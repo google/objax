@@ -1,0 +1,4 @@
+absl-py
+tensorflow-cpu>=2.3.0
+tensorflow_datasets>=3.2.1
+tqdm

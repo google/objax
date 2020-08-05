@@ -1,0 +1,10 @@
+*.iml
+*.log
+*.pyc
+.idea
+.vscode
+__pycache__
+dist/
+docs/build/
+docs/source/_autosummary
+experiments/

@@ -1,0 +1,7 @@
+sphinx
+sphinx_rtd_theme
+recommonmark
+nbsphinx
+pandoc
+jupyter_client
+ipykernel
