@@ -333,7 +333,7 @@ class Sequential(ModuleList):
     """Executes modules in the order they were passed to the constructor."""
 
     def __call__(self, x: JaxArray, **kwargs) -> JaxArray:
-        """Execute the sequence of operation contained on x and **kwargs and return result."""
+        """Execute the sequence of operation contained on ``x`` and ``**kwargs`` and return result."""
         for f in self:
             s = inspect.signature(f).parameters
             if s:
