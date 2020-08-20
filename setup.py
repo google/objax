@@ -31,7 +31,7 @@ long_description = open(README_FILE, encoding='utf-8').read()
 install_requires = [str(r) for r in parse_requirements(open(REQUIREMENTS_FILE, 'rt'))]
 
 setup(
-    name='Objax',
+    name='objax',
     version=version,
     description='Objax is a machine learning framework that provides an Object Oriented layer for JAX.',
     long_description=long_description,
@@ -42,7 +42,6 @@ setup(
     packages=find_packages(),
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-        'Framework :: Flask',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
