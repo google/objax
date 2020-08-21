@@ -1,28 +1,28 @@
 Welcome to Objax's documentation!
 =================================
 
-**Objax** adds an **Object Oriented** layer on top of `JAX <https://github.com/google/jax>`_
-(a framework for high performance machine learning).
+**Objax** adds an **Object Oriented** layer on top of the `JAX <https://github.com/google/jax>`_
+framework for high performance machine learning.
 Objax is designed **by researchers for researchers**, focusing on simplicity and understandability.
-The library aims to make it easy for its users to read, understand, extend, and modify its code to adapt it
-to their needs.
+Objax users should be able to easily read, understand, extend, and modify it to fit their needs.
 
 :doc:`Try the 5 minutes tutorial. <notebooks/Objax_Basics>`
 
-Machine learning's :code:`'Hello world'`: A classifier's weigths optimization with gradient descent::
+Machine learning's :code:`'Hello world'`: optimizing the weights of classifier ``net`` through gradient descent::
 
    opt = objax.optimizer.Adam(net.vars())
 
    def loss(x, y):
-       logits = net(x)
+       logits = net(x)  # Output of classifier on x
        xe = cross_entropy_logits(logits, y)
        return xe.mean()
 
+   # Perform gradient descent wrt to net weights    
    gv = objax.GradValues(loss, net.vars())
 
    def train_op(x, y):
-       g, v = gv(x, y)
-       opt(lr, g)
+       g, v = gv(x, y)  # returns gradients g and loss v
+       opt(lr, g)  # update weights
        return v
 
    train_op = objax.Jit(train_op, net.vars() + opt.vars())
@@ -41,41 +41,41 @@ Motivation
 ^^^^^^^^^^
 
 Researchers and students look at machine learning frameworks in their own way.
-Often they find themselves trying to read the code of some technique, say an Adam optimizer, to get an idea
-how it works or to try to extend it or as the basis of research for a new optimizer.
-Case in point is machine learning frameworks differ from standard libraries in how they are used: a large class of
+Often they read the code of some technique, say an Adam optimizer, to understand how it works
+so they can extend it or design a new optimizer.
+This is how machine learning frameworks differ from standard libraries: a large class of
 users not only look at the APIs but also at the code behind these APIs.
 
 Coded for simplicity
 ^^^^^^^^^^^^^^^^^^^^
 
-Source code should be understandable by everyone, including from users without backgrounds in computer science.
+Source code should be understandable by everyone, including users without background in computer science.
 So how simple is it really? Judge for yourself with this tutorial: :doc:`notebooks/Logistic_Regression`.
 
 Object-oriented
 ^^^^^^^^^^^^^^^
-In machine learning, for a function :math:`f(X; \theta)`, it is common practice to separate the
-inputs :math:`X` from the parameters :math:`\theta`.
-Mathematically, this is captured by using a semi-colon to semantically separate one group of arguments from another.
+It is common in machine learning to separate the inputs (:math:`X`)
+from the parameters (:math:`\theta`) of a function :math:`f(X;
+\theta)`.
+Math notation captures this difference by using a semi-colon to semantically separate the first group of arguments from the other.  
 
-In Objax, we represents this semantic distinction through an object :py:class:`objax.Module`:
+Objax represents this semantic distinction through :py:class:`objax.Module`:
 
-* the module parameters :math:`\theta` are object attributes of the form :code:`self.w, ...`
-* the inputs :math:`X` are arguments to the methods such as :code:`def __call__(self, x, y, ...):`
+* the module's parameters :math:`\theta` are attributes of the form :code:`self.w, ...`
+* inputs :math:`X` are method arguments such as :code:`def __call__(self, x, y, ...):`
 
 Designed for flexibility
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-We minimized the number of abstractions, in fact there are only two main ones: the Module and the Variable.
-Everything is built out of these two basic classes. Read more about this in this in-depth guide
-:doc:`advanced/variables_and_modules`.
+Objax minimizes the number of abstractions users need to understand. There are two main ones: *Modules* and *Variables*.
+Everything is built out of these two basic classes. You can read more about this in :doc:`advanced/variables_and_modules`. 
 
 Engineered for performance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In machine learning, performance is essential.
 Every second counts.
-And with Objax we make it count by using JAX/XLA engine which also powers TensorFlow.
+Objax makes it count by using the JAX/XLA engine that also powers TensorFlow.
 Read more about this in :doc:`advanced/jit`.
 
 
