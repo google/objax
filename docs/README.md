@@ -1,10 +1,10 @@
 # Documentation folder
 
-The document uses `.rst` format which stands for 
-[reStructuredText (reST)](https://docutils.sourceforge.io/docs/user/rst/quickstart.html).
+The document uses `.rst` format which stands for reStructuredText
+(reST)](https://docutils.sourceforge.io/docs/user/rst/quickstart.html).
 
 [Cheat sheet](http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html)
-for reST. 
+for reST.
 
 ## Initial setup
 
@@ -21,5 +21,5 @@ sudo apt install pandoc
 ```bash
 cd docs
 make clean
-PYTHONPATH=$PYTHONPATHL:.. make html
+PYTHONPATH=$PYTHONPATH:.. make html
 ```

@@ -2,38 +2,38 @@
 
 This is not an officially supported Google product.
 
-Objax is an object-oriented (OO) for Jax.
-Objax design strives for simplicity and flexibility with the goal of facilitating experimentation and research in
-machine learning.
-Objax's intent is that its code should be easily understandable and forkable, as such it is particularly aimed at
-students and researchers.
+Objax is an object-oriented (OO) library for Jax. Objax's design strives for
+simplicity and flexibility with the goal of facilitating experimentation and
+research in machine learning. Objax code should be easily understandable and
+forkable, as it targets students and researchers.
 
-This the developer repository of Objax, there is very little user documentation here, for the full documentation go to
- *coming soon*.
- 
-You can find more information on:
+This is the developer repository of Objax, there is very little user documentation
+ here, for the full documentation go to [objax.readthedocs.io](https://objax.readthedocs.io/).
 
-* [Examples](examples/README.md)
+You can also find information on:
+
+* [Sample Code](examples/README.md)
 * [Writing documentation](docs/README.md)
 
 
 ## User installation guide
 
-Installing is done using pip with the following command:
+You install Objax using `pip` as follows:
 
 ```bash
 pip install --upgrade objax
 ```
 
-For GPU support, we assume you have already some version of CUDA installed. Here are the extra steps:
+Objax supports GPUs but assumes that you already have some version of CUDA
+instaled. Here are the extra steps:
 
 ```bash
-# Specify your installed CUDA version.
+# Update accordingly to your installed CUDA version
 CUDA_VERSION=11.0
 pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
 ```
 
-### Useful shell configurations
+### Useful environment configurations
 
 Here are a few useful options:
 
@@ -45,7 +45,7 @@ export XLA_PYTHON_CLIENT_PREALLOCATE=false
 
 ### Testing your installation
 
-You can run a few basic operations:
+You can test your installation by running the code below:
 
 ```python
 import jax
@@ -62,9 +62,10 @@ m = objax.nn.Conv2D(3, 4, k=3)
 print('Conv2D return shape', m(x).shape)  # (100, 4, 32, 32)
 ```
 
-Typically if you get errors running this using CUDA, it probably means your installation of CUDA or CuDNN has issues.
+Typically if you get errors running this using CUDA, it probably means your
+installation of CUDA or CuDNN has issues.
 
-### Installing examples
+### Runing code examples
 
 Clone the code repository:
 
@@ -75,8 +76,8 @@ cd objax/examples
 
 ## Developer installation guide
 
-For developing purpose we recommend using virtualenv. 
-Using Ubuntu or a similar Linux distribution, the setup is as follows:
+We recommend using `virtualenv` if you want to develop in Objax. The setup for
+Ubuntu or a similar Linux distribution is as follows:
 
 ```bash
 # Install virtualenv if you haven't done so already
@@ -86,7 +87,7 @@ virtualenv -p python3 --system-site-packages ~/jax3
 # Start the virtual environment
 . ~/jax3/bin/activate
 
-# Clone objax git repository.
+# Clone objax git repository, if you haven't.
 git clone https://github.com/google/objax.git
 cd objax
 
@@ -100,24 +101,14 @@ CUDA_VERSION=11.0
 pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
 ```
 
-It is required for the current folder to be in `PYTHONPATH`. 
-This can be done with the following command:
+The current folder must be in `PYTHONPATH`. You can do this with the following command:
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:.
 ```
+### Running tests
 
-### Useful shell configurations
-
-Here are a few useful options:
-
-```bash
-# Prevent JAX from taking the whole GPU memory
-# (useful if you want to run several programs on a single GPU)
-export XLA_PYTHON_CLIENT_PREALLOCATE=false
-```
-
-### Testing
+You can run all tests as follows:
 
 ```bash
 ./tests/run.sh

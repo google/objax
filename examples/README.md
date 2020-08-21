@@ -2,7 +2,7 @@
 
 # Examples
 
-This directory contains fully functional code examples that you can use to learn more about ObJAX.
+This directory contains fully functional code examples that you can use to learn more about Objax
 
 See:
 * [Image Classification](classify/img/README.md)
