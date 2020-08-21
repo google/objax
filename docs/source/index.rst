@@ -44,13 +44,13 @@ Researchers and students look at machine learning frameworks in their own way.
 Often they read the code of some technique, say an Adam optimizer, to understand how it works
 so they can extend it or design a new optimizer.
 This is how machine learning frameworks differ from standard libraries: a large class of
-users not only look at the APIs but also at the code under these APIs. 
+users not only look at the APIs but also at the code behind these APIs.
 
 Coded for simplicity
 ^^^^^^^^^^^^^^^^^^^^
 
 Source code should be understandable by everyone, including users without background in computer science.
-So how simple is it really? Judge for yourself with this tutorial: :doc:`notebooks/Logistic_Regression`. 
+So how simple is it really? Judge for yourself with this tutorial: :doc:`notebooks/Logistic_Regression`.
 
 Object-oriented
 ^^^^^^^^^^^^^^^
@@ -59,10 +59,10 @@ from the parameters (:math:`\theta`) of a function :math:`f(X;
 \theta)`.
 Math notation captures this difference by using a semi-colon to semantically separate the first group of arguments from the other.  
 
-Objax represents this semantic distinction through :py:class:`objax.Module`: 
+Objax represents this semantic distinction through :py:class:`objax.Module`:
 
-* the module's parameters :math:`\theta` are attributes of the form :code:`self.w, ...` 
-* inputs :math:`X` are method arguments such as :code:`def __call__(self, x, y, ...):` 
+* the module's parameters :math:`\theta` are attributes of the form :code:`self.w, ...`
+* inputs :math:`X` are method arguments such as :code:`def __call__(self, x, y, ...):`
 
 Designed for flexibility
 ^^^^^^^^^^^^^^^^^^^^^^^^

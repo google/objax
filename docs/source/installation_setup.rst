@@ -63,7 +63,8 @@ Clone the code repository:
 Developer installation
 ----------------------
 
-For developing purpose we recommend using :code:`virtualenv`. The setup in Ubuntu or similar Linux distributions is as follows:
+For developing purpose we recommend using :code:`virtualenv`.
+The setup in Ubuntu or similar Linux distributions is as follows:
 
 .. code-block:: bash
 
@@ -87,7 +88,8 @@ For developing purpose we recommend using :code:`virtualenv`. The setup in Ubunt
     CUDA_VERSION=11.0
     pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
 
-The current folder must be in :code:`PYTHONPATH`. This can be done with the following command: 
+The current folder must be in :code:`PYTHONPATH`.
+This can be done with the following command: 
 
 .. code-block:: bash
 
