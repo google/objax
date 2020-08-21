@@ -5,3 +5,5 @@ nbsphinx
 pandoc
 jupyter_client
 ipykernel
+objax
+.
