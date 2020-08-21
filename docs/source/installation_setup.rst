@@ -4,13 +4,14 @@ Installation and Setup
 User installation
 -----------------
 
-Installing is done using :code:`pip` with the following command:
+Install using :code:`pip` with the following command:
 
 .. code-block:: bash
 
     pip install --upgrade objax
 
-For GPU support, we assume you have already some version of CUDA installed. Here are the extra steps:
+For GPU support, we assume you have already some version of CUDA
+installed. Here are the extra steps:  
 
 .. code-block:: bash
 
@@ -32,7 +33,7 @@ Here are a few useful options:
 Testing your installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can run a few basic operations::
+You can run the code below to test your installation::
 
     import jax
     import objax
@@ -47,7 +48,8 @@ You can run a few basic operations::
     m = objax.nn.Conv2D(3, 4, k=3)
     print('Conv2D return shape', m(x).shape)  # (100, 4, 32, 32)
 
-Typically if you get errors running this using CUDA, it probably means your installation of CUDA or CuDNN has issues.
+If you get errors running this using CUDA, it probably means
+your installation of CUDA or CuDNN has issues. 
 
 Installing examples
 ^^^^^^^^^^^^^^^^^^^
@@ -63,8 +65,8 @@ Clone the code repository:
 Developer installation
 ----------------------
 
-For developing purpose we recommend using :code:`virtualenv`.
-Using Ubuntu or a similar Linux distribution, the setup is as follows:
+For developing purpose we recommend using :code:`virtualenv`. The
+setup in Ubuntu or similar Linux distributions is as follows:
 
 .. code-block:: bash
 
@@ -88,8 +90,8 @@ Using Ubuntu or a similar Linux distribution, the setup is as follows:
     CUDA_VERSION=11.0
     pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
 
-It is required for the current folder to be in :code:`PYTHONPATH`.
-This can be done with the following command:
+The current folder must be in :code:`PYTHONPATH`. This can be done
+with the following command: 
 
 .. code-block:: bash
 

@@ -1,7 +1,7 @@
 Code Examples
 =============
 
-This section describes the code examples found in :code:`ObJAX/examples`
+This section describes the code examples found in :code:`objax/examples`
 
 Classification
 --------------
@@ -33,7 +33,7 @@ Hardware    CPU or GPU or TPU
 :code:`examples/classify/img/mnist_dnn.py`
 """"""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate a DNNet model for multiclass classification on `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
+Train and evaluate a DNNet model for multiclass classification on the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
 
 .. code-block:: bash
 
@@ -56,7 +56,7 @@ Techniques  Model weight averaging for improved accuracy using
 """"""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a simple custom CNN model for multiclass classification on
-`MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
+the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
 
 .. code-block:: bash
 
@@ -79,7 +79,7 @@ Techniques  * Model weight averaging for improved accuracy using
 :code:`examples/classify/img/mnist_dp.py`
 """""""""""""""""""""""""""""""""""""""""
 
-Using differential privacy, Train and evaluate a convNet model for `MNIST <http://yann.lecun.com/exdb/mnist/>`_
+Use differential privacy to train and evaluate a convNet model for `MNIST <http://yann.lecun.com/exdb/mnist/>`_
 dataset.
 
 .. code-block:: bash
@@ -105,7 +105,7 @@ Techniques  * Compute differentially private gradient using :py:class:`objax.pri
 """""""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a `wide resnet <https://arxiv.org/abs/1605.07146>`_ model for multiclass classification on
-`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
+the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
 
 .. code-block:: bash
 
@@ -129,7 +129,7 @@ Techniques  * Learning rate schedule.
 """""""""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate convNet models for multiclass classification on
-`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
+the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
 
 .. code-block:: bash
 
@@ -166,9 +166,8 @@ Techniques  * Model weight averaging for improved accuracy using
 :code:`examples/classify/img/imagenet/imagenet_train.py`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on `ImageNet <http://www.image-net.org/>`_
-dataset.
-See a :code:`examples/classify/img/imagenet/README.md` for an additional information.
+Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on the `ImageNet <http://www.image-net.org/>`_
+dataset. See :code:`examples/classify/img/imagenet/README.md` for additional information.
 
 ==========  =
 Data        `ImageNet <http://www.image-net.org/>`_ from `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
@@ -191,7 +190,7 @@ Techniques  * Parallelized on multiple GPUs using :py:class:`objax.Parallel`.
 
 Image classification using an ImageNet-pretrained
 `VGG19 <https://www.robots.ox.ac.uk/~vgg/publications/2015/Simonyan15/simonyan15.pdf>`_ model.
-See a :code:`examples/classify/img/misc/PRETRAINED_VGG.md` for an additional information.
+See :code:`examples/classify/img/misc/PRETRAINED_VGG.md` for additional information.
 
 ==========  =
 Techniques  Load VGG-19 model with pretrained weights and run 1000-way image classification.
@@ -241,7 +240,7 @@ Example code available at :code:`examples/gpt-2`.
 
 Load pretrained `GPT2 <https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf>`_
 model (124M parameter) and demonstrate how to use the model to generate a text sequence.
-See a :code:`examples/gpt-2/README.md` for an additional information.
+See :code:`examples/gpt-2/README.md` for additional information.
 
 ==========  =
 Hardware    GPU or TPU
@@ -257,7 +256,7 @@ Example code is available at :code:`examples/rnn`.
 :code:`examples/rnn/shakespeare.py`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Train and evaluate a vanilla RNN model on shakespeare corpus dataset.
+Train and evaluate a vanilla RNN model on the Shakespeare corpus dataset.
 See :code:`examples/rnn/README.md` for additional information.
 
 .. code-block:: bash
@@ -287,8 +286,8 @@ Example codes available at :code:`examples/optimization`.
 :code:`examples/optimization/maml.py`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Meta-learning method `MAML <https://arxiv.org/abs/1703.03400>`_ implementation to demonstrate computing gradient of
-gradient.
+Meta-learning method `MAML <https://arxiv.org/abs/1703.03400>`_ implementation to demonstrate computing the gradient of 
+a gradient.
 
 .. code-block:: bash
 
