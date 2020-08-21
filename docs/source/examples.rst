@@ -55,7 +55,8 @@ Techniques  Model weight averaging for improved accuracy using
 :code:`examples/classify/img/mnist_cnn.py`
 """"""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate a simple custom CNN model for multiclass classification on the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
+Train and evaluate a simple custom CNN model for multiclass classification on
+the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
 
 .. code-block:: bash
 
@@ -102,7 +103,8 @@ Techniques  * Compute differentially private gradient using :py:class:`objax.pri
 :code:`examples/classify/img/cifar10_simple.py`
 """""""""""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate a `wide resnet <https://arxiv.org/abs/1605.07146>`_ model for multiclass classification on the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
+Train and evaluate a `wide resnet <https://arxiv.org/abs/1605.07146>`_ model for multiclass classification on
+the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
 
 .. code-block:: bash
 
@@ -125,7 +127,8 @@ Techniques  * Learning rate schedule.
 :code:`examples/classify/img/cifar10_advanced.py`
 """""""""""""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate convNet models for multiclass classification on the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
+Train and evaluate convNet models for multiclass classification on
+the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
 
 .. code-block:: bash
 
@@ -162,7 +165,8 @@ Techniques  * Model weight averaging for improved accuracy using
 :code:`examples/classify/img/imagenet/imagenet_train.py`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on the `ImageNet <http://www.image-net.org/>`_ dataset. See :code:`examples/classify/img/imagenet/README.md` for additional information.
+Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on the `ImageNet <http://www.image-net.org/>`_ dataset.
+See :code:`examples/classify/img/imagenet/README.md` for additional information.
 
 ==========  =
 Data        `ImageNet <http://www.image-net.org/>`_ from `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
@@ -233,7 +237,8 @@ Example code available at :code:`examples/gpt-2`.
 :code:`examples/gpt-2/gpt2.py`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Load pretrained `GPT2 <https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf>`_ model (124M parameter) and demonstrate how to use the model to generate a text sequence.
+Load pretrained `GPT2 <https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf>`_
+model (124M parameter) and demonstrate how to use the model to generate a text sequence.
 See :code:`examples/gpt-2/README.md` for additional information.
 
 ==========  =
@@ -250,7 +255,8 @@ Example code is available at :code:`examples/rnn`.
 :code:`examples/rnn/shakespeare.py`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Train and evaluate a vanilla RNN model on the Shakespeare corpus dataset. See :code:`examples/rnn/README.md` for additional information.
+Train and evaluate a vanilla RNN model on the Shakespeare corpus dataset.
+See :code:`examples/rnn/README.md` for additional information.
 
 .. code-block:: bash
 

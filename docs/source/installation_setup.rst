@@ -10,7 +10,7 @@ Install using :code:`pip` with the following command:
 
     pip install --upgrade objax
 
-For GPU support, we assume you have already some version of CUDA installed. Here are the extra steps:  
+For GPU support, we assume you have already some version of CUDA installed. Here are the extra steps:
 
 .. code-block:: bash
 
@@ -47,7 +47,7 @@ You can run the code below to test your installation::
     m = objax.nn.Conv2D(3, 4, k=3)
     print('Conv2D return shape', m(x).shape)  # (100, 4, 32, 32)
 
-If you get errors running this using CUDA, it probably means your installation of CUDA or CuDNN has issues. 
+If you get errors running this using CUDA, it probably means your installation of CUDA or CuDNN has issues.
 
 Installing examples
 ^^^^^^^^^^^^^^^^^^^
@@ -89,7 +89,7 @@ The setup in Ubuntu or similar Linux distributions is as follows:
     pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
 
 The current folder must be in :code:`PYTHONPATH`.
-This can be done with the following command: 
+This can be done with the following command:
 
 .. code-block:: bash
 
