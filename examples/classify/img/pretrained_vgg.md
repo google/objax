@@ -12,5 +12,5 @@ Please download the weights of VGG-19 pretrained model from this
 
 ## Classifying images
 
-This [example](pretrained_vgg.py) shows how to classifying an image downloaded from internet.
+This [example](pretrained_vgg.py) shows how to classifying an image downloaded from the internet.
 You can set an `IMAGE_PATH` to classify your own image.

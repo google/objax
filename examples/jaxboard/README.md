@@ -2,7 +2,7 @@
 
 # Saving to tensorboard
 
-This directory contains examples on how to visualize data in tensorboard with objax.
+This directory contains examples on how to visualize data in tensorboard with Objax.
 
 ```bash
 python3 examples/jaxboard/summary.py
