@@ -2,7 +2,7 @@
 
 # Examples
 
-This directory contains examples using RNNs.
+This directory contains examples using Recurrent Neural Networks (RNNs).
 
 See:
 * `shakespeare.py` - predict characters from Shakespeare's plays.
