@@ -79,7 +79,7 @@ def train_op(x, xl):
 train_op = objax.Jit(train_op, gv.vars() + opt.vars() + ema.vars())
 
 # Training
-model_vars.print()
+print(model_vars)
 print(f'Visualize results with: tensorboard --logdir "{logdir}"')
 print("Disclaimer: This code demonstrates the DNNet class. For SOTA accuracy use a CNN instead.")
 with SummaryWriter(os.path.join(logdir, 'tb')) as tensorboard:

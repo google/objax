@@ -55,7 +55,7 @@ class Experiment:
         bn_cls = objax.nn.SyncedBatchNorm2D if FLAGS.use_sync_bn else objax.nn.BatchNorm2D
         self.model = ResNet50(in_channels=3, num_classes=NUM_CLASSES, normalization_fn=bn_cls)
         self.model_vars = self.model.vars()
-        self.model_vars.print()
+        print(self.model_vars)
         # Create parallel eval op
         self.evaluate_batch_parallel = objax.Parallel(self.evaluate_batch, self.model_vars,
                                                       reduce=lambda x: x.sum(0))

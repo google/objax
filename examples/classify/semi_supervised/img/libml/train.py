@@ -42,7 +42,7 @@ class TrainLoopFSL(objax.Module):
         return pickle.dumps(self.model)
 
     def print(self):
-        self.model.vars().print()
+        print(self.model.vars())
         print('Byte size %d\n' % len(self.serialize_model()))
         print('Parameters'.center(79, '-'))
         for kv in sorted(self.params.items()):
