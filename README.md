@@ -1,16 +1,23 @@
 # Objax
 
+[**Tutorials**](https://objax.readthedocs.io/en/latest/notebooks/Objax_Basics.html)
+| [**Install**](https://objax.readthedocs.io/en/latest/installation_setup.html)
+| [**Documentation**](https://objax.readthedocs.io/en/latest/)
+| [**Philosophy**](https://objax.readthedocs.io/en/latest/index.html#objax-philosophy)
+
 This is not an officially supported Google product.
 
-Objax is an object-oriented (OO) library for Jax. Objax's design strives for
-simplicity and flexibility with the goal of facilitating experimentation and
-research in machine learning. Objax code should be easily understandable and
-forkable, as it targets students and researchers.
+Objax is an open source machine learning framework that accelerates research and learning thanks to a
+minimalist object-oriented design and a readable code base.
+Its name comes from the contraction of Object and [JAX](https://github.com/google/jax) -- a popular high-performance
+framework.
+Objax is designed **by researchers for researchers** with a focus on simplicity and understandability.
+Its users should be able to easily read, understand, extend, and modify it to fit their needs.
 
 This is the developer repository of Objax, there is very little user documentation
- here, for the full documentation go to [objax.readthedocs.io](https://objax.readthedocs.io/).
+here, for the full documentation go to [objax.readthedocs.io](https://objax.readthedocs.io/).
 
-You can also find information on:
+You can find READMEs in the subdirectory of this project, for example:
 
 * [Sample Code](examples/README.md)
 * [Writing documentation](docs/README.md)
