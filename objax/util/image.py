@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['nchw', 'nhwc', 'to_png']
+__all__ = ['nchw', 'nhwc', 'normalize_to_uint8', 'normalize_to_unit_float', 'to_png']
 
 import io
 from typing import Union
@@ -35,6 +35,16 @@ def nhwc(x: Union[np.ndarray, JaxArray]) -> Union[np.ndarray, JaxArray]:
     dims = list(range(x.ndim))
     dims.append(dims.pop(-3))
     return x.transpose(dims)
+
+
+def normalize_to_uint8(x: Union[np.ndarray, JaxArray]) -> Union[np.ndarray, JaxArray]:
+    """Map a float image in [1/256-1, 1-1/256] to uint8 {0, 1, ..., 255}."""
+    return (128 * (x + (1 - 1 / 256))).clip(0, 255).round().astype('uint8')
+
+
+def normalize_to_unit_float(x: Union[np.ndarray, JaxArray]) -> Union[np.ndarray, JaxArray]:
+    """Map an uint8 image in {0, 1, ..., 255} to float interval [1/256-1, 1-1/256]."""
+    return x * (1 / 128) + (1 / 256 - 1)
 
 
 def to_png(x: np.ndarray) -> bytes:

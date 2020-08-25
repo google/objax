@@ -38,6 +38,8 @@ objax.util.image
 
     nchw
     nhwc
+    normalize_to_uint8
+    normalize_to_unit_float
     to_png
 
 .. automodule:: objax.util.image
