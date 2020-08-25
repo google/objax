@@ -12,7 +12,7 @@ objax.functional
 
 .. currentmodule:: objax.functional
 
-Due to the large quantity of APIs in this section, we organized it into the following sub-sections:
+Due to the large number of APIs in this section, we organized it into the following sub-sections:
 
 .. contents::
     :local:
@@ -76,8 +76,8 @@ Pooling
 .. autofunction:: space_to_batch2d
 .. autofunction:: space_to_channel2d
 
-Everything else
-^^^^^^^^^^^^^^^
+Misc
+^^^^
 
 .. autosummary::
 
@@ -88,7 +88,7 @@ Everything else
     stop_gradient
     top_k
     rsqrt
-    upscale
+    upscale_nn
 
 .. autofunction:: dynamic_slice
 .. autofunction:: flatten
@@ -97,7 +97,7 @@ Everything else
 .. autofunction:: stop_gradient
 .. autofunction:: top_k
 .. autofunction:: rsqrt
-.. autofunction:: upscale
+.. autofunction:: upscale_nn
 
 objax.functional.divergence
 ---------------------------

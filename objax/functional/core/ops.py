@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __all__ = ['dynamic_slice', 'pad', 'rsqrt', 'stop_gradient', 'top_k',
-           'flatten', 'one_hot', 'upscale']
+           'flatten', 'one_hot', 'upscale_nn']
 
 import jax.nn.functions as jnnf
 from jax import numpy as jn, lax
@@ -41,29 +41,17 @@ def flatten(x: JaxArray) -> JaxArray:
     return x.reshape([x.shape[0], -1])
 
 
-
-# Sample code for top_k with gradient support
-# def top_k(x: jn.ndarray, k: int):
-#     """Select the top k slices from the last dimension."""
-#     bcast_idxs = jn.broadcast_to(jn.arange(x.shape[-1]), x.shape)
-#     sorted_vals, sorted_idxs = lax.sort_key_val(x, bcast_idxs)
-#     topk_vals = lax.slice_in_dim(sorted_vals, -k, sorted_vals.shape[-1], axis=-1)
-#     topk_idxs = lax.slice_in_dim(sorted_idxs, -k, sorted_idxs.shape[-1], axis=-1)
-#     topk_vals = jn.flip(topk_vals, axis=-1)
-#     topk_idxs = jn.flip(topk_idxs, axis=-1)
-#     return topk_vals, topk_idxs
-
-
-def upscale(x: JaxArray) -> JaxArray:
-    """Applies a 2x upscale of image batches of shape (N, C, H, W).
+def upscale_nn(x: JaxArray, scale: int = 2) -> JaxArray:
+    """Nearest neighbor upscale for image batches of shape (N, C, H, W).
 
     Args:
         x: input tensor of shape (N, C, H, W).
+        scale: integer scaling factor.
 
     Returns:
-        Output tensor of shape (N, C, 2*H, 2*W).
+        Output tensor of shape (N, C, H * scale, W * scale).
     """
     s = x.shape
     x = x.reshape(s[:2] + (s[2], 1, s[3], 1))
-    x = jn.tile(x, (1, 1, 1, 2, 1, 2))
-    return x.reshape(s[:2] + (2 * s[2], 2 * s[3]))
+    x = jn.tile(x, (1, 1, 1, scale, 1, scale))
+    return x.reshape(s[:2] + (scale * s[2], scale * s[3]))
