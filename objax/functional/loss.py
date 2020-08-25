@@ -18,7 +18,7 @@ from typing import Union
 
 import jax.numpy as jn
 
-from objax.functional.ops import logsumexp
+from objax.functional.core import logsumexp
 from objax.typing import JaxArray
 
 

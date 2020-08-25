@@ -12,31 +12,91 @@ objax.functional
 
 .. currentmodule:: objax.functional
 
+Due to the large quantity of APIs in this section, we organized it into the following sub-sections:
+
+.. contents::
+    :local:
+    :depth: 1
+
+Activation
+^^^^^^^^^^
+
 .. autosummary::
 
-   average_pool_2d
-   flatten
-   max_pool_2d
-   one_hot
-   relu
-   upscale
+    celu
+    elu
+    leaky_relu
+    log_sigmoid
+    log_softmax
+    logsumexp
+    relu
+    selu
+    sigmoid
+    softmax
+    softplus
+    tanh
+
+.. autofunction:: celu
+.. autofunction:: elu
+.. autofunction:: leaky_relu
+.. autofunction:: log_sigmoid
+.. autofunction:: log_softmax
+.. autofunction:: logsumexp
+.. autofunction:: relu
+.. autofunction:: selu
+.. autofunction:: sigmoid
+.. autofunction:: softmax
+.. autofunction:: softplus
+.. autofunction:: tanh
+
+Pooling
+^^^^^^^
+
+.. autosummary::
+
+    average_pool_2d
+    batch_to_space2d
+    channel_to_space2d
+    max_pool_2d
+    space_to_batch2d
+    space_to_channel2d
 
 .. autofunction:: average_pool_2d
 
     For a definition of pooling, including examples see
     `Pooling Layer <https://cs231n.github.io/convolutional-networks/#pool>`_.
 
+.. autofunction:: batch_to_space2d
+.. autofunction:: channel_to_space2d
 .. autofunction:: max_pool_2d
 
     For a definition of pooling, including examples see
     `Pooling Layer <https://cs231n.github.io/convolutional-networks/#pool>`_.
 
+.. autofunction:: space_to_batch2d
+.. autofunction:: space_to_channel2d
+
+Everything else
+^^^^^^^^^^^^^^^
+
+.. autosummary::
+
+    dynamic_slice
+    flatten
+    one_hot
+    pad
+    stop_gradient
+    top_k
+    rsqrt
+    upscale
+
+.. autofunction:: dynamic_slice
 .. autofunction:: flatten
-
 .. autofunction:: one_hot
-
-.. autofunction:: relu
-
+.. autofunction:: pad
+.. autofunction:: stop_gradient
+.. autofunction:: top_k
+.. autofunction:: rsqrt
 .. autofunction:: upscale
 
 objax.functional.divergence
