@@ -46,7 +46,7 @@ epochs = 20
 # Model
 model = objax.nn.Linear(ndim, 1)
 opt = objax.optimizer.SGD(model.vars())
-model.vars().print()
+print(model.vars())
 
 
 # Cross Entropy Loss

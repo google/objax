@@ -232,8 +232,9 @@ class VarCollection(Dict[str, BaseVar]):
         for var, tensor in zip(vl, tensors):
             var.assign(tensor)
 
-    def print(self, max_width=100):
+    def __str__(self, max_width=100):
         """Pretty print the contents of the VarCollection."""
+        text = []
         total = count = 0
         longest_string = max((len(x) for x in self.keys()), default=20)
         longest_string = min(max_width, max(longest_string, 20))
@@ -241,8 +242,9 @@ class VarCollection(Dict[str, BaseVar]):
             size = np.prod(v.value.shape) if v.value.ndim else 1
             total += size
             count += 1
-            print(f'{name:{longest_string}} {size:8d} {v.value.shape}')
-        print(f'{f"+Total({count})":{longest_string}} {total:8d}')
+            text.append(f'{name:{longest_string}} {size:8d} {v.value.shape}')
+        text.append(f'{f"+Total({count})":{longest_string}} {total:8d}')
+        return '\n'.join(text)
 
     @contextmanager
     def replicate(self):

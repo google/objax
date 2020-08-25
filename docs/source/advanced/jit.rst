@@ -47,14 +47,14 @@ present in your computer and what code is being jitted::
 As mentioned earlier, :code:`jit_net` is a module instance, it's sharing the variables with the module :code:`net`,
 we can verify it::
 
-    net.vars().print()
+    print(net.vars())
     # (Sequential)[0](Linear).b        3 (3,)
     # (Sequential)[0](Linear).w        6 (2, 3)
     # (Sequential)[2](Linear).b        4 (4,)
     # (Sequential)[2](Linear).w       12 (3, 4)
     # +Total(4)                       25
 
-    jit_net.vars().print()
+    print(jit_net.vars())
     # (Jit)(Sequential)[0](Linear).b        3 (3,)
     # (Jit)(Sequential)[0](Linear).w        6 (2, 3)
     # (Jit)(Sequential)[2](Linear).b        4 (4,)
@@ -62,7 +62,7 @@ we can verify it::
     # +Total(4)                            25
 
     # We can verify that jit_func also shares the same variables
-    jit_func.vars().print()
+    print(jit_func.vars())
     # (Jit)(Sequential)[0](Linear).b        3 (3,)
     # (Jit)(Sequential)[0](Linear).w        6 (2, 3)
     # (Jit)(Sequential)[2](Linear).b        4 (4,)
