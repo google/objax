@@ -257,13 +257,13 @@ code.
 Let's inspect the names::
 
     f = Linear(4, 5)
-    f.vars().print()  # print name, size, dimensions
+    print(f.vars())  # print name, size, dimensions
     # (Linear).w                 20 (4, 5)
     # (Linear).b                  5 (5,)
     # +Total(2)                  25
 
     f = MiniNet(4, 5, 6)
-    f.vars().print()
+    print(f.vars())
     # (MiniNet).f1(Linear).w       20 (4, 5)
     # (MiniNet).f1(Linear).b        5 (5,)
     # (MiniNet).f2(Linear).w       30 (5, 6)
@@ -302,7 +302,7 @@ Here's a simple example of its usage::
             self.good = objax.ModuleList([objax.TrainVar(jn.zeros(3)),
                                           objax.TrainVar(jn.zeros(4))])
 
-    MyModule().vars().print()
+    print(MyModule().vars())
     # (MyModule).good(ModuleList)[0]        3 (3,)
     # (MyModule).good(ModuleList)[1]        4 (4,)
     # +Total(2)                             7
@@ -312,7 +312,7 @@ VarCollection
 -------------
 
 The :code:`Module.vars` method returns an :py:class:`objax.VarCollection`.
-Thie class is a dictionary that maps names to variables.
+This class is a dictionary that maps names to variables.
 It has some additional methods and some modified behaviors specifically for variable manipulation.
 In most cases, you won't need to use the more advanced methods such as :code:`__iter__`, :code:`tensors` and
 :code:`assign`, but this is an in-depth topic.
@@ -331,15 +331,20 @@ Let's take a look at some of them through an example::
     m2 = Linear(4, 5)
 
     # First, as seen before, we can print the contents with print() method
-    m1.vars().print()
+    print(m1.vars())
     # (Linear).w                 12 (3, 4)
     # (Linear).b                  4 (4,)
     # +Total(2)                  16
 
+    # A VarCollection is really a dictionary
+    print(repr(m1.vars()))
+    # {'(Linear).w': <objax.variable.TrainVar object at 0x7fb5e47c0ad0>,
+    #  '(Linear).b': <objax.variable.TrainVar object at 0x7fb5ec017890>}
+
 Combining multiple VarCollections is done by using addition::
 
     all_vars = m1.vars('m1') + m2.vars('m2')
-    all_vars.print()
+    print(all_vars)
     # m1(Linear).w               12 (3, 4)
     # m1(Linear).b                4 (4,)
     # m2(Linear).w               20 (4, 5)
@@ -361,7 +366,7 @@ Here's a simple weight sharing example where we simply refer to the same module 
 
     # Weight sharing
     shared_vars = m1.vars('m1') + m1.vars('m1_shared')
-    shared_vars.print()
+    print(shared_vars)
     # m1(Linear).w               12 (3, 4)
     # m1(Linear).b                4 (4,)
     # m1_shared(Linear).w        12 (3, 4)

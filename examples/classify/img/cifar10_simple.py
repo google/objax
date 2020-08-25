@@ -62,7 +62,7 @@ def augment(x):
 
 
 # Training
-model.vars().print()
+print(model.vars())
 for epoch in range(30):
     # Train
     loss = []

@@ -79,13 +79,13 @@ Let's look at what gradient as a module looks like through a simple example::
 As stated, :code:`gradient_loss` is a module instance and has variables.
 Its variables are simply the ones passed to :py:class:`objax.GradValues`, we can verify it::
 
-    gradient_loss.vars().print()
+    print(gradient_loss.vars())
     # (GradValues)(Linear).b        3 (3,)
     # (GradValues)(Linear).w        6 (2, 3)
     # +Total(2)                     9
 
     # These variables are from
-    m.vars().print()
+    print(m.vars())
     # (Linear).b                  3 (3,)
     # (Linear).w                  6 (2, 3)
     # +Total(2)                   9
@@ -151,7 +151,7 @@ From this we can demonstrate the training of a classifier::
         return v                         # Return loss value
 
     # Observe that the gradient contains the variables of the model (weight sharing)
-    gradient_loss.vars().print()
+    print(gradient_loss.vars())
     # (GradValues)(Sequential)[0](Linear).b        3 (3,)
     # (GradValues)(Sequential)[0](Linear).w        6 (2, 3)
     # (GradValues)(Sequential)[2](Linear).b        4 (4,)
@@ -250,7 +250,7 @@ networks separately.
 Continuing our example::
 
     all_vars = my_classifier.vars()
-    all_vars.print()
+    print(all_vars)
     # (Sequential)[0](Linear).b        3 (3,)
     # (Sequential)[0](Linear).w        6 (2, 3)
     # (Sequential)[2](Linear).b        4 (4,)
@@ -261,7 +261,7 @@ Let's say we want to freeze the second Linear layer by treating it as constant::
 
     # We create two VarCollection
     vars_train = objax.VarCollection((k, v) for k, v in all_vars.items() if '[2](Linear)' not in k)
-    vars_train.print()
+    print(vars_train)
     # (Sequential)[0](Linear).b        3 (3,)
     # (Sequential)[0](Linear).w        6 (2, 3)
     # +Total(2)                        9

@@ -94,7 +94,7 @@ model = ALLCNN(nin=1, nclass=nclass, scales=2, filters=filters, filters_max=filt
 model_vars = model.vars()
 opt = objax.optimizer.SGD(model_vars)
 predict = objax.Jit(model)
-model_vars.print()
+print(model_vars)
 
 
 def loss(x, label):
