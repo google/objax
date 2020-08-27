@@ -1,10 +1,12 @@
 Welcome to Objax's documentation!
 =================================
 
-**Objax** adds an **Object Oriented** layer on top of the `JAX <https://github.com/google/jax>`_
-framework for high performance machine learning.
-Objax is designed **by researchers for researchers**, focusing on simplicity and understandability.
-Objax users should be able to easily read, understand, extend, and modify it to fit their needs.
+Objax is an open source machine learning framework that accelerates research and learning thanks to a
+minimalist object-oriented design and a readable code base.
+Its name comes from the contraction of Object and `JAX <https://github.com/google/jax>`_ -- a popular high-performance
+framework.
+Objax is designed **by researchers for researchers** with a focus on simplicity and understandability.
+Its users should be able to easily read, understand, extend, and modify it to fit their needs.
 
 :doc:`Try the 5 minutes tutorial. <notebooks/Objax_Basics>`
 
