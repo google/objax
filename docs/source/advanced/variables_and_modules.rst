@@ -39,7 +39,7 @@ TrainVar
 An :py:class:`objax.TrainVar` is a trainable variable.
 TrainVar variables are meant to keep the trainable weights of neural networks.
 As such, when calling a gradient module such as objax.GradValues, their gradients are computed.
-This constrasts with the  other type of variable (state variables),
+This contrasts with the  other type of variable (state variables),
 which do not have gradients.
 A TrainVar is created by passing a JaxArray containing its initial value::
 
@@ -49,12 +49,13 @@ A TrainVar is created by passing a JaxArray containing its initial value::
     v = objax.TrainVar(jn.arange(6, dtype=jn.float32))
     print(v.value)  # [0. 1. 2. 3. 4. 5.]
 
-    # It is not directly writable.
+    # It is not directly writable to avoid accidentally breaking differentiability.
     v.value += 1  # Raises a ValueError
 
-    # You can force assign it, however -as expected- all its uses before the assignment are not
-    # differentiable.
-    v.assign(v.value + 1)
+    # You can force assign it if you know what you are doing.
+    v.assign(v.value + 1)  # Still differentiable, v depends on its previous values.
+    print(v.value)  # [1. 2. 3. 4. 5. 6.]
+    v.assign(jn.arange(1, 7, dtype=jn.float32))  # Old values lost, v is not differentiable anymore.
     print(v.value)  # [1. 2. 3. 4. 5. 6.]
 
 StateVar
@@ -77,7 +78,7 @@ StateVars are created just like TrainVars, by passing a JaxArray containing thei
 
     # You can also assign to it, it's the same as doing v.value = ...
     v.assign(v.value + 1)
-    print(v.value)  # [2. 3. 4. 5. 6., 7.]
+    print(v.value)  # [2. 3. 4. 5. 6. 7.]
 
 StateVar variables are ignored by gradient methods.
 Unlike :ref:`TrainVar` variables, their gradients are not computed.
@@ -285,10 +286,13 @@ modules.
 
 ModuleList
 ^^^^^^^^^^
+
 The class :py:class:`objax.ModuleList` inherits from :code:`list` and behaves exactly like a list with the
 difference that :code:`vars()` looks for variables and modules in it.
 This class is very simple, and we invite you to look at it and use it for inspiration if you want to extend other
 Python containers or design your own.
+
+    .. seealso:: :py:class:`objax.nn.Sequential`
 
 Here's a simple example of its usage::
 
