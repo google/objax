@@ -32,7 +32,7 @@ pip install --upgrade objax
 ```
 
 Objax supports GPUs but assumes that you already have some version of CUDA
-instaled. Here are the extra steps:
+installed. Here are the extra steps:
 
 ```bash
 # Update accordingly to your installed CUDA version
