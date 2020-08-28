@@ -32,7 +32,7 @@ pip install --upgrade objax
 ```
 
 Objax supports GPUs but assumes that you already have some version of CUDA
-instaled. Here are the extra steps:
+installed. Here are the extra steps:
 
 ```bash
 # Update accordingly to your installed CUDA version
@@ -60,12 +60,12 @@ import objax
 
 print(f'Number of GPUs {jax.device_count()}')
 
-x = objax.random.normal((100, 4))
-m = objax.nn.Linear(4, 5)
+x = objax.random.normal(shape=(100, 4))
+m = objax.nn.Linear(nin=4, nout=5)
 print('Matrix product shape', m(x).shape)  # (100, 5)
 
-x = objax.random.normal((100, 3, 32, 32))
-m = objax.nn.Conv2D(3, 4, k=3)
+x = objax.random.normal(shape=(100, 3, 32, 32))
+m = objax.nn.Conv2D(nin=3, nout=4, k=3)
 print('Conv2D return shape', m(x).shape)  # (100, 4, 32, 32)
 ```
 
