@@ -244,7 +244,7 @@ Gradients of a subset of variables
 
 When doing more complex optimizations, one might want to temporarily treat a part of a network as constant.
 This is achieved by simply passing only the variables you want the gradient of to :py:class:`objax.GradValues`.
-This is useful for example in GANs where one has to opimize the discriminator and the generator
+This is useful for example in GANs where one has to optimize the discriminator and the generator
 networks separately.
 
 Continuing our example::
