@@ -115,6 +115,29 @@ objax.nn
 .. autoclass:: Sequential
    :members: __init__, append, clear, copy, count, extend, index, insert, pop, remove, reverse, vars
 
+    Usage example::
+
+        import objax
+
+        ml = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu,
+                                  objax.nn.Linear(3, 4)])
+        x = objax.random.normal((10, 2))
+        y = ml(x)  # Runs all the operations (Linear -> ReLU -> Linear).
+        print(y.shape)  # (10, 4)
+
+        # objax.nn.Sequential is really a list.
+        ml.append(objax.nn.Linear(4, 5))
+        print(ml(x).shape)  # (10, 5)
+
+        print(ml.vars())
+        # (Sequential)[0](Linear).b        3 (3,)
+        # (Sequential)[0](Linear).w        6 (2, 3)
+        # (Sequential)[2](Linear).b        4 (4,)
+        # (Sequential)[2](Linear).w       12 (3, 4)
+        # (Sequential)[3](Linear).b        5 (5,)
+        # (Sequential)[3](Linear).w       20 (4, 5)
+        # +Total(6)                       50
+
 .. autoclass:: SyncedBatchNorm
     :members: __call__
 
