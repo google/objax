@@ -499,7 +499,7 @@ Let's clarify this with a simple example::
               #  [17 17 17 17]]
 
 
-Computing weights gradients par batch entry
+Computing weights gradients per batch entry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is a more advanced example, conceptually it is similar to what's powering differential privacy gradients::
