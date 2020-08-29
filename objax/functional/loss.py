@@ -56,9 +56,7 @@ def cross_entropy_logits_sparse(
     return logsumexp(logits, axis=1) - logits[jn.arange(logits.shape[0]), labels]
 
 
-def mean_squared_logarithmic_error(
-    y_true: JaxArray, y_pred: JaxArray, eps: float = 2 ** -17
-) -> JaxArray:
+def mean_squared_logarithmic_error(y_true: JaxArray, y_pred: JaxArray) -> JaxArray:
     """Computes the the mean squared logarithmic error.
 
     Args:
