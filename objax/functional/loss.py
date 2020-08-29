@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['cross_entropy_logits',
-            'cross_entropy_logits_sparse',
-            'mean_squared_logarithmic_error',
-            'l2',
-            'sigmoid_cross_entropy_logits']
+__all__ = [
+    "cross_entropy_logits",
+    "cross_entropy_logits_sparse",
+    "mean_squared_logarithmic_error",
+    "l2",
+    "sigmoid_cross_entropy_logits",
+]
 
 from typing import Union
 
@@ -39,7 +41,9 @@ def cross_entropy_logits(logits: JaxArray, labels: JaxArray) -> JaxArray:
     return logsumexp(logits, axis=-1) - (logits * labels).sum(-1)
 
 
-def cross_entropy_logits_sparse(logits: JaxArray, labels: Union[JaxArray, int]) -> JaxArray:
+def cross_entropy_logits_sparse(
+    logits: JaxArray, labels: Union[JaxArray, int]
+) -> JaxArray:
     """Computes the softmax cross-entropy loss.
 
     Args:
@@ -52,23 +56,23 @@ def cross_entropy_logits_sparse(logits: JaxArray, labels: Union[JaxArray, int]) 
     return logsumexp(logits, axis=1) - logits[jn.arange(logits.shape[0]), labels]
 
 
-def mean_squared_logarithmic_error(y_true: JaxArray,
-                                    y_pred: JaxArray,
-                                    eps: float = 2 ** -17) -> JaxArray:
+def mean_squared_logarithmic_error(
+    y_true: JaxArray, y_pred: JaxArray, eps: float = 2 ** -17
+) -> JaxArray:
     """Computes the the mean squared logarithmic error.
 
     Args:
-        y_true: n-dimensional tensor of floats.
-        y_pred: n-dimensional tensor of floats.
+        y_true: float tensor of shape (batch, d0, d1...dn)
+        y_pred: float tensor of shape (batch, d0, d1...dn)
 
     Returns:
-        scalar tensor containing mean squared logarithmic error
+        float tensor of shape (batch, d0, d1...dn-1)
     """
-    y_true_log = jn.log1p(jn.maximum(y_true, eps + 1.))
-    y_pred_log = jn.log1p(jn.maximum(y_pred, eps + 1.))
-    
+    y_true_log = jn.log1p(y_true)
+    y_pred_log = jn.log1p(y_pred)
+
     loss = (y_pred_log - y_true_log) ** 2
-    return loss.mean(axis=0)
+    return loss.mean(axis=-1)
 
 
 def l2(x: JaxArray) -> JaxArray:
@@ -83,7 +87,9 @@ def l2(x: JaxArray) -> JaxArray:
     return 0.5 * (x ** 2).sum()
 
 
-def sigmoid_cross_entropy_logits(logits: JaxArray, labels: Union[JaxArray, int]) -> JaxArray:
+def sigmoid_cross_entropy_logits(
+    logits: JaxArray, labels: Union[JaxArray, int]
+) -> JaxArray:
     """Computes the sigmoid cross-entropy loss.
 
     Args:
