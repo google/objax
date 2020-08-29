@@ -360,7 +360,7 @@ advanced users nonetheless::
 Output aggregation
 ^^^^^^^^^^^^^^^^^^
 
-Similarly the ouptput :math:`y` of parallel call is reduced using the :code:`reduce` argument.
+Similarly the output :math:`y` of parallel call is reduced using the :code:`reduce` argument.
 The first dimension :math:`d` of :math:`y` is the device dimension and its name comes from the :code:`axis_name`
 argument while by default is simply :code:`"device"`.
 
