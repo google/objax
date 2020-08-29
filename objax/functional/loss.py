@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['cross_entropy_logits', 'cross_entropy_logits_sparse', 'l2', 'sigmoid_cross_entropy_logits', 'mean_squared_error']
+__all__ = ['cross_entropy_logits', 
+           'cross_entropy_logits_sparse', 
+           'l2', 
+           'sigmoid_cross_entropy_logits', 
+           'mean_squared_error', 
+           'mean_absolute_error']
 
 from typing import Union
 
@@ -77,10 +82,23 @@ def mean_squared_error(logits: JaxArray, labels: JaxArray) -> JaxArray:
     """Computes the mean squared error between logits and labels.
 
     Args:
-        logits: (batch_size, d0, .. dN) tensor of logits.
-        labels: (batch_size, d0, .. dN) tensor of labels.
+        logits: (batch_size, d0, .. dN) tensor of the predicted values.
+        labels: (batch_size, d0, .. dN) tensor of the ground truth values.
 
     Returns:
-        (batch_size, d0, .. dN-1) tensor of the cross-entropies for each entry.
+        (batch_size, d0, .. dN-1) tensor of mean squared error for each entry.
     """
-    return jn.mean(jn.square(y_true - y_pred), axis=-1)
+    return jn.mean(jn.square(labels - logits), axis=-1)
+
+
+def mean_absolute_error(logits: JaxArray, labels: JaxArray) -> JaxArray:
+    """Computes the mean absolute error between logits and labels.
+
+    Args:
+        logits: (batch_size, d0, .. dN) tensor of the predicted values.
+        labels: (batch_size, d0, .. dN) tensor of the ground truth values.
+
+    Returns:
+        (batch_size, d0, .. dN-1) tensor of the mean absolute error for each entry.
+    """
+    return jn.mean(jn.abs(labels - logits), axis=-1)
