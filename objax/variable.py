@@ -126,7 +126,7 @@ class TrainRef(BaseState):
 
 
 class StateVar(BaseState):
-    """StateVar are variables that get updated manually, and are not autmatically updated by optimizers.
+    """StateVar are variables that get updated manually, and are not automatically updated by optimizers.
     For example, the mean and variance statistics in BatchNorm are StateVar."""
 
     def __init__(self, tensor: JaxArray, reduce: Optional[Callable[[JaxArray], JaxArray]] = reduce_mean):
@@ -194,7 +194,7 @@ class VarCollection(Dict[str, BaseVar]):
         return vc
 
     def __iter__(self) -> Iterator[BaseVar]:
-        """Create an iteratator that iterates over the variables (dict values) and visit them only once.
+        """Create an iterator that iterates over the variables (dict values) and visit them only once.
         If a variable has two names, for example in the case of weight sharing, this iterator yields the variable only
         once."""
         seen = set()
