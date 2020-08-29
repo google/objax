@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['cross_entropy_logits', 'cross_entropy_logits_sparse', 'l2', 'sigmoid_cross_entropy_logits']
+__all__ = ['cross_entropy_logits',
+            'cross_entropy_logits_sparse',
+            'mean_squared_logarithmic_error',
+            'l2',
+            'sigmoid_cross_entropy_logits']
 
 from typing import Union
 
@@ -46,6 +50,25 @@ def cross_entropy_logits_sparse(logits: JaxArray, labels: Union[JaxArray, int]) 
         (batch,) tensor of the cross-entropies for each entry.
     """
     return logsumexp(logits, axis=1) - logits[jn.arange(logits.shape[0]), labels]
+
+
+def mean_squared_logarithmic_error(y_true: JaxArray,
+                                    y_pred: JaxArray,
+                                    eps: float = 2 ** -17) -> JaxArray:
+    """Computes the the mean squared logarithmic error.
+
+    Args:
+        y_true: n-dimensional tensor of floats.
+        y_pred: n-dimensional tensor of floats.
+
+    Returns:
+        scalar tensor containing mean squared logarithmic error
+    """
+    y_true_log = jn.log1p(jn.maximum(y_true, eps + 1.))
+    y_pred_log = jn.log1p(jn.maximum(y_pred, eps + 1.))
+    
+    loss = (y_pred_log - y_true_log) ** 2
+    return loss.mean(axis=0)
 
 
 def l2(x: JaxArray) -> JaxArray:
