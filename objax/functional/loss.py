@@ -80,6 +80,7 @@ def mean_absolute_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,
     axis = [i for i in range(loss.ndim) if i not in keep_dims]
     return loss.mean(axis)
 
+
 def mean_squared_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
     """Computes the mean squared error between x and y.
     
