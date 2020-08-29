@@ -23,7 +23,7 @@ import objax
 
 class TestLoss(unittest.TestCase):
     def test_on_mae(self):
-        """Test mean squared error on x and y."""
+        """Test mean absolute error on x and y."""
         x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
         y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
         e = objax.functional.loss.mean_absolute_error(x, y)
@@ -31,7 +31,7 @@ class TestLoss(unittest.TestCase):
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
       
     def test_on_mae_keep_dims(self):
-        """Test mean squared error on x and y."""
+        """Test mean absolute error on x and y with keep_dims."""
         x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
         y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
         e = objax.functional.loss.mean_absolute_error(x, y, [1])
@@ -39,7 +39,7 @@ class TestLoss(unittest.TestCase):
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
         
     def test_on_mae_no_dims(self):
-        """Test mean squared error on x and y."""
+        """Test mean absolute error on x and y with no keep_dims."""
         x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
         y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
         e = objax.functional.loss.mean_absolute_error(x, y, [])
@@ -55,7 +55,7 @@ class TestLoss(unittest.TestCase):
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
      
     def test_on_mse_keep_dims(self):
-        """Test mean squared error on x and y."""
+        """Test mean squared error on x and y with keep_dims."""
         x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
         y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
         e = objax.functional.loss.mean_squared_error(x, y, [1])
@@ -63,7 +63,7 @@ class TestLoss(unittest.TestCase):
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
         
     def test_on_mse_no_dims(self):
-        """Test mean squared error on x and y."""
+        """Test mean squared error on x and y with no keep_dims."""
         x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
         y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
         e = objax.functional.loss.mean_squared_error(x, y, [])
