@@ -177,7 +177,7 @@ Let's say we want to add weight decay and returning the individual components of
 The loss function can return any number of values or even structures such as dicts or list.
 **Only the first returned value is used to compute the gradient**, the others are returned as the loss value.
 
-Continuing on our example, less create a new loss that returns its multiple components::
+Continuing on our example, lets create a new loss that returns its multiple components::
 
     def losses(x, labels):
         logits = my_classifier(x)

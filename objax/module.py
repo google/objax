@@ -76,7 +76,7 @@ class ModuleList(Module, list):
 
 
 class ModuleWrapper(Module):
-    """Module whose sole purpose is to store a collectable VarCollection. This classs is exclusively
+    """Module whose sole purpose is to store a collectable VarCollection. This class is exclusively
     used internally by Objax, for example in Jit, Vectorize and Parallel."""
 
     def __init__(self, vc: VarCollection):
@@ -105,7 +105,7 @@ class Jit(ModuleWrapper):
 
         Args:
             f: the function or the module to compile.
-            vc: the VarCollection of variables used by the function or module. This argument is equired for functions.
+            vc: the VarCollection of variables used by the function or module. This argument is required for functions.
             static_argnums: tuple of indexes of f's input arguments to treat as static (constants)).
                 A new graph is compiled for each different combination of values for such inputs.
         """
