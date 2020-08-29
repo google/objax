@@ -110,7 +110,7 @@ class TestLoss(unittest.TestCase):
         e = objax.functional.loss.cross_entropy_logits_sparse(10 * x, y)
         gold = jn.array([0.15614605, 1.820976, 1.8720856, 1.5760615])
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
-        
-        
+
+
 if __name__ == '__main__':
     unittest.main()
