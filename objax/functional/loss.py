@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['cross_entropy_logits', 'cross_entropy_logits_sparse', 'l2', 'sigmoid_cross_entropy_logits']
+__all__ = ['cross_entropy_logits', 
+           'cross_entropy_logits_sparse', 
+           'l2', 
+           'mean_absolute_error',
+           'mean_squared_error', 
+           'sigmoid_cross_entropy_logits']
 
-from typing import Union
+from typing import Union, Iterable
 
 import jax.numpy as jn
 
@@ -58,6 +63,38 @@ def l2(x: JaxArray) -> JaxArray:
         scalar tensor containing the l2 loss of x.
     """
     return 0.5 * (x ** 2).sum()
+
+
+def mean_absolute_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
+    """Computes the mean absolute error between x and y.
+    
+    Args:
+        x: a tensor of shape (d0, .. dN-1).
+        y: a tensor of shape (d0, .. dN-1).
+        keep_dims: a sequence of the dimensions to keep.
+        
+    Returns:
+        (d_i, ..., for i in keep_dims) tensor of the mean absolute error.
+    """
+    loss = jn.abs(x - y)
+    axis = [i for i in range(loss.ndim) if i not in keep_dims]
+    return loss.mean(axis)
+
+
+def mean_squared_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
+    """Computes the mean squared error between x and y.
+    
+    Args:
+        x: a tensor of shape (d0, .. dN-1).
+        y: a tensor of shape (d0, .. dN-1).
+        keep_dims: a sequence of the dimensions to keep.
+        
+    Returns:
+        (d_i, ..., for i in keep_dims) tensor of the mean squared error.
+    """
+    loss = (x - y) ** 2
+    axis = [i for i in range(loss.ndim) if i not in keep_dims]
+    return loss.mean(axis)
 
 
 def sigmoid_cross_entropy_logits(logits: JaxArray, labels: Union[JaxArray, int]) -> JaxArray:
