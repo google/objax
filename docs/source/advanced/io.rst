@@ -48,7 +48,7 @@ descriptor, so another way to save would be::
 
 .. note::
     The advantage of using a filename instead of file handle is that data will be written to a temporary file
-    first and a temporary file will be renamed to provided filename only after all data has been written.
+    first and the temporary file will be renamed to provided filename only after all data has been written.
     In the event of the program being killed, this prevents from having truncated files.
     When using a file descriptor the code does not have this protection.
     File descriptors are typically used for unit testing.
