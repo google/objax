@@ -22,6 +22,54 @@ import objax
 
 
 class TestLoss(unittest.TestCase):
+    def test_on_mae(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
+        y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
+        e = objax.functional.loss.mean_absolute_error(x, y)
+        gold = jn.array([1.6300001, 2.6275, 0.59250003])
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+      
+    def test_on_mae_keep_dims(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
+        y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
+        e = objax.functional.loss.mean_absolute_error(x, y, [1])
+        gold = jn.array([1.1633334 , 0.47666666, 2.6033332 , 2.2233334 ])
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+        
+    def test_on_mae_no_dims(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
+        y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
+        e = objax.functional.loss.mean_absolute_error(x, y, [])
+        gold = jn.array(1.6166668)
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+        
+    def test_on_mse(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
+        y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
+        e = objax.functional.loss.mean_squared_error(x, y)
+        gold = jn.array([4.54755, 8.203675, 0.61157507])
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+     
+    def test_on_mse_keep_dims(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
+        y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
+        e = objax.functional.loss.mean_squared_error(x, y, [1])
+        gold = jn.array([3.249767, 0.2687, 9.0297, 5.2689])
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+        
+    def test_on_mse_no_dims(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([[0.76, 0.38, 0.51, 0.59], [0.89, 0.76, 0.17, 0.19], [0.14, 0.29, 0.49, 0.55]])
+        y = jn.array([[1, 0, 4, 3], [4, 0, 4, 3], [0, 0, 0, 2]], dtype=jn.uint32)
+        e = objax.functional.loss.mean_squared_error(x, y, [])
+        gold = jn.array(4.454267)
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+    
     def test_on_xe_logits_2d(self):
         """Test cross-entropy on logits."""
         x = jn.array([[0.58, 0.4, 0.02], [0.36, 0.27, 0.37], [0.46, 0.24, 0.3], [0.35, 0.29, 0.36]])
@@ -62,7 +110,7 @@ class TestLoss(unittest.TestCase):
         e = objax.functional.loss.cross_entropy_logits_sparse(10 * x, y)
         gold = jn.array([0.15614605, 1.820976, 1.8720856, 1.5760615])
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
-
-
+        
+        
 if __name__ == '__main__':
     unittest.main()
