@@ -85,9 +85,9 @@ Objax provides a simple checkpointing interface called :py:class:`objax.io.Check
     ckpt = objax.io.Checkpoint(logdir='save_folder', keep_ckpts=5)
 
     # Saving
-    ckpt.save(net.vars(), epoch=1)
+    ckpt.save(net.vars(), idx=1)
     net[0].b.assign(net[0].b.value + 1)
-    ckpt.save(net.vars(), epoch=2)
+    ckpt.save(net.vars(), idx=2)
 
     # Restoring
     ckpt.restore(net.vars(), idx=1)   # net[0].b.value = (0,)
