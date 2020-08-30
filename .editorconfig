@@ -1,3 +1,5 @@
+# EditorConfig file to specify formatting, for more details: https://EditorConfig.org
+
 [*]
 charset = utf-8
 end_of_line = lf
