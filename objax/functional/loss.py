@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+<<<<<<< HEAD
 __all__ = [
     "cross_entropy_logits",
     "cross_entropy_logits_sparse",
@@ -19,8 +20,16 @@ __all__ = [
     "l2",
     "sigmoid_cross_entropy_logits",
 ]
+=======
+__all__ = ['cross_entropy_logits', 
+           'cross_entropy_logits_sparse', 
+           'l2', 
+           'mean_absolute_error',
+           'mean_squared_error', 
+           'sigmoid_cross_entropy_logits']
+>>>>>>> 97ad6998d942f041b7d8cdb9749044cdbc3abcad
 
-from typing import Union
+from typing import Union, Iterable
 
 import jax.numpy as jn
 
@@ -85,9 +94,45 @@ def l2(x: JaxArray) -> JaxArray:
     return 0.5 * (x ** 2).sum()
 
 
+<<<<<<< HEAD
 def sigmoid_cross_entropy_logits(
     logits: JaxArray, labels: Union[JaxArray, int]
 ) -> JaxArray:
+=======
+def mean_absolute_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
+    """Computes the mean absolute error between x and y.
+    
+    Args:
+        x: a tensor of shape (d0, .. dN-1).
+        y: a tensor of shape (d0, .. dN-1).
+        keep_dims: a sequence of the dimensions to keep.
+        
+    Returns:
+        (d_i, ..., for i in keep_dims) tensor of the mean absolute error.
+    """
+    loss = jn.abs(x - y)
+    axis = [i for i in range(loss.ndim) if i not in keep_dims]
+    return loss.mean(axis)
+
+
+def mean_squared_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
+    """Computes the mean squared error between x and y.
+    
+    Args:
+        x: a tensor of shape (d0, .. dN-1).
+        y: a tensor of shape (d0, .. dN-1).
+        keep_dims: a sequence of the dimensions to keep.
+        
+    Returns:
+        (d_i, ..., for i in keep_dims) tensor of the mean squared error.
+    """
+    loss = (x - y) ** 2
+    axis = [i for i in range(loss.ndim) if i not in keep_dims]
+    return loss.mean(axis)
+
+
+def sigmoid_cross_entropy_logits(logits: JaxArray, labels: Union[JaxArray, int]) -> JaxArray:
+>>>>>>> 97ad6998d942f041b7d8cdb9749044cdbc3abcad
     """Computes the sigmoid cross-entropy loss.
 
     Args:

@@ -357,7 +357,7 @@ Combining multiple VarCollections is done by using addition::
 
     # We had to specify starting names for each of the var collections since
     # they have variables with the same name. Had we not, a name collision would
-    # have occured since VarCollection is a dictionary that maps names to variables.
+    # have occurred since VarCollection is a dictionary that maps names to variables.
     m1.vars() + m2.vars()  # raises ValueError('Name conflicts...')
 
 Weight sharing

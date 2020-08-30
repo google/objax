@@ -48,7 +48,7 @@ descriptor, so another way to save would be::
 
 .. note::
     The advantage of using a filename instead of file handle is that data will be written to a temporary file
-    first and temporary file will be renamed to provided filename only after all data has been written.
+    first and the temporary file will be renamed to provided filename only after all data has been written.
     In the event of the program being killed, this prevents from having truncated files.
     When using a file descriptor the code does not have this protection.
     File descriptors are typically used for unit testing.
@@ -66,7 +66,7 @@ Since the code for loading and saving is very concise, simply looking at it is t
 Checkpointing
 -------------
 
-Checkpointing can be defined as saving a neural network weights during training.
+Checkpointing can be defined as saving neural network weights during training.
 Often checkpointing keeps multiple saves, each from different training steps.
 For space reasons, it's common to keep only the latest-k saves.
 Checkpointing can be used for a variety of purposes:
@@ -100,7 +100,7 @@ Objax provides a simple checkpointing interface called :py:class:`objax.io.Check
 Customized checkpointing
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:class:`objax.io.Checkpoint` class has some constants that allow to customize its behavior.
+The :py:class:`objax.io.Checkpoint` class has some constants that allow it to customize its behavior.
 You can redefine them for example creating a child class that inherits from Checkpoint.
 The fields are the following::
 
@@ -124,7 +124,7 @@ Saving a module
     potential risk.
 
 Now that we warned you, let's mention that Objax modules can be pickled
-with `Python's pickle module <https://docs.python.org/3/library/pickle.html>`_ like many others Python objects.
+with `Python's pickle module <https://docs.python.org/3/library/pickle.html>`_ like many other Python objects.
 This can be quite convenient since you can save not only the module's weight, but the module itself.
 
 Let's look at a simple example::

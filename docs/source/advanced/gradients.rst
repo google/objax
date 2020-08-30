@@ -31,7 +31,7 @@ In machine learning, for a function :math:`f(X; \theta)`, it is common practice 
 inputs :math:`X` from the parameters :math:`\theta`.
 Mathematically, this is captured by using a semi-colon to semantically separate one group of arguments from another.
 
-In Objax, we represents this semantic distinction through an object :py:class:`objax.Module`:
+In Objax, we represent this semantic distinction through an object :py:class:`objax.Module`:
 
 * the module parameters :math:`\theta` are object attributes of the form :code:`self.w, ...`
 * the inputs :math:`X` are arguments to the methods such as :code:`def __call__(self, x1, x2, ...):`
@@ -127,7 +127,7 @@ Read first the part about :ref:`Variables and Modules` if you haven't done so ye
                 v.value -= lr * g
 
 In short, :code:`self.refs` keeps a list of references to the network trainable variables :code:`TrainVar`.
-When calling the :code:`__call__` method, the values of the variables gets updated by the SGD method.
+When calling the :code:`__call__` method, the values of the variables get updated by the SGD method.
 
 From this we can demonstrate the training of a classifier::
 
