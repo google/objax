@@ -102,8 +102,8 @@ def mean_squared_log_error(y_true: JaxArray, y_pred: JaxArray, keep_dims: Iterab
     """Computes the mean squared logarithmic error between y_true and y_pred.
 
     Args:
-        x: a tensor of shape (d0, .. dN-1).
-        y: a tensor of shape (d0, .. dN-1).
+        y_true: a tensor of shape (d0, .. dN-1).
+        y_pred: a tensor of shape (d0, .. dN-1).
         keep_dims: a sequence of the dimensions to keep.
 
     Returns:
