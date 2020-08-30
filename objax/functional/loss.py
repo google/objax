@@ -17,7 +17,7 @@ __all__ = ['cross_entropy_logits',
            'l2',
            'mean_absolute_error',
            'mean_squared_error',
-           'mean_squared_log_error'
+           'mean_squared_log_error',
            'sigmoid_cross_entropy_logits']
 
 from typing import Union, Iterable
