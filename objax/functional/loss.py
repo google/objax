@@ -19,7 +19,7 @@ __all__ = ['cross_entropy_logits',
            'mean_squared_error', 
            'sigmoid_cross_entropy_logits']
 
-from typing import Union, Iterable
+from typing import Union, Iterable, Optional
 
 import jax.numpy as jn
 
@@ -65,35 +65,35 @@ def l2(x: JaxArray) -> JaxArray:
     return 0.5 * (x ** 2).sum()
 
 
-def mean_absolute_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
+def mean_absolute_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[int]] = (0,)) -> JaxArray:
     """Computes the mean absolute error between x and y.
     
     Args:
         x: a tensor of shape (d0, .. dN-1).
         y: a tensor of shape (d0, .. dN-1).
-        keep_dims: a sequence of the dimensions to keep.
+        keep_axis: a sequence of the dimensions to keep, use `None` to return a single value.
         
     Returns:
-        (d_i, ..., for i in keep_dims) tensor of the mean absolute error.
+        tensor of shape (d_i, ..., for i in keep_axis) containing the mean absolute error.
     """
     loss = jn.abs(x - y)
-    axis = [i for i in range(loss.ndim) if i not in keep_dims]
+    axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
 
 
-def mean_squared_error(x: JaxArray, y: JaxArray, keep_dims: Iterable[int] = (0,)) -> JaxArray:
+def mean_squared_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[int]] = (0,)) -> JaxArray:
     """Computes the mean squared error between x and y.
     
     Args:
         x: a tensor of shape (d0, .. dN-1).
         y: a tensor of shape (d0, .. dN-1).
-        keep_dims: a sequence of the dimensions to keep.
+        keep_axis: a sequence of the dimensions to keep, use `None` to return a single value.
         
     Returns:
-        (d_i, ..., for i in keep_dims) tensor of the mean squared error.
+        tensor of shape (d_i, ..., for i in keep_axis) containing the mean squared error.
     """
     loss = (x - y) ** 2
-    axis = [i for i in range(loss.ndim) if i not in keep_dims]
+    axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
 
 
