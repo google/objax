@@ -71,7 +71,7 @@ def mean_absolute_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[i
     Args:
         x: a tensor of shape (d0, .. dN-1).
         y: a tensor of shape (d0, .. dN-1).
-        keep_axis: a sequence of the dimensions to keep, use `None` to return a single value.
+        keep_axis: a sequence of the dimensions to keep, use `None` to return a scalar value.
         
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean absolute error.
@@ -87,7 +87,7 @@ def mean_squared_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[in
     Args:
         x: a tensor of shape (d0, .. dN-1).
         y: a tensor of shape (d0, .. dN-1).
-        keep_axis: a sequence of the dimensions to keep, use `None` to return a single value.
+        keep_axis: a sequence of the dimensions to keep, use `None` to return a scalar value.
         
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean squared error.
