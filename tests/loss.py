@@ -50,6 +50,26 @@ class TestLoss(unittest.TestCase):
         gold = jn.array([3.249767, 0.2687, 9.0297, 5.2689])
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
 
+    def test_on_mean_squared_log_error(self):
+        """Test mean squared error on x and y."""
+        x = jn.array([3, 5, 2, 7], dtype=jn.float32)
+        y = jn.array([2, 5, 4, 8], dtype=jn.float32)
+        output = objax.functional.loss.mean_squared_log_error(x, y)
+        expected = jn.array([0.08276097 , 0., 0.26094282 , 0.013872852], dtype=jn.float32)
+        self.assertAlmostEqual(jn.abs(output - expected).sum(), 0, delta=1e-12)
+        # Test mean squared error on x and y with keep_axis
+        x = jn.array([[3, 5, 2.5, 7]], dtype=jn.float32)
+        y = jn.array([[2.5, 5, 4, 8]], dtype=jn.float32)
+        output = objax.functional.loss.mean_squared_log_error(x, y, keep_axis=(0,))
+        expected = jn.array([0.039730113], dtype=jn.float32)
+        self.assertAlmostEqual(jn.abs(output - expected).sum(), 0, delta=1e-12)
+        # Test mean squared error on x and y with no keep_dims
+        x = jn.array([[0.1152, 0.6301, 0.6845], [0.0958, 0.2180, 0.8503]], dtype=jn.float32)
+        y = jn.array([[0.0026, 0.9501, 0.1955], [0.3537, 0.1689, 0.7774]], dtype=jn.float32)
+        output = objax.functional.loss.mean_squared_log_error(x, y, keep_axis=())
+        expected = jn.array(0.03483658, dtype=jn.float32)
+        self.assertAlmostEqual(jn.abs(output - expected).sum(), 0, delta=1e-12)
+
     def test_on_xe_logits_2d(self):
         """Test cross-entropy on logits."""
         x = jn.array([[0.58, 0.4, 0.02], [0.36, 0.27, 0.37], [0.46, 0.24, 0.3], [0.35, 0.29, 0.36]])
