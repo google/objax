@@ -36,7 +36,7 @@ class TestConv(unittest.TestCase):
                             [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
         # NCHW: Batch, Channels/Colors, Height, Width
         features = conv_filter(image)
-        expected_features = jn.array([[[[61., 72.], [106., 117.]]]])
+        expected_features = jn.array([[[[62., 72.], [106., 117.]]]])
         self.assertEqual(features.shape, (1, 1, 2, 2))
         self.assertTrue(jn.array_equal(features, expected_features))
 
