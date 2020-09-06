@@ -15,8 +15,9 @@
 __all__ = ['average_pool_2d', 'batch_to_space2d', 'channel_to_space2d', 'max_pool_2d', 'space_to_batch2d',
            'space_to_channel2d']
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
+import numpy as np
 from jax import numpy as jn, lax
 
 from objax.constants import ConvPadding
@@ -26,22 +27,22 @@ from objax.util import to_tuple
 
 def average_pool_2d(x: JaxArray,
                     size: Union[Tuple[int, int], int] = 2,
-                    strides: Union[Tuple[int, int], int] = 2,
+                    strides: Optional[Union[Tuple[int, int], int]] = None,
                     padding: ConvPadding = ConvPadding.VALID) -> JaxArray:
     """Applies average pooling using a square 2D filter.
 
     Args:
         x: input tensor of shape (N, C, H, W).
         size: size of pooling filter.
-        strides: stride step.
+        strides: stride step, use size when stride is none (default).
         padding: type of padding used in pooling operation.
 
     Returns:
         output tensor of shape (N, C, H, W).
     """
     size = to_tuple(size, 2)
-    strides = to_tuple(strides, 2)
-    return lax.reduce_window(x, 0, lax.add, (1, 1) + size, (1, 1) + strides, padding=padding.value)
+    strides = to_tuple(strides, 2) if strides else size
+    return lax.reduce_window(x, 0, lax.add, (1, 1) + size, (1, 1) + strides, padding=padding.value) / np.prod(size)
 
 
 def batch_to_space2d(x: JaxArray, size: Union[Tuple[int, int], int] = 2) -> JaxArray:

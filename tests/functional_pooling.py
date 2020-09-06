@@ -27,6 +27,21 @@ def shaparange(s):
 
 
 class TestPooling(unittest.TestCase):
+    def test_average_pooling2d(self):
+        x = shaparange((2, 3, 10, 30))
+        y = objax.functional.average_pool_2d(x, size=5)
+        z = x.reshape((2, 3, 2, 5, 6, 5)).mean((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.average_pool_2d(x, size=5, strides=1)
+        z = np.zeros((2, 3, 6, 26), dtype=np.float)
+        for i in range(6):
+            for j in range(26):
+                z[:, :, i, j] = x[:, :, i:i + 5, j:j + 5].mean((-2, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.average_pool_2d(x, size=(2, 3))
+        z = x.reshape((2, 3, 5, 2, 10, 3)).mean((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+
     def test_space_batch(self):
         """Test batch_to_space2d and space_to_batch2d."""
         x = shaparange((2, 3, 10, 30))
