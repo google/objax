@@ -1,7 +1,7 @@
 Code Examples
 =============
 
-This section describes the code examples found in :code:`ObJAX/examples`
+This section describes the code examples found in :code:`objax/examples`
 
 Classification
 --------------
@@ -34,7 +34,7 @@ Hardware    CPU or GPU or TPU
 Digit Classification with Deep Neural Network (DNN)
 """""""""""""""""""""""""""""""""""""""""""""""""""
 
-Train and evaluate a DNNet model for multiclass classification on `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
+Train and evaluate a DNNet model for multiclass classification on the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
 
 .. code-block:: bash
 
@@ -58,7 +58,7 @@ Digit Classification with Convolutional Neural Network (CNN)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a simple custom CNN model for multiclass classification on
-`MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
+the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
 
 .. code-block:: bash
 
@@ -82,8 +82,7 @@ Techniques  * Model weight averaging for improved accuracy using
 Digit Classification using Differential Privacy
 """""""""""""""""""""""""""""""""""""""""""""""
 
-Using differential privacy, Train and evaluate a convNet model for `MNIST <http://yann.lecun.com/exdb/mnist/>`_
-dataset.
+Train and evaluate a convNet model for `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset with differential privacy.
 
 .. code-block:: bash
 
@@ -108,7 +107,7 @@ Image Classification on CIFAR-10 (Simple)
 """""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a `wide resnet <https://arxiv.org/abs/1605.07146>`_ model for multiclass classification on
-`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
+the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
 
 .. code-block:: bash
 
@@ -133,7 +132,7 @@ Image Classification on CIFAR-10 (Advanced)
 """""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate convNet models for multiclass classification on
-`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
+the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
 
 .. code-block:: bash
 
@@ -173,7 +172,7 @@ Image Classification on ImageNet
 
 Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on `ImageNet <http://www.image-net.org/>`_
 dataset.
-See `README <https://github.com/google/objax/blob/master/examples/classify/img/imagenet/README.md>`__ for an additional information.
+See `README <https://github.com/google/objax/blob/master/examples/classify/img/imagenet/README.md>`__ for additional information.
 
 ==========  =
 Code        `examples/classify/img/imagenet/imagenet_train.py <https://github.com/google/objax/blob/master/examples/classify/img/imagenet/imagenet_train.py>`_
@@ -197,7 +196,7 @@ Image Classification using Pretrained VGG Network
 
 Image classification using an ImageNet-pretrained
 `VGG19 <https://www.robots.ox.ac.uk/~vgg/publications/2015/Simonyan15/simonyan15.pdf>`_ model.
-See `README <https://github.com/google/objax/blob/master/examples/classify/img/pretrained_vgg.md>`__ for an additional information.
+See `README <https://github.com/google/objax/blob/master/examples/classify/img/pretrained_vgg.md>`__ for additional information.
 
 ==========  =
 Code        `examples/classify/img/pretrained_vgg.py <https://github.com/google/objax/blob/master/examples/classify/img/pretrained_vgg.py>`_
@@ -249,7 +248,7 @@ Generating a Text Sequence using GPT-2
 
 Load pretrained `GPT-2 <https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf>`_
 model (124M parameter) and demonstrate how to use the model to generate a text sequence.
-See `README <https://github.com/google/objax/blob/master/examples/gpt-2/README.md>`__ for an additional information.
+See `README <https://github.com/google/objax/blob/master/examples/gpt-2/README.md>`__ for additional information.
 
 ==========  =
 Code        `examples/gpt-2/gpt2.py <https://github.com/google/objax/blob/master/examples/gpt-2/gpt2.py>`_
@@ -266,7 +265,7 @@ Example code is available at :code:`examples/rnn`.
 Train a Vanilla RNN to Predict Characters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Train and evaluate a vanilla RNN model on shakespeare corpus dataset.
+Train and evaluate a vanilla RNN model on the Shakespeare corpus dataset.
 See `README <https://github.com/google/objax/blob/master/examples/rnn/README.md>`__ for additional information.
 
 .. code-block:: bash
@@ -297,8 +296,7 @@ Example codes available at :code:`examples/optimization`.
 Model Agnostic Meta-Learning (MAML)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Meta-learning method `MAML <https://arxiv.org/abs/1703.03400>`_ implementation to demonstrate computing gradient of
-gradient.
+Meta-learning method `MAML <https://arxiv.org/abs/1703.03400>`_ implementation to demonstrate computing the gradient of a gradient.
 
 .. code-block:: bash
 
@@ -335,5 +333,3 @@ Usages      * summary scalar
             * summary text
             * summary image
 ==========  =
-
-

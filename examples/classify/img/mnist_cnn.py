@@ -97,7 +97,7 @@ def train_op(x, y):
 train_op = objax.Jit(train_op, gv.vars() + opt.vars() + ema.vars())
 
 # Training
-model.vars().print()
+print(model.vars())
 for epoch in range(epochs):
     # Train one epoch
     loop = trange(0, train_size, batch,

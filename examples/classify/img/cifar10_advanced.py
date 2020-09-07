@@ -96,7 +96,7 @@ class TrainModule(TrainLoop):
         model_vars = self.model.vars()
         self.opt = objax.optimizer.Momentum(model_vars)
         self.ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999, debias=True)
-        model_vars.print()
+        print(model_vars)
 
         def loss(x, label):
             logit = self.model(x, training=True)

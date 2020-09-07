@@ -31,7 +31,7 @@ In machine learning, for a function :math:`f(X; \theta)`, it is common practice 
 inputs :math:`X` from the parameters :math:`\theta`.
 Mathematically, this is captured by using a semi-colon to semantically separate one group of arguments from another.
 
-In Objax, we represents this semantic distinction through an object :py:class:`objax.Module`:
+In Objax, we represent this semantic distinction through an object :py:class:`objax.Module`:
 
 * the module parameters :math:`\theta` are object attributes of the form :code:`self.w, ...`
 * the inputs :math:`X` are arguments to the methods such as :code:`def __call__(self, x1, x2, ...):`
@@ -79,13 +79,13 @@ Let's look at what gradient as a module looks like through a simple example::
 As stated, :code:`gradient_loss` is a module instance and has variables.
 Its variables are simply the ones passed to :py:class:`objax.GradValues`, we can verify it::
 
-    gradient_loss.vars().print()
+    print(gradient_loss.vars())
     # (GradValues)(Linear).b        3 (3,)
     # (GradValues)(Linear).w        6 (2, 3)
     # +Total(2)                     9
 
     # These variables are from
-    m.vars().print()
+    print(m.vars())
     # (Linear).b                  3 (3,)
     # (Linear).w                  6 (2, 3)
     # +Total(2)                   9
@@ -127,7 +127,7 @@ Read first the part about :ref:`Variables and Modules` if you haven't done so ye
                 v.value -= lr * g
 
 In short, :code:`self.refs` keeps a list of references to the network trainable variables :code:`TrainVar`.
-When calling the :code:`__call__` method, the values of the variables gets updated by the SGD method.
+When calling the :code:`__call__` method, the values of the variables get updated by the SGD method.
 
 From this we can demonstrate the training of a classifier::
 
@@ -151,7 +151,7 @@ From this we can demonstrate the training of a classifier::
         return v                         # Return loss value
 
     # Observe that the gradient contains the variables of the model (weight sharing)
-    gradient_loss.vars().print()
+    print(gradient_loss.vars())
     # (GradValues)(Sequential)[0](Linear).b        3 (3,)
     # (GradValues)(Sequential)[0](Linear).w        6 (2, 3)
     # (GradValues)(Sequential)[2](Linear).b        4 (4,)
@@ -177,7 +177,7 @@ Let's say we want to add weight decay and returning the individual components of
 The loss function can return any number of values or even structures such as dicts or list.
 **Only the first returned value is used to compute the gradient**, the others are returned as the loss value.
 
-Continuing on our example, less create a new loss that returns its multiple components::
+Continuing on our example, lets create a new loss that returns its multiple components::
 
     def losses(x, labels):
         logits = my_classifier(x)
@@ -244,13 +244,13 @@ Gradients of a subset of variables
 
 When doing more complex optimizations, one might want to temporarily treat a part of a network as constant.
 This is achieved by simply passing only the variables you want the gradient of to :py:class:`objax.GradValues`.
-This is useful for example in GANs where one has to opimize the discriminator and the generator
+This is useful for example in GANs where one has to optimize the discriminator and the generator
 networks separately.
 
 Continuing our example::
 
     all_vars = my_classifier.vars()
-    all_vars.print()
+    print(all_vars)
     # (Sequential)[0](Linear).b        3 (3,)
     # (Sequential)[0](Linear).w        6 (2, 3)
     # (Sequential)[2](Linear).b        4 (4,)
@@ -261,7 +261,7 @@ Let's say we want to freeze the second Linear layer by treating it as constant::
 
     # We create two VarCollection
     vars_train = objax.VarCollection((k, v) for k, v in all_vars.items() if '[2](Linear)' not in k)
-    vars_train.print()
+    print(vars_train)
     # (Sequential)[0](Linear).b        3 (3,)
     # (Sequential)[0](Linear).w        6 (2, 3)
     # +Total(2)                        9

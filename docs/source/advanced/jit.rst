@@ -47,14 +47,14 @@ present in your computer and what code is being jitted::
 As mentioned earlier, :code:`jit_net` is a module instance, it's sharing the variables with the module :code:`net`,
 we can verify it::
 
-    net.vars().print()
+    print(net.vars())
     # (Sequential)[0](Linear).b        3 (3,)
     # (Sequential)[0](Linear).w        6 (2, 3)
     # (Sequential)[2](Linear).b        4 (4,)
     # (Sequential)[2](Linear).w       12 (3, 4)
     # +Total(4)                       25
 
-    jit_net.vars().print()
+    print(jit_net.vars())
     # (Jit)(Sequential)[0](Linear).b        3 (3,)
     # (Jit)(Sequential)[0](Linear).w        6 (2, 3)
     # (Jit)(Sequential)[2](Linear).b        4 (4,)
@@ -62,7 +62,7 @@ we can verify it::
     # +Total(4)                            25
 
     # We can verify that jit_func also shares the same variables
-    jit_func.vars().print()
+    print(jit_func.vars())
     # (Jit)(Sequential)[0](Linear).b        3 (3,)
     # (Jit)(Sequential)[0](Linear).w        6 (2, 3)
     # (Jit)(Sequential)[2](Linear).b        4 (4,)
@@ -360,7 +360,7 @@ advanced users nonetheless::
 Output aggregation
 ^^^^^^^^^^^^^^^^^^
 
-Similarly the ouptput :math:`y` of parallel call is reduced using the :code:`reduce` argument.
+Similarly the output :math:`y` of parallel call is reduced using the :code:`reduce` argument.
 The first dimension :math:`d` of :math:`y` is the device dimension and its name comes from the :code:`axis_name`
 argument while by default is simply :code:`"device"`.
 
@@ -499,7 +499,7 @@ Let's clarify this with a simple example::
               #  [17 17 17 17]]
 
 
-Computing weights gradients par batch entry
+Computing weights gradients per batch entry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is a more advanced example, conceptually it is similar to what's powering differential privacy gradients::
