@@ -1,9 +1,11 @@
+*.egg-info
 *.iml
 *.log
 *.pyc
 .idea
 .vscode
 __pycache__
+build/
 dist/
 docs/build/
 docs/source/_autosummary

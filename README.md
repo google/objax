@@ -1,16 +1,23 @@
 # Objax
 
+[**Tutorials**](https://objax.readthedocs.io/en/latest/notebooks/Objax_Basics.html)
+| [**Install**](https://objax.readthedocs.io/en/latest/installation_setup.html)
+| [**Documentation**](https://objax.readthedocs.io/en/latest/)
+| [**Philosophy**](https://objax.readthedocs.io/en/latest/index.html#objax-philosophy)
+
 This is not an officially supported Google product.
 
-Objax is an object-oriented (OO) library for Jax. Objax's design strives for
-simplicity and flexibility with the goal of facilitating experimentation and
-research in machine learning. Objax code should be easily understandable and
-forkable, as it targets students and researchers.
+Objax is an open source machine learning framework that accelerates research and learning thanks to a
+minimalist object-oriented design and a readable code base.
+Its name comes from the contraction of Object and [JAX](https://github.com/google/jax) -- a popular high-performance
+framework.
+Objax is designed **by researchers for researchers** with a focus on simplicity and understandability.
+Its users should be able to easily read, understand, extend, and modify it to fit their needs.
 
 This is the developer repository of Objax, there is very little user documentation
- here, for the full documentation go to [objax.readthedocs.io](https://objax.readthedocs.io/).
+here, for the full documentation go to [objax.readthedocs.io](https://objax.readthedocs.io/).
 
-You can also find information on:
+You can find READMEs in the subdirectory of this project, for example:
 
 * [Sample Code](examples/README.md)
 * [Writing documentation](docs/README.md)
@@ -25,7 +32,7 @@ pip install --upgrade objax
 ```
 
 Objax supports GPUs but assumes that you already have some version of CUDA
-instaled. Here are the extra steps:
+installed. Here are the extra steps:
 
 ```bash
 # Update accordingly to your installed CUDA version
@@ -53,12 +60,12 @@ import objax
 
 print(f'Number of GPUs {jax.device_count()}')
 
-x = objax.random.normal((100, 4))
-m = objax.nn.Linear(4, 5)
+x = objax.random.normal(shape=(100, 4))
+m = objax.nn.Linear(nin=4, nout=5)
 print('Matrix product shape', m(x).shape)  # (100, 5)
 
-x = objax.random.normal((100, 3, 32, 32))
-m = objax.nn.Conv2D(3, 4, k=3)
+x = objax.random.normal(shape=(100, 3, 32, 32))
+m = objax.nn.Conv2D(nin=3, nout=4, k=3)
 print('Conv2D return shape', m(x).shape)  # (100, 4, 32, 32)
 ```
 

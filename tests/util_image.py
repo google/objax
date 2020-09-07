@@ -16,6 +16,7 @@
 
 import io
 import unittest
+from typing import Tuple
 
 import jax.numpy as jn
 import numpy as np
@@ -25,7 +26,7 @@ import objax
 
 
 class TestUtilImage(unittest.TestCase):
-    def ndimarange(self, dims):
+    def ndimarange(self, dims: Tuple[int, ...]):
         return np.arange(np.prod(dims), dtype=float).reshape(dims)
 
     def test_nchw(self):
@@ -45,6 +46,19 @@ class TestUtilImage(unittest.TestCase):
         x = self.ndimarange((2, 3, 4, 5, 6))
         self.assertEqual(objax.util.image.nhwc(x).tolist(), x.transpose((0, 1, 3, 4, 2)).tolist())
         self.assertEqual(objax.util.image.nhwc(jn.array(x)).tolist(), x.transpose((0, 1, 3, 4, 2)).tolist())
+
+    def test_normalize(self):
+        """Test normalize methods."""
+        x = np.arange(256)
+        y = objax.util.image.normalize_to_unit_float(x)
+        self.assertEqual((x / 128 - (1 - 1 / 256)).tolist(), y.tolist())
+        self.assertEqual(y.tolist(), y.clip(-1, 1).tolist())
+        z = objax.util.image.normalize_to_uint8(y)
+        self.assertEqual(x.tolist(), z.tolist())
+        z = objax.util.image.normalize_to_uint8(y + 1 / 128)
+        self.assertEqual((x + 1).clip(0, 255).tolist(), z.tolist())
+        z = objax.util.image.normalize_to_uint8(y - 1 / 128)
+        self.assertEqual((x - 1).clip(0, 255).tolist(), z.tolist())
 
     def test_to_png(self):
         """Test to_png."""

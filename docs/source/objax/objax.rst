@@ -26,18 +26,20 @@ Modules
     :members:
     :show-inheritance:
 
+    .. seealso:: :py:class:`objax.nn.Sequential`
+
     Usage example::
 
         import objax
 
         ml = objax.ModuleList(['hello', objax.TrainVar(objax.random.normal((10,2)))])
-        ml.vars().print()
+        print(ml.vars())
         # (ModuleList)[1]            20 (10, 2)
         # +Total(1)                  20
 
         ml.pop()
         ml.append(objax.nn.Linear(2, 3))
-        ml.vars().print()
+        print(ml.vars())
         # (ModuleList)[1](Linear).b        3 (3,)
         # (ModuleList)[1](Linear).w        6 (2, 3)
         # +Total(2)                        9
@@ -150,14 +152,16 @@ Variables
 
         m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
         vc = m.vars()  # This is a VarCollection
-        vc.print()
 
         # It is a dictionary
+        print(repr(vc))
+        # {'(Sequential)[0](Linear).b': <objax.variable.TrainVar object at 0x7faecb506390>,
+        #  '(Sequential)[0](Linear).w': <objax.variable.TrainVar object at 0x7faec81ee350>}
         print(vc.keys())  # dict_keys(['(Sequential)[0](Linear).b', '(Sequential)[0](Linear).w'])
         assert (vc['(Sequential)[0](Linear).w'].value == m[0].w.value).all()
 
         # Convenience print
-        vc.print()
+        print(vc)
         # (Sequential)[0](Linear).b        3 (3,)
         # (Sequential)[0](Linear).w        6 (2, 3)
         # +Total(2)                        9

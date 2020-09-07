@@ -21,8 +21,7 @@ import tensorflow_datasets as tfds
 from tqdm import trange
 
 import objax
-from objax.functional import one_hot, tanh
-from objax.functional.ops import average_pool_2d
+from objax.functional import one_hot, tanh, average_pool_2d
 from objax.jaxboard import SummaryWriter, Summary
 from objax.nn import Sequential, Conv2D
 from objax.util import EasyDict
@@ -94,7 +93,7 @@ model = ALLCNN(nin=1, nclass=nclass, scales=2, filters=filters, filters_max=filt
 model_vars = model.vars()
 opt = objax.optimizer.SGD(model_vars)
 predict = objax.Jit(model)
-model_vars.print()
+print(model_vars)
 
 
 def loss(x, label):
