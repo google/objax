@@ -170,8 +170,7 @@ Techniques  * Model weight averaging for improved accuracy using
 Image Classification on ImageNet
 """"""""""""""""""""""""""""""""
 
-Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on `ImageNet <http://www.image-net.org/>`_
-dataset.
+Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on the `ImageNet <http://www.image-net.org/>`_ dataset.
 See `README <https://github.com/google/objax/blob/master/examples/classify/img/imagenet/README.md>`__ for additional information.
 
 ==========  =
