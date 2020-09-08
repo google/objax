@@ -11,8 +11,8 @@ Image
 
 Example code available at :code:`examples/classify`.
 
-:code:`examples/classify/img/logistic.py`
-"""""""""""""""""""""""""""""""""""""""""
+Logistic Regression
+"""""""""""""""""""
 
 Train and evaluate a logistic regression model for binary classification on horses or humans dataset.
 
@@ -22,6 +22,7 @@ Train and evaluate a logistic regression model for binary classification on hors
     python3 examples/classify/img/logistic.py
 
 ==========  =
+Code        `examples/classify/img/logistic.py <https://github.com/google/objax/blob/master/examples/classify/img/logistic.py>`_
 Data        horses_or_humans from `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     Custom single layer
 Loss        :py:func:`objax.functional.loss.sigmoid_cross_entropy_logits`
@@ -30,8 +31,8 @@ Accuracy    ~77%
 Hardware    CPU or GPU or TPU
 ==========  =
 
-:code:`examples/classify/img/mnist_dnn.py`
-""""""""""""""""""""""""""""""""""""""""""
+Digit Classification with Deep Neural Network (DNN)
+"""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a DNNet model for multiclass classification on the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
 
@@ -41,6 +42,7 @@ Train and evaluate a DNNet model for multiclass classification on the `MNIST <ht
     python3 examples/classify/img/mnist_dnn.py
 
 ==========  =
+Code        `examples/classify/img/mnist_dnn.py <https://github.com/google/objax/blob/master/examples/classify/img/mnist_dnn.py>`_
 Data        `MNIST <http://yann.lecun.com/exdb/mnist/>`_ from
             `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     Deep Neural Net :py:class:`objax.zoo.DNNet`
@@ -52,8 +54,8 @@ Techniques  Model weight averaging for improved accuracy using
             :py:class:`objax.optimizer.ExponentialMovingAverage`.
 ==========  =
 
-:code:`examples/classify/img/mnist_cnn.py`
-""""""""""""""""""""""""""""""""""""""""""
+Digit Classification with Convolutional Neural Network (CNN)
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a simple custom CNN model for multiclass classification on
 the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
@@ -64,6 +66,7 @@ the `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset.
     python3 examples/classify/img/mnist_cnn.py
 
 ==========  =
+Code        `examples/classify/img/mnist_cnn.py <https://github.com/google/objax/blob/master/examples/classify/img/mnist_cnn.py>`_
 Data        `MNIST <http://yann.lecun.com/exdb/mnist/>`_ from
             `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     Custom Convolution Neural Net using :py:class:`objax.nn.Sequential`
@@ -76,8 +79,8 @@ Techniques  * Model weight averaging for improved accuracy using
             * Regularization using extra weight decay term in loss.
 ==========  =
 
-:code:`examples/classify/img/mnist_dp.py`
-"""""""""""""""""""""""""""""""""""""""""
+Digit Classification using Differential Privacy
+"""""""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a convNet model for `MNIST <http://yann.lecun.com/exdb/mnist/>`_ dataset with differential privacy.
 
@@ -89,6 +92,7 @@ Train and evaluate a convNet model for `MNIST <http://yann.lecun.com/exdb/mnist/
     python3 examples/classify/img/mnist_dp.py --help
 
 ==========  =
+Code        `examples/classify/img/mnist_dp.py <https://github.com/google/objax/blob/master/examples/classify/img/mnist_dp.py>`_
 Data        `MNIST <http://yann.lecun.com/exdb/mnist/>`_ from
             `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     Custom Convolution Neural Net using :py:class:`objax.nn.Sequential`
@@ -99,9 +103,8 @@ Hardware    GPU
 Techniques  * Compute differentially private gradient using :py:class:`objax.privacy.PrivateGradValues`.
 ==========  =
 
-
-:code:`examples/classify/img/cifar10_simple.py`
-"""""""""""""""""""""""""""""""""""""""""""""""
+Image Classification on CIFAR-10 (Simple)
+"""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate a `wide resnet <https://arxiv.org/abs/1605.07146>`_ model for multiclass classification on
 the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
@@ -112,6 +115,7 @@ the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
     python3 examples/classify/img/cifar10_simple.py
 
 ==========  =
+Code        `examples/classify/img/cifar10_simple.py <https://github.com/google/objax/blob/master/examples/classify/img/cifar10_simple.py>`_
 Data        `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ from
             `tf.keras.datasets <https://www.tensorflow.org/api_docs/python/tf/keras/datasets>`_
 Network     Wide ResNet using :py:class:`objax.zoo.wide_resnet.WideResNet`
@@ -124,8 +128,8 @@ Techniques  * Learning rate schedule.
             * Regularization using extra weight decay term in loss.
 ==========  =
 
-:code:`examples/classify/img/cifar10_advanced.py`
-"""""""""""""""""""""""""""""""""""""""""""""""""
+Image Classification on CIFAR-10 (Advanced)
+"""""""""""""""""""""""""""""""""""""""""""
 
 Train and evaluate convNet models for multiclass classification on
 the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
@@ -140,6 +144,7 @@ the `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ dataset.
     python3 examples/classify/img/cifar10_advanced.py --help
 
 ==========  =
+Code        `examples/classify/img/cifar10_advanced.py <https://github.com/google/objax/blob/master/examples/classify/img/cifar10_advanced.py>`_
 Data        `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ from
             `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     Configurable with :code:`--arch="network"`
@@ -162,13 +167,14 @@ Techniques  * Model weight averaging for improved accuracy using
             * **Reusable training loop** example.
 ==========  =
 
-:code:`examples/classify/img/imagenet/imagenet_train.py`
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Image Classification on ImageNet
+""""""""""""""""""""""""""""""""
 
 Train and evaluate a `ResNet50 <https://arxiv.org/abs/1603.05027>`_ model on the `ImageNet <http://www.image-net.org/>`_ dataset.
-See :code:`examples/classify/img/imagenet/README.md` for additional information.
+See `README <https://github.com/google/objax/blob/master/examples/classify/img/imagenet/README.md>`__ for additional information.
 
 ==========  =
+Code        `examples/classify/img/imagenet/imagenet_train.py <https://github.com/google/objax/blob/master/examples/classify/img/imagenet/imagenet_train.py>`_
 Data        `ImageNet <http://www.image-net.org/>`_ from `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     `ResNet50 <https://arxiv.org/abs/1603.05027>`_
 Loss        :py:func:`objax.functional.loss.cross_entropy_logits_sparse`
@@ -184,14 +190,15 @@ Techniques  * Parallelized on multiple GPUs using :py:class:`objax.Parallel`.
             * Saving of tensorboard visualization files using :py:class:`objax.jaxboard.SummaryWriter`.
 ==========  =
 
-:code:`examples/classify/img/pretrained_vgg.py`
-"""""""""""""""""""""""""""""""""""""""""""""""
+Image Classification using Pretrained VGG Network
+"""""""""""""""""""""""""""""""""""""""""""""""""
 
 Image classification using an ImageNet-pretrained
 `VGG19 <https://www.robots.ox.ac.uk/~vgg/publications/2015/Simonyan15/simonyan15.pdf>`_ model.
-See :code:`examples/classify/img/misc/PRETRAINED_VGG.md` for additional information.
+See `README <https://github.com/google/objax/blob/master/examples/classify/img/pretrained_vgg.md>`__ for additional information.
 
 ==========  =
+Code        `examples/classify/img/pretrained_vgg.py <https://github.com/google/objax/blob/master/examples/classify/img/pretrained_vgg.py>`_
 Techniques  Load VGG-19 model with pretrained weights and run 1000-way image classification.
 ==========  =
 
@@ -200,8 +207,8 @@ Semi-Supervised Learning
 
 Example code available at :code:`examples/semi_supervised`.
 
-:code:`examples/semi_supervised/img/fixmatch.py`
-""""""""""""""""""""""""""""""""""""""""""""""""
+Semi-Supervised Learning with FixMatch
+""""""""""""""""""""""""""""""""""""""
 
 Semi-supervised learning of image classification models with `FixMatch <https://arxiv.org/abs/2001.07685>`_.
 
@@ -215,6 +222,7 @@ Semi-supervised learning of image classification models with `FixMatch <https://
     python3 examples/classify/semi_supervised/img/fixmatch.py --help
 
 ==========  =
+Code        `examples/classify/semi_supervised/img/fixmatch.py <https://github.com/google/objax/blob/master/examples/classify/semi_supervised/img/fixmatch.py>`_
 Data        `CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_, `CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_, `SVHN <http://ufldl.stanford.edu/housenumbers/>`_, `STL10 <https://ai.stanford.edu/~acoates/stl10/>`_
 Network     Custom implementation of Wide ResNet.
 Loss        :py:func:`objax.functional.loss.cross_entropy_logits` and :py:func:`objax.functional.loss.cross_entropy_logits_sparse`
@@ -232,19 +240,20 @@ Techniques  * Load data from multiple data pipelines.
 GPT-2
 -----
 
-Example code available at :code:`examples/gpt-2`.
+Example code is available at :code:`examples/gpt-2`.
 
-:code:`examples/gpt-2/gpt2.py`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Generating a Text Sequence using GPT-2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Load pretrained `GPT2 <https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf>`_
+Load pretrained `GPT-2 <https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf>`_
 model (124M parameter) and demonstrate how to use the model to generate a text sequence.
-See :code:`examples/gpt-2/README.md` for additional information.
+See `README <https://github.com/google/objax/blob/master/examples/gpt-2/README.md>`__ for additional information.
 
 ==========  =
+Code        `examples/gpt-2/gpt2.py <https://github.com/google/objax/blob/master/examples/gpt-2/gpt2.py>`_
 Hardware    GPU or TPU
 Techniques  * Define Transformer model.
-            * Load GPT2 model with pretrained weights and generate a sequence.
+            * Load GPT-2 model with pretrained weights and generate a sequence.
 ==========  =
 
 RNN
@@ -252,11 +261,11 @@ RNN
 
 Example code is available at :code:`examples/rnn`.
 
-:code:`examples/rnn/shakespeare.py`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Train a Vanilla RNN to Predict Characters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Train and evaluate a vanilla RNN model on the Shakespeare corpus dataset.
-See :code:`examples/rnn/README.md` for additional information.
+See `README <https://github.com/google/objax/blob/master/examples/rnn/README.md>`__ for additional information.
 
 .. code-block:: bash
 
@@ -264,6 +273,7 @@ See :code:`examples/rnn/README.md` for additional information.
     python3 examples/rnn/shakespeare.py
 
 ==========  =
+Code        `examples/rnn/shakespeare.py <https://github.com/google/objax/blob/master/examples/rnn/shakespeare.py>`_
 Data        `Shakespeare corpus <https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt>`_
             from `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
 Network     Custom implementation of vanilla RNN.
@@ -282,8 +292,8 @@ Optimization
 
 Example codes available at :code:`examples/optimization`.
 
-:code:`examples/optimization/maml.py`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Model Agnostic Meta-Learning (MAML)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Meta-learning method `MAML <https://arxiv.org/abs/1703.03400>`_ implementation to demonstrate computing the gradient of a gradient.
 
@@ -293,6 +303,7 @@ Meta-learning method `MAML <https://arxiv.org/abs/1703.03400>`_ implementation t
     python3 examples/optimization/maml.py
 
 ==========  =
+Code        `examples/optimization/maml.py <https://github.com/google/objax/blob/master/examples/optimization/maml.py>`_
 Data        Synthetic data
 Network     3-layer DNNet
 Hardware    CPU or GPU or TPU
@@ -304,10 +315,10 @@ Jaxboard
 
 Example code available at :code:`examples/jaxboard`.
 
-:code:`examples/jaxboard/summary.py`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How to Use Jaxboard
+^^^^^^^^^^^^^^^^^^^
 
-Sample usage of jaxboard.
+Sample usage of jaxboard. See `README <https://github.com/google/objax/blob/master/examples/jaxboard/README.md>`__ for additional information.
 
 .. code-block:: bash
 
@@ -315,6 +326,7 @@ Sample usage of jaxboard.
     python3 examples/jaxboard/summary.py
 
 ==========  =
+Code        `examples/jaxboard/summary.py <https://github.com/google/objax/blob/master/examples/jaxboard/summary.py>`_
 Hardware    CPU
 Usages      * summary scalar
             * summary text
