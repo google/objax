@@ -1,4 +1,4 @@
-name: Style check (linter)
+name: Style check
 
 # Trigger workflow on pull requests or push to master branch.
 on:
@@ -8,7 +8,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  linting:
     runs-on: ubuntu-latest
 
     strategy:
