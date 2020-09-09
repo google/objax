@@ -103,14 +103,31 @@ class TestLoss(unittest.TestCase):
         gold = jn.array([[[[0.9881458, 1.278976]]], [[[1.2800856, 1.0900612]]]])
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
 
-    def test_on_xe_logits_sparse(self):
-        """Test cross-entropy on logits with sparse labels."""
+    def test_on_xe_logits_sparse_2d(self):
+        """Test cross-entropy on logits with sparse labels in 2d."""
         x = jn.array([[0.58, 0.4, 0.02], [0.36, 0.27, 0.37], [0.46, 0.24, 0.3], [0.35, 0.29, 0.36]])
         y = jn.array([0, 1, 2, 1], dtype=jn.uint32)
         e = objax.functional.loss.cross_entropy_logits_sparse(10 * x, y)
         gold = jn.array([0.15614605, 1.820976, 1.8720856, 1.5760615])
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
 
+    def test_on_xe_logits_sparse_5d(self):
+        """Test cross-entropy on logits with sparse labels in 5d."""
+        x = jn.array([[0.58, 0.4, 0.02], [0.36, 0.27, 0.37], [0.46, 0.24, 0.3], [0.35, 0.29, 0.36]])
+        x = x.reshape((2, 1, 1, 2, 3))
+        y = jn.array([0, 1, 2, 1], dtype=jn.uint32)
+        y = y.reshape((2, 1, 1, 2))
+        e = objax.functional.loss.cross_entropy_logits_sparse(10 * x, y)
+        gold = jn.array([[[[0.15614605, 1.820976]]], [[[1.8720856, 1.5760615]]]])
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
+
+    def test_on_xe_logits_sparse_integer_label(self):
+        """Test cross-entropy on logits with sparse integer label."""
+        x = jn.array([[0.58, 0.4, 0.02], [0.36, 0.27, 0.37], [0.46, 0.24, 0.3], [0.35, 0.29, 0.36]])
+        y = 2
+        e = objax.functional.loss.cross_entropy_logits_sparse(10 * x, y)
+        gold = jn.array([5.756146, 0.820976, 1.8720856, 0.8760612])
+        self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
 
 if __name__ == '__main__':
     unittest.main()
