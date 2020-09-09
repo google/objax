@@ -48,9 +48,14 @@ def cross_entropy_logits_sparse(logits: JaxArray, labels: Union[JaxArray, int]) 
         labels: (batch, ...) integer tensor of label indexes in {0, ...,#nclass-1} or just a single integer.
 
     Returns:
-        (batch,) tensor of the cross-entropies for each entry.
+        (batch, ...) tensor of the cross-entropies for each entry.
     """
-    return logsumexp(logits, axis=1) - logits[jn.arange(logits.shape[0]), labels]
+    if isinstance(labels, int):
+        labeled_logits = logits[..., labels]
+    else:
+        labeled_logits = jn.take_along_axis(logits, labels[..., None], -1).squeeze(-1)
+
+    return logsumexp(logits, axis=-1) - labeled_logits
 
 
 def l2(x: JaxArray) -> JaxArray:
