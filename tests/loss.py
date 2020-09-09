@@ -129,5 +129,6 @@ class TestLoss(unittest.TestCase):
         gold = jn.array([5.756146, 0.820976, 1.8720856, 0.8760612])
         self.assertAlmostEqual(jn.abs(e - gold).sum(), 0, delta=1e-12)
 
+
 if __name__ == '__main__':
     unittest.main()
