@@ -28,7 +28,7 @@ class ExponentialMovingAverage(Module):
 
     def __init__(self, vc: VarCollection, momentum: float = 0.999, debias: bool = False, eps: float = 1e-6):
         """Creates ExponentialMovingAverage instance with given hyperparameters.
-        
+
         Args:
             momentum: the decay factor for the moving average.
             debias: bool indicating whether to use initialization bias correction.

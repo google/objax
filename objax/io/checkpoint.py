@@ -25,7 +25,7 @@ from objax.variable import VarCollection
 
 class Checkpoint:
     """Helper class which performs saving and restoring of the variables.
-    
+
     Variables are stored in the checkpoint files. One checkpoint file stores a single snapshot of the variables.
     Different checkpoint files store different snapshots of the variables (for example at different training step).
     Each checkpoint has associated index, which is used to identify time when snapshot of the variables was made.
@@ -102,7 +102,7 @@ class Checkpoint:
 
     def save(self, vc: VarCollection, idx: int):
         """Saves variables collection to checkpoint with given index.
-        
+
         Args:
             vc: variables collection to save.
             idx: index of the new checkpoint where variables should be saved.

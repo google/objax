@@ -91,7 +91,7 @@ class TestVectorize(unittest.TestCase):
         """Vectorize module with a broadcast argument and a static one with incomplete batch argument."""
         f = objax.nn.Linear(3, 4)
         with self.assertRaises(AssertionError):
-            fv = objax.Vectorize(lambda x, y: f(x) + y, f.vars(), batch_axis=(0,))
+            _ = objax.Vectorize(lambda x, y: f(x) + y, f.vars(), batch_axis=(0,))
 
     def test_vectorize_module_one_arg_one_static_missing_batched_call(self):
         """Vectorize module with a broadcast argument and a static one with incomplete batch argument.
@@ -101,7 +101,7 @@ class TestVectorize(unittest.TestCase):
         fv = objax.Vectorize(lambda *a: f(a[0]) + a[1], f.vars(), batch_axis=(0,))
         x = objax.random.normal((96, 3))
         with self.assertRaises(AssertionError):
-            yv = fv(x, c)
+            _ = fv(x, c)
 
     def test_vectorize_random_function(self):
         class RandomReverse(objax.Module):

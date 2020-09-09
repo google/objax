@@ -38,7 +38,7 @@ class PrivateGradValues(Module):
                  batch_axis: Tuple[Optional[int], ...] = (0,),
                  keygen: random.Generator = random.DEFAULT_GENERATOR):
         """Constructs a PrivateGradValues instance.
- 
+
         Args:
             f: the function for which to compute gradients.
             vc: the variables for which to compute gradients.
