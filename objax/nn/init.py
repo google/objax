@@ -95,7 +95,7 @@ def xavier_normal(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
     """Returns a tensor with values assigned using Xavier Glorot normal initializer from
     `Understanding the difficulty of training deep feedforward neural networks
     <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_.
-    
+
     Args:
         shape: shape of the output tensor.
         gain: optional scaling factor.

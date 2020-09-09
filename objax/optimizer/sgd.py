@@ -26,7 +26,7 @@ class SGD(Module):
 
     def __init__(self, vc: VarCollection):
         """Constructor for SGD optimizer.
-        
+
         Args:
             vc: collection of variables to optimize.
         """
@@ -34,7 +34,7 @@ class SGD(Module):
 
     def __call__(self, lr: float, grads: List[JaxArray]):
         """Updates variables based on SGD algorithm.
-        
+
         Args:
             lr: the learning rate.
             grads: the gradients to apply.

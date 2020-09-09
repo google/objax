@@ -14,15 +14,16 @@
 
 """Unittests for Parallel Layer."""
 import os
-
-os.environ['XLA_FLAGS'] = ' '.join(os.environ.get('XLA_FLAGS', '').split(' ')
-                                   + ['--xla_force_host_platform_device_count=8'])
-
 import unittest
 import numpy as np
 import jax.numpy as jn
 
 import objax
+
+
+# Split CPU cores into 8 devices for tests of objax.Parallel
+os.environ['XLA_FLAGS'] = ' '.join(os.environ.get('XLA_FLAGS', '').split(' ')
+                                   + ['--xla_force_host_platform_device_count=8'])
 
 
 class TestParallel(unittest.TestCase):
