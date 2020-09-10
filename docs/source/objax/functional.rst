@@ -127,6 +127,7 @@ objax.functional.loss
     l2
     mean_absolute_error
     mean_squared_error
+    mean_squared_log_error
     sigmoid_cross_entropy_logits
 
 .. autofunction:: cross_entropy_logits

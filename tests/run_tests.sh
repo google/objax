@@ -13,8 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-for i in tests/*.py; do
-  CUDA_VISIBLE_DEVICES= python3 -m unittest $i >&$i.log &
-done
-wait
-fgrep FAILED tests/*.log
+# Change directory to repository root
+cd "$( dirname "${BASH_SOURCE[0]}" )/.."
+
+if python3 -c "import pytest" &> /dev/null ; then
+  # If pytest is installed then use it to run tests
+  # Pytest has nicer output compared to unittest package and also it's used
+  # to run automatic unit tests on GitHub.
+  CUDA_VISIBLE_DEVICES= pytest tests/*.py
+else
+  # If pytest is not installed then use default unittest to run tests.
+  for i in tests/*.py; do
+    CUDA_VISIBLE_DEVICES= python3 -m unittest $i >&$i.log &
+  done
+  wait
+  fgrep FAILED tests/*.log
+fi

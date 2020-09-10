@@ -54,9 +54,8 @@ def _compute_log_a_int(q: float, sigma: float, alpha: int) -> float:
     log_a = -np.inf
 
     for i in range(alpha + 1):
-        log_coef_i = (
-                math.log(special.binom(alpha, i)) + i * math.log(q) +
-                (alpha - i) * math.log(1 - q))
+        log_coef_i = (math.log(special.binom(alpha, i)) + i * math.log(q)
+                      + (alpha - i) * math.log(1 - q))
 
         s = log_coef_i + (i * i - i) / (2 * (sigma ** 2))
         log_a = _log_add(log_a, s)
@@ -121,8 +120,8 @@ def _log_erfc(x: float) -> float:
             #     erfc(x) ~ exp(-x^2-.5/x^2+.625/x^4)/(x*pi^.5)
             # To verify in Mathematica:
             #     Series[Log[Erfc[x]] + Log[x] + Log[Pi]/2 + x^2, {x, Infinity, 6}]
-            return (-math.log(math.pi) / 2 - math.log(x) - x ** 2 - .5 * x ** -2 +
-                    .625 * x ** -4 - 37. / 24. * x ** -6 + 353. / 64. * x ** -8)
+            return (-math.log(math.pi) / 2 - math.log(x) - x ** 2 - .5 * x ** -2
+                    + .625 * x ** -4 - 37. / 24. * x ** -6 + 353. / 64. * x ** -8)
         else:
             return math.log(r)
 
@@ -206,7 +205,8 @@ def analyze_renyi(q: float, noise_multiplier: float, steps: int, orders: Tuple[f
 
     Args:
       q: The sampling rate.
-      noise_multiplier: The ratio of the standard deviation of the Gaussian noise to the l2-sensitivity of the function to which it is added.
+      noise_multiplier: The ratio of the standard deviation of the Gaussian noise to the l2-sensitivity
+                        of the function to which it is added.
       steps: The number of steps.
       orders: An array (or a scalar) of RDP orders.
 
@@ -228,7 +228,8 @@ def convert_renyidp_to_dp(orders: Tuple[float, ...], rdp: Tuple[float, ...], tar
       orders: An array (or a scalar) of RDP orders.
       rdp: An array of RDP values. Must be of the same length as the orders list.
       target_eps: If not None, the epsilon for which we compute the corresponding delta.
-      target_delta: If not None, the delta for which we compute the corresponding epsilon. Exactly one of target_eps and target_delta must be None.
+      target_delta: If not None, the delta for which we compute the corresponding epsilon.
+                    Exactly one of target_eps and target_delta must be None.
 
     Returns:
       eps, delta, opt_order.
@@ -252,14 +253,18 @@ def convert_renyidp_to_dp(orders: Tuple[float, ...], rdp: Tuple[float, ...], tar
         return eps, target_delta, opt_order
 
 
-def analyze_dp(q: float, noise_multiplier: float, steps: int, orders: Tuple[float, ...] = (
-        1.25, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 4.5, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20),
+def analyze_dp(q: float,
+               noise_multiplier: float,
+               steps: int,
+               orders: Tuple[float, ...] = (1.25, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 4.5, 5, 6,
+                                            7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20),
                delta: float = 1e-05) -> float:
     """Compute and print results of DP-SGD analysis.
 
     Args:
       q: The sampling rate.
-      noise_multiplier: The ratio of the standard deviation of the Gaussian noise to the l2-sensitivity of the function to which it is added.
+      noise_multiplier: The ratio of the standard deviation of the Gaussian noise to the l2-sensitivity
+                        of the function to which it is added.
       steps: The number of steps.
       orders: An array (or a scalar) of RDP orders.
       delta: The target delta.

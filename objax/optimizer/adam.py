@@ -29,7 +29,7 @@ class Adam(Module):
 
     def __init__(self, vc: VarCollection, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-8):
         """Constructor for Adam optimizer class.
-        
+
         Args:
             vc: collection of variables to optimize.
             beta1: value of Adam's beta1 hyperparameter. Defaults to 0.9.
@@ -46,7 +46,7 @@ class Adam(Module):
 
     def __call__(self, lr: float, grads: List[JaxArray]):
         """Updates variables and other state based on Adam algorithm.
-        
+
         Args:
             lr: the learning rate.
             grads: the gradients to apply.
