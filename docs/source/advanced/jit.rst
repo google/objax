@@ -360,7 +360,7 @@ advanced users nonetheless::
 Output aggregation
 ^^^^^^^^^^^^^^^^^^
 
-Similarly the ouptput :math:`y` of parallel call is reduced using the :code:`reduce` argument.
+Similarly the output :math:`y` of parallel call is reduced using the :code:`reduce` argument.
 The first dimension :math:`d` of :math:`y` is the device dimension and its name comes from the :code:`axis_name`
 argument while by default is simply :code:`"device"`.
 
@@ -499,7 +499,7 @@ Let's clarify this with a simple example::
               #  [17 17 17 17]]
 
 
-Computing weights gradients par batch entry
+Computing weights gradients per batch entry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is a more advanced example, conceptually it is similar to what's powering differential privacy gradients::

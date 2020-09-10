@@ -26,3 +26,10 @@ information on using pull requests.
 
 This project follows [Google's Open Source Community
 Guidelines](https://opensource.google.com/conduct/).
+
+## Code style
+
+We follow [PEP8](https://www.python.org/dev/peps/pep-0008/) with `max-line-length=120` characters.
+As to code formatting, some of us internally use
+[PyCharm code formatter](https://www.jetbrains.com/help/pycharm/command-line-formatter.html).
+You are not required to use it, just maintain the style seen in other files.

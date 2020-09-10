@@ -31,7 +31,7 @@ In machine learning, for a function :math:`f(X; \theta)`, it is common practice 
 inputs :math:`X` from the parameters :math:`\theta`.
 Mathematically, this is captured by using a semi-colon to semantically separate one group of arguments from another.
 
-In Objax, we represents this semantic distinction through an object :py:class:`objax.Module`:
+In Objax, we represent this semantic distinction through an object :py:class:`objax.Module`:
 
 * the module parameters :math:`\theta` are object attributes of the form :code:`self.w, ...`
 * the inputs :math:`X` are arguments to the methods such as :code:`def __call__(self, x1, x2, ...):`
@@ -127,7 +127,7 @@ Read first the part about :ref:`Variables and Modules` if you haven't done so ye
                 v.value -= lr * g
 
 In short, :code:`self.refs` keeps a list of references to the network trainable variables :code:`TrainVar`.
-When calling the :code:`__call__` method, the values of the variables gets updated by the SGD method.
+When calling the :code:`__call__` method, the values of the variables get updated by the SGD method.
 
 From this we can demonstrate the training of a classifier::
 
@@ -177,7 +177,7 @@ Let's say we want to add weight decay and returning the individual components of
 The loss function can return any number of values or even structures such as dicts or list.
 **Only the first returned value is used to compute the gradient**, the others are returned as the loss value.
 
-Continuing on our example, less create a new loss that returns its multiple components::
+Continuing on our example, lets create a new loss that returns its multiple components::
 
     def losses(x, labels):
         logits = my_classifier(x)
@@ -244,7 +244,7 @@ Gradients of a subset of variables
 
 When doing more complex optimizations, one might want to temporarily treat a part of a network as constant.
 This is achieved by simply passing only the variables you want the gradient of to :py:class:`objax.GradValues`.
-This is useful for example in GANs where one has to opimize the discriminator and the generator
+This is useful for example in GANs where one has to optimize the discriminator and the generator
 networks separately.
 
 Continuing our example::

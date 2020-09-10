@@ -26,6 +26,8 @@ Modules
     :members:
     :show-inheritance:
 
+    .. seealso:: :py:class:`objax.nn.Sequential`
+
     Usage example::
 
         import objax

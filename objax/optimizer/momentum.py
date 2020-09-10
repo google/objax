@@ -27,7 +27,7 @@ class Momentum(Module):
 
     def __init__(self, vc: VarCollection, momentum: float = 0.9, nesterov: bool = False):
         """Constructor for momentum optimizer class.
-        
+
         Args:
             vc: collection of variables to optimize.
             momentum: the momentum hyperparameter.

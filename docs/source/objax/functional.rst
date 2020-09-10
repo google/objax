@@ -125,6 +125,9 @@ objax.functional.loss
     cross_entropy_logits
     cross_entropy_logits_sparse
     l2
+    mean_absolute_error
+    mean_squared_error
+    mean_squared_log_error
     sigmoid_cross_entropy_logits
 
 .. autofunction:: cross_entropy_logits
@@ -148,6 +151,10 @@ Calculates the l2 loss, as:
 
 .. math::
    l_2 = \frac{\sum_{i} x_{i}^2}{2}
+
+.. autofunction:: mean_absolute_error
+
+.. autofunction:: mean_squared_error
 
 .. autofunction:: sigmoid_cross_entropy_logits
 
