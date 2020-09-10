@@ -100,7 +100,7 @@ Loss        :py:func:`objax.functional.loss.cross_entropy_logits`
 Optimizer   :py:class:`objax.optimizer.SGD`
 Accuracy
 Hardware    GPU
-Techniques  * Compute differentially private gradient using :py:class:`objax.privacy.PrivateGradValues`.
+Techniques  * Compute differentially private gradient using :py:class:`objax.privacy.dpsgd.PrivateGradValues`.
 ==========  =
 
 Image Classification on CIFAR-10 (Simple)

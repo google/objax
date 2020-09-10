@@ -18,7 +18,7 @@ from typing import Tuple
 import numpy as np
 from scipy import special
 
-__all__ = ["apply_dp_sgd_analysis", "get_privacy_spent", "compute_rdp"]
+__all__ = ["analyze_dp", "convert_renyidp_to_dp", "analyze_renyi"]
 
 
 def _log_add(logx: float, logy: float) -> float:
@@ -177,7 +177,7 @@ def _compute_eps(orders: Tuple[float, ...], rdp: Tuple[float, ...], delta: float
     return eps[idx_opt], orders_vec[idx_opt]
 
 
-def _compute_rdp(q: float, sigma: float, alpha: float) -> float:
+def _analyze_renyi(q: float, sigma: float, alpha: float) -> float:
     """Compute RDP of the Sampled Gaussian mechanism at order alpha.
 
     Args:
@@ -200,7 +200,7 @@ def _compute_rdp(q: float, sigma: float, alpha: float) -> float:
     return _compute_log_a(q, sigma, alpha) / (alpha - 1)
 
 
-def compute_rdp(q: float, noise_multiplier: float, steps: int, orders: Tuple[float, ...]):
+def analyze_renyi(q: float, noise_multiplier: float, steps: int, orders: Tuple[float, ...]):
     """Compute RDP of the Sampled Gaussian Mechanism.
 
     Args:
@@ -214,14 +214,14 @@ def compute_rdp(q: float, noise_multiplier: float, steps: int, orders: Tuple[flo
       The RDPs at all orders, can be np.inf.
     """
 
-    rdp = np.array([_compute_rdp(q, noise_multiplier, order)
+    rdp = np.array([_analyze_renyi(q, noise_multiplier, order)
                     for order in orders])
 
     return rdp * steps
 
 
-def get_privacy_spent(orders: Tuple[float, ...], rdp: Tuple[float, ...], target_eps: float = None,
-                      target_delta: float = None) -> Tuple[float, float, float]:
+def convert_renyidp_to_dp(orders: Tuple[float, ...], rdp: Tuple[float, ...], target_eps: float = None,
+                          target_delta: float = None) -> Tuple[float, float, float]:
     """Compute delta (or eps) for given eps (or delta) from RDP values.
 
     Args:
@@ -250,15 +250,15 @@ def get_privacy_spent(orders: Tuple[float, ...], rdp: Tuple[float, ...], target_
         return target_eps, delta, opt_order
     if target_delta is not None:
         eps, opt_order = _compute_eps(orders, rdp, target_delta)
-        return (eps, target_delta, opt_order)
+        return eps, target_delta, opt_order
 
 
-def apply_dp_sgd_analysis(q: float,
-                          noise_multiplier: float,
-                          steps: int,
-                          orders: Tuple[float, ...] = (1.25, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 4.5, 5, 6,
-                                                       7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20),
-                          delta: float = 1e-05) -> float:
+def analyze_dp(q: float,
+               noise_multiplier: float,
+               steps: int,
+               orders: Tuple[float, ...] = (1.25, 1.5, 1.75, 2., 2.25, 2.5, 3., 3.5, 4., 4.5, 5, 6,
+                                            7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20),
+               delta: float = 1e-05) -> float:
     """Compute and print results of DP-SGD analysis.
 
     Args:
@@ -278,7 +278,7 @@ def apply_dp_sgd_analysis(q: float,
     if noise_multiplier == 0:
         return float('inf')
 
-    rdp = compute_rdp(q, noise_multiplier, steps, orders)
-    eps, _, opt_order = get_privacy_spent(orders, rdp, target_delta=delta)
+    rdp = analyze_renyi(q, noise_multiplier, steps, orders)
+    eps, _, opt_order = convert_renyidp_to_dp(orders, rdp, target_delta=delta)
 
     return eps
