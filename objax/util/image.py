@@ -38,7 +38,7 @@ def from_file(file: Union[str, IO[BinaryIO]]) -> np.ndarray:
 
 
 def image_grid(image: np.ndarray) -> np.ndarray:
-    """Take an image grid (nh, nw, gw, c, h, w) and export it to an image (c, nh * h, nh * w)."""
+    """Rearrange array of images (nh, hw, c, h, w) into image grid in a single image (c, nh * h, nh * w)."""
     s = image.shape
     return image.transpose([2, 0, 3, 1, 4]).reshape([s[2], s[3] * s[0], s[4] * s[1]])
 

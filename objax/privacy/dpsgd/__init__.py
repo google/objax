@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-for i in tests/*.py; do
-  CUDA_VISIBLE_DEVICES= python3 -m unittest $i >&$i.log &
-done
-wait
-fgrep FAILED tests/*.log
+from .gradient import *
+from .privacyaccountant import *

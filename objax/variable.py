@@ -134,8 +134,8 @@ class StateVar(BaseState):
 
         Args:
             tensor: the initial value of the StateVar.
-            reduce: a function that takes an array of shape ``(n, *dims)`` and returns one of shape ``(*dims)``. Used to combine
-                    the multiple states produced in an objax.Vectorize or an objax.Parallel call.
+            reduce: a function that takes an array of shape ``(n, *dims)`` and returns one of shape ``(*dims)``.
+                    Used to combine the multiple states produced in an objax.Vectorize or an objax.Parallel call.
         """
         self._value = tensor
         super().__init__(reduce)

@@ -1,0 +1,36 @@
+name: Testing
+
+# Trigger workflow on pull requests or push to master branch.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+      # Checks-out repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v2
+
+      - name: Setup Python # Set Python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install --upgrade -r requirements.txt
+
+      - name: Test with pytest
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          CUDA_VISIBLE_DEVICES= pytest tests/*.py
