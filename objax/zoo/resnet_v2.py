@@ -29,7 +29,7 @@ __all__ = ['ResNetV2', 'ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet1
 
 def conv_args(kernel_size: int, nout: int):
     """Returns list of arguments which are common to all convolutions.
-    
+
     Args:
         kernel_size: size of convolution kernel (single number).
         nout: number of output filters.
@@ -201,7 +201,7 @@ class ResNet18(ResNetV2):
                  normalization_fn: Callable[..., objax.Module] = objax.nn.BatchNorm2D,
                  activation_fn: Callable[[JaxArray], JaxArray] = objax.functional.relu):
         """Creates ResNet18 instance.
-        
+
         Args:
             in_channels: number of channels in the input image.
             num_classes: number of output classes.
@@ -227,7 +227,7 @@ class ResNet34(ResNetV2):
                  normalization_fn: Callable[..., objax.Module] = objax.nn.BatchNorm2D,
                  activation_fn: Callable[[JaxArray], JaxArray] = objax.functional.relu):
         """Creates ResNet34 instance.
-        
+
         Args:
             in_channels: number of channels in the input image.
             num_classes: number of output classes.
@@ -253,7 +253,7 @@ class ResNet50(ResNetV2):
                  normalization_fn: Callable[..., objax.Module] = objax.nn.BatchNorm2D,
                  activation_fn: Callable[[JaxArray], JaxArray] = objax.functional.relu):
         """Creates ResNet50 instance.
-        
+
         Args:
             in_channels: number of channels in the input image.
             num_classes: number of output classes.
@@ -277,7 +277,7 @@ class ResNet101(ResNetV2):
                  normalization_fn: Callable[..., objax.Module] = objax.nn.BatchNorm2D,
                  activation_fn: Callable[[JaxArray], JaxArray] = objax.functional.relu):
         """Creates ResNet101 instance.
-        
+
         Args:
             in_channels: number of channels in the input image.
             num_classes: number of output classes.
@@ -301,7 +301,7 @@ class ResNet152(ResNetV2):
                  normalization_fn: Callable[..., objax.Module] = objax.nn.BatchNorm2D,
                  activation_fn: Callable[[JaxArray], JaxArray] = objax.functional.relu):
         """Creates ResNet152 instance.
-        
+
         Args:
             in_channels: number of channels in the input image.
             num_classes: number of output classes.
@@ -325,7 +325,7 @@ class ResNet200(ResNetV2):
                  normalization_fn: Callable[..., objax.Module] = objax.nn.BatchNorm2D,
                  activation_fn: Callable[[JaxArray], JaxArray] = objax.functional.relu):
         """Creates ResNet200 instance.
-        
+
         Args:
             in_channels: number of channels in the input image.
             num_classes: number of output classes.

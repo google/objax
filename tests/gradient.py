@@ -193,9 +193,9 @@ class TestPrivateGradValues(unittest.TestCase):
         noise_multiplier = 0
 
         for microbatch in [1, 10, self.ntrain]:
-            gv_priv = objax.Jit(objax.privacy.PrivateGradValues(self.loss, self.model_vars,
-                                                                noise_multiplier, l2_norm_clip, microbatch,
-                                                                batch_axis=(0, 0)))
+            gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss, self.model_vars,
+                                                                      noise_multiplier, l2_norm_clip, microbatch,
+                                                                      batch_axis=(0, 0)))
             gv = objax.GradValues(self.loss, self.model_vars)
             g_priv, v_priv = gv_priv(self.data, self.labels)
             g, v = gv(self.data, self.labels)
@@ -215,9 +215,9 @@ class TestPrivateGradValues(unittest.TestCase):
         acceptable_float_error = 1e-8
         for microbatch in [1, 10, self.ntrain]:
             for l2_norm_clip in [0, 1e-2, 1e-1, 1.0]:
-                gv_priv = objax.Jit(objax.privacy.PrivateGradValues(self.loss, self.model_vars,
-                                                                    noise_multiplier, l2_norm_clip, microbatch,
-                                                                    batch_axis=(0, 0)))
+                gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss, self.model_vars,
+                                                                          noise_multiplier, l2_norm_clip, microbatch,
+                                                                          batch_axis=(0, 0)))
                 g_priv, v_priv = gv_priv(self.data, self.labels)
                 # Get the actual squared norm of the gradient.
                 g_normsquared = sum([np.sum(g ** 2) for g in g_priv])
@@ -231,9 +231,12 @@ class TestPrivateGradValues(unittest.TestCase):
         for microbatch in [1, 10, self.ntrain]:
             for noise_multiplier in [0.1, 10.0]:
                 for l2_norm_clip in [0.01, 0.1]:
-                    gv_priv = objax.Jit(objax.privacy.PrivateGradValues(self.loss, self.model_vars,
-                                                                        noise_multiplier, l2_norm_clip, microbatch,
-                                                                        batch_axis=(0, 0)))
+                    gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss,
+                                                                              self.model_vars,
+                                                                              noise_multiplier,
+                                                                              l2_norm_clip,
+                                                                              microbatch,
+                                                                              batch_axis=(0, 0)))
                     # Repeat the run and collect all gradients.
                     g_privs = []
                     for i in range(runs):
@@ -281,9 +284,9 @@ class TestPrivateGradValuesAxis(unittest.TestCase):
         noise_multiplier = 0.
 
         def get_g(microbatch, l2_norm_clip, batch_axis=(0,)):
-            gv_priv = objax.privacy.PrivateGradValues(loss, objax.VarCollection({'w': w}),
-                                                      noise_multiplier, l2_norm_clip, microbatch,
-                                                      batch_axis=batch_axis)
+            gv_priv = objax.privacy.dpsgd.PrivateGradValues(loss, objax.VarCollection({'w': w}),
+                                                            noise_multiplier, l2_norm_clip, microbatch,
+                                                            batch_axis=batch_axis)
             g_priv, v_priv = gv_priv(data)
             return g_priv
 

@@ -113,11 +113,29 @@ The current folder must be in `PYTHONPATH`. You can do this with the following c
 ```bash
 export PYTHONPATH=$PYTHONPATH:.
 ```
-### Running tests
 
-You can run all tests as follows:
+### Running linter and tests
+
+Install additional packages for testing and linting:
 
 ```bash
-./tests/run.sh
+# Installation of pytest is optional.
+# Tests will run without it, however pytest provides nicer output and
+# GitHub tests are run using pytest.
+pip install pytest
+
+# Flake8 is required to run linter.
+pip install flake8
 ```
 
+Run linter:
+
+```bash
+./tests/run_linter.sh
+```
+
+Run tests:
+
+```bash
+./tests/run_tests.sh
+```

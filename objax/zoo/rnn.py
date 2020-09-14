@@ -71,10 +71,11 @@ class RNN(Module):
         outputs = []
         for x in inputs:
             self.state.value = self.activation(
-                jn.dot(x, self.w_xh.value) +
-                jn.dot(self.state.value, self.w_hh.value) +
-                self.b_h.value)
+                jn.dot(x, self.w_xh.value)
+                + jn.dot(self.state.value, self.w_hh.value)
+                + self.b_h.value)
             y = self.output_layer(self.state.value)
             outputs.append(y)
-        if only_return_final: return outputs[-1]
+        if only_return_final:
+            return outputs[-1]
         return jn.concatenate(outputs, axis=0)

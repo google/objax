@@ -105,11 +105,11 @@ def loss(x, label):
 # We use PrivateGradValues instead of GradValues to get private gradient.
 # batch_axis=(0, 0) indicates the axis to use as batch is 0. It should be set to
 # an all 0 tuple for PrivateGradValues.
-gv = objax.privacy.PrivateGradValues(loss, model_vars,
-                                     noise_multiplier,
-                                     l2_norm_clip,
-                                     microbatch,
-                                     batch_axis=(0, 0))
+gv = objax.privacy.dpsgd.PrivateGradValues(loss, model_vars,
+                                           noise_multiplier,
+                                           l2_norm_clip,
+                                           microbatch,
+                                           batch_axis=(0, 0))
 
 
 def train_op(x, xl):
@@ -151,9 +151,9 @@ with SummaryWriter(os.path.join(log_dir, 'tb')) as tensorboard:
         summary.scalar('eval/accuracy', 100 * accuracy)
 
         # Use apply_dp_sgd_analysis to compute the current DP guarantee.
-        eps = objax.privacy.apply_dp_sgd_analysis(q=sampling_rate,
-                                                  noise_multiplier=noise_multiplier,
-                                                  steps=steps, delta=delta)
+        eps = objax.privacy.dpsgd.analyze_dp(q=sampling_rate,
+                                             noise_multiplier=noise_multiplier,
+                                             steps=steps, delta=delta)
         summary.scalar('privacy/epsilon', eps)
         print('Epoch %04d  Accuracy %.2f Epsilon: %.2f Delta: %.6f ' % (epoch + 1, 100 * accuracy, eps, delta))
         tensorboard.write(summary, step=steps)

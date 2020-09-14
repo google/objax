@@ -14,15 +14,16 @@
 
 """Unittests for Batch Normalization Layer."""
 import os
-
-# for tests of sync batch norm
-os.environ['XLA_FLAGS'] = ' '.join(os.environ.get('XLA_FLAGS', '').split(' ')
-                                   + ['--xla_force_host_platform_device_count=8'])
-
 import unittest
 
 import objax
+
 import numpy as np
+
+
+# Split CPU cores into 8 devices for tests of sync batch norm
+os.environ['XLA_FLAGS'] = ' '.join(os.environ.get('XLA_FLAGS', '').split(' ')
+                                   + ['--xla_force_host_platform_device_count=8'])
 
 
 class TestBatchnorm(unittest.TestCase):

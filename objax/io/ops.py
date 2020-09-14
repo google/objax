@@ -26,7 +26,7 @@ from objax.variable import TrainRef, VarCollection
 
 def load_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
     """Loads values of all variables in the given variables collection from file.
-    
+
     Values loaded from file will replace old values in the variables collection.
     If variable exists in the file, but does not exist in the variables collection it will be ignored.
     If variable exists in the variables collection, but not found in the file then exception will be raised.
@@ -62,7 +62,7 @@ def load_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
 
 def save_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
     """Saves variables collection into file.
-    
+
     Args:
         file: filename or python file handle of the file where variables will be saved.
         vc: variables collection which will be saved into file.
