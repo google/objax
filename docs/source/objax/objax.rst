@@ -14,6 +14,7 @@ Modules
 
     Module
     ModuleList
+    Grad
     GradValues
     Jit
     Parallel
@@ -43,6 +44,27 @@ Modules
         # (ModuleList)[1](Linear).b        3 (3,)
         # (ModuleList)[1](Linear).w        6 (2, 3)
         # +Total(2)                        9
+
+.. autoclass:: Grad
+   :members:
+
+    Usage example::
+
+        import objax
+
+        m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
+
+        def f(x, y):
+            return ((m(x) - y) ** 2).mean()
+
+        # Create module to compute gradients of f for m.vars()
+        grad_f = objax.Grad(f, m.vars())
+
+        # Create module to compute gradients of f for input 0 (x) and m.vars()
+        grad_fx = objax.Grad(f, m.vars(), input_argnums=(0,))
+
+
+    For more information and examples, see :ref:`Understanding Gradients`.
 
 .. autoclass:: GradValues
    :members:
