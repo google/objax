@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['GradValues']
+__all__ = ['GradValues', 'Grad']
 
 from typing import List, Optional, Callable, Tuple
 
@@ -71,3 +71,28 @@ class GradValues(ModuleWrapper):
                                        list(args))
         self.vc.subset(BaseState).assign(changes)
         return g, outputs
+
+
+class Grad(ModuleWrapper):
+
+    """The Grad module is used to compute the gradients of a function."""
+    def __init__(self, f: Callable,
+                 variables: Optional[VarCollection],
+                 input_argnums: Optional[Tuple[int, ...]] = None):
+
+        """Constructs an instance to compute the gradient of f w.r.t. variables.
+
+        Args:
+            f: the function for which to compute gradients.
+            variables: the variables for which to compute gradients.
+            input_argnums: input indexes, if any, on which to compute gradients.
+        """
+        self.grad_values = GradValues(f, variables, input_argnums)
+
+    def __call__(self, *args):
+        """Returns the computed gradients for the first value returned by `f`.
+
+        Returns:
+            A list of input gradients, if any, followed by the variable gradients."""
+        g, v = self.grad_values(*args)
+        return g
