@@ -18,6 +18,7 @@ import glob
 import os
 from typing import Callable, Optional
 
+import jax
 from objax.io.ops import load_var_collection, save_var_collection
 from objax.typing import FileOrStr
 from objax.variable import VarCollection
@@ -47,7 +48,12 @@ class Checkpoint:
     SAVE_FN: Callable[[FileOrStr, VarCollection], None] = staticmethod(save_var_collection)
     """Save function, which saves variables collection into given file."""
 
-    def __init__(self, logdir: str, keep_ckpts: int, makedir: bool = True, verbose: bool = True):
+    def __init__(self,
+                 logdir: str,
+                 keep_ckpts: int,
+                 makedir: bool = True,
+                 verbose: bool = True,
+                 only_first_host_writes: bool = True):
         """Creates instance of the Checkpoint class.
 
         Args:
@@ -56,11 +62,14 @@ class Checkpoint:
             makedir: if True then directory for checkpoints will be created,
                 otherwise it's expected that directory already exists.
             verbose: if True then print when data is restored from checkpoint.
+            only_first_host_writes: if True then checkpoints are saved only by the first host in multi-host setup,
+                                    otherwise user has to manually ensure that checkpoints are saved by only one host.
         """
+        self.do_writes = (jax.host_id() == 0) or (not only_first_host_writes)
         self.logdir = logdir
         self.keep_ckpts = keep_ckpts
         self.verbose = verbose
-        if makedir:
+        if makedir and self.do_writes:
             os.makedirs(os.path.join(logdir, self.DIR_NAME), exist_ok=True)
 
     @staticmethod
@@ -107,6 +116,8 @@ class Checkpoint:
             vc: variables collection to save.
             idx: index of the new checkpoint where variables should be saved.
         """
+        if not self.do_writes:
+            return
         self.SAVE_FN(os.path.join(self.logdir, self.DIR_NAME, self.FILE_FORMAT % idx), vc)
         for ckpt in sorted(glob.glob(os.path.join(self.logdir, self.DIR_NAME, self.FILE_MATCH)))[:-self.keep_ckpts]:
             os.remove(ckpt)

@@ -71,3 +71,8 @@ def to_tuple(v: Union[Tuple[Number, ...], Number, Iterable], n: int):
         return (v,) * n
     else:
         return tuple(v)
+
+
+def multi_host_barrier():
+    """Barrier op for multi-host setup."""
+    jax.random.normal(jax.random.PRNGKey(0), ()).block_until_ready()

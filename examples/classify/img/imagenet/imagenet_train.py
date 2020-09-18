@@ -49,8 +49,8 @@ class Experiment:
 
     def __init__(self):
         # Some constants
-        total_batch_size = FLAGS.train_device_batch_size * jax.device_count()
-        self.base_learning_rate = FLAGS.base_learning_rate * total_batch_size / 256
+        self.total_batch_size = FLAGS.train_device_batch_size * jax.device_count()
+        self.base_learning_rate = FLAGS.base_learning_rate * self.total_batch_size / 256
         # Create model
         bn_cls = objax.nn.SyncedBatchNorm2D if FLAGS.use_sync_bn else objax.nn.BatchNorm2D
         self.model = ResNet50(in_channels=3, num_classes=NUM_CLASSES, normalization_fn=bn_cls)
@@ -146,8 +146,7 @@ class Experiment:
             batch_dims=[jax.local_device_count() * FLAGS.train_device_batch_size],
             tfds_data_dir=FLAGS.tfds_data_dir)
 
-        steps_per_epoch = (imagenet_data.Split.TRAIN.num_examples
-                           / (FLAGS.train_device_batch_size * jax.device_count()))
+        steps_per_epoch = imagenet_data.Split.TRAIN.num_examples / self.total_batch_size
         total_train_steps = int(steps_per_epoch * FLAGS.num_train_epochs)
         eval_every_n_steps = FLAGS.eval_every_n_steps
 
@@ -194,6 +193,7 @@ def main(argv):
     print('JAX devices:\n%s' % '\n'.join(str(d) for d in jax.devices()), flush=True)
     experiment = Experiment()
     experiment.train_and_eval()
+    objax.util.multi_host_barrier()
 
 
 if __name__ == '__main__':

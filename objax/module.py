@@ -176,7 +176,7 @@ class Parallel(ModuleWrapper):
         super().__init__(vc)
         static_argnums = sorted(static_argnums or ())
         self.reduce = reduce
-        self.ndevices = jax.device_count()
+        self.ndevices = jax.local_device_count()
         self.static_argnums = frozenset(static_argnums)
 
         def pmap(tensor_list: List[ShardedDeviceArray], random_list: List[ShardedDeviceArray], *args):
