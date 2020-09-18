@@ -224,8 +224,8 @@ We can easily make a more complicated module that uses the previously defined mo
 
     class MiniNet(objax.Module):
         def __init__(self, m, n, p):
-            self.f1 = Linear(m, n)
-            self.f2 = Linear(n, p)
+            self.f1 = objax.nn.Linear(m, n)
+            self.f2 = objax.nn.Linear(n, p)
 
         def __call__(self, x):
             y = self.f1(x)

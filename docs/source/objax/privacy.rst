@@ -1,15 +1,15 @@
-objax.privacy package
+objax.privacy.dpsgd package
 =====================
 
-.. currentmodule:: objax.privacy
+.. currentmodule:: objax.privacy.dpsgd
 
 .. autosummary::
 
     PrivateGradValues
-    apply_dp_sgd_analysis
-    compute_rdp
-    get_privacy_spent
+    analyze_dp
+    analyze_renyi
+    convert_renyidp_to_dp
 
-.. automodule:: objax.privacy
+.. automodule:: objax.privacy.dpsgd
     :members:
     :imported-members:

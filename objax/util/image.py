@@ -12,15 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['nchw', 'nhwc', 'normalize_to_uint8', 'normalize_to_unit_float', 'to_png']
+__all__ = ['from_file', 'image_grid', 'nchw', 'nhwc', 'normalize_to_uint8', 'normalize_to_unit_float', 'to_png']
 
 import io
-from typing import Union
+from typing import Union, BinaryIO, IO
 
+import jax.numpy as jn
 import numpy as np
 from PIL import Image
 
 from objax.typing import JaxArray
+
+
+def from_file(file: Union[str, IO[BinaryIO]]) -> np.ndarray:
+    """Read an image from a file, convert it RGB and return it as an array.
+
+    Args:
+        file: filename or python file handle of the input file.
+
+    Return:
+        3D numpy array (C, H, W) normalized with normalize_to_unit_float.
+    """
+    image = np.asarray(Image.open(file).convert('RGB'))
+    return normalize_to_unit_float(image.transpose((2, 0, 1)))
+
+
+def image_grid(image: np.ndarray) -> np.ndarray:
+    """Rearrange array of images (nh, hw, c, h, w) into image grid in a single image (c, nh * h, nh * w)."""
+    s = image.shape
+    return image.transpose([2, 0, 3, 1, 4]).reshape([s[2], s[3] * s[0], s[4] * s[1]])
 
 
 def nchw(x: Union[np.ndarray, JaxArray]) -> Union[np.ndarray, JaxArray]:
@@ -47,10 +67,12 @@ def normalize_to_unit_float(x: Union[np.ndarray, JaxArray]) -> Union[np.ndarray,
     return x * (1 / 128) + (1 / 256 - 1)
 
 
-def to_png(x: np.ndarray) -> bytes:
+def to_png(x: Union[np.ndarray, JaxArray]) -> bytes:
     """Converts numpy array in (C,H,W) format into PNG format."""
+    if isinstance(x, jn.ndarray):
+        x = np.array(x)
     if x.dtype in (np.float64, np.float32, np.float16):
-        x = np.transpose((x + 1) * 127.5, [1, 2, 0]).clip(0, 255).round().astype('uint8')
+        x = np.transpose(normalize_to_uint8(x), (1, 2, 0))
     elif x.dtype != np.uint8:
         raise ValueError('Unsupported array type, expecting float or uint8', x.dtype)
     if x.shape[2] == 1:
