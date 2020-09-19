@@ -1,5 +1,5 @@
-Tutorials
-=========
+Additional tutorials
+====================
 
 This section includes various tutorials for Objax.
 
