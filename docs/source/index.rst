@@ -90,6 +90,7 @@ Read more about this in :doc:`advanced/jit`.
    notebooks/Logistic_Regression
    notebooks/Custom_Networks
    examples
+   tutorials
 
 .. toctree::
    :maxdepth: 2
