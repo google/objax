@@ -25,6 +25,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+
 import sys
 
 import objax
@@ -91,13 +92,8 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
-# aterzis@: enable text wrapping in tables
-html_context = {
-    'css_files': [
-        '_static/theme_overrides.css',  # override wide tables in RTD theme
-    ],
-}
+html_css_files = ['theme_overrides.css']
+html_js_files = ['objax.js']
 
 # -- Options for nbsphinx -----------------------------------------------------
 
