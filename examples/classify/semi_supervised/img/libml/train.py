@@ -95,7 +95,7 @@ class TrainLoopFSL(objax.Module):
         start_epoch = ckpt.restore(self.vars())[0]
 
         train_iter = iter(train)
-        step_array = np.zeros(jax.device_count(), 'uint32')  # for multi-GPU
+        step_array = np.zeros(jax.local_device_count(), 'uint32')  # for multi-GPU
         with objax.jaxboard.SummaryWriter(os.path.join(logdir, 'tb')) as tensorboard:
             for epoch in range(start_epoch, train_kimg // report_kimg):
                 summary = objax.jaxboard.Summary()
