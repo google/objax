@@ -191,6 +191,8 @@ class Parallel(ModuleWrapper):
 
     def device_reshape(self, x: JaxArray) -> JaxArray:
         """Utility to reshape an input array in order to broadcast to multiple devices."""
+        assert x.shape[0]%self.ndevices == 0, f'Must be able to equally divide batch {x.shape} among ' \
+                                              f'{self.ndevices} devices, but does not go equally.'
         return x.reshape((self.ndevices, x.shape[0] // self.ndevices) + x.shape[1:])
 
     def __call__(self, *args):
