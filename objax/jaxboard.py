@@ -17,7 +17,6 @@ import os
 from time import time
 from typing import Union, Callable, Tuple, ByteString
 
-import jax
 import numpy as np
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
@@ -96,7 +95,7 @@ class Summary(dict):
 class SummaryWriter:
     """Writes entries to event files in the logdir to be consumed by Tensorboard."""
 
-    def __init__(self, logdir: str, queue_size: int = 5, write_interval: int = 5, only_first_host_writes: bool = True):
+    def __init__(self, logdir: str, queue_size: int = 5, write_interval: int = 5):
         """Creates SummaryWriter instance.
 
         Args:
@@ -104,28 +103,19 @@ class SummaryWriter:
             queue_size: size of the queue for pending events and summaries
                         before one of the 'add' calls forces a flush to disk.
             write_interval: how often, in seconds, to write the pending events and summaries to disk.
-            only_first_host_writes: if True then summaries are saved only by the first host in multi-host setup,
-                                    otherwise user has to manually ensure that summaries are saved by only one host.
         """
-        write_summary = (jax.host_id() == 0) or (not only_first_host_writes)
+        if not os.path.isdir(logdir):
+            os.makedirs(logdir, exist_ok=True)
 
-        if write_summary:
-            if not os.path.isdir(logdir):
-                os.makedirs(logdir, exist_ok=True)
-
-            self.writer = EventFileWriter(logdir, queue_size, write_interval)
-        else:
-            self.writer = None
+        self.writer = EventFileWriter(logdir, queue_size, write_interval)
 
     def write(self, summary: Summary, step: int):
         """Adds on event to the event file."""
-        if self.writer:
-            self.writer.add_event(event_pb2.Event(step=step, summary=summary(), wall_time=time()))
+        self.writer.add_event(event_pb2.Event(step=step, summary=summary(), wall_time=time()))
 
     def close(self):
         """Flushes the event file to disk and close the file."""
-        if self.writer:
-            self.writer.close()
+        self.writer.close()
 
     def __enter__(self):
         return self

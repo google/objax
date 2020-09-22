@@ -168,17 +168,19 @@ class Experiment:
                 start_time = time.time()
                 accuracy = self.run_eval()
                 elapsed_eval_time = time.time() - start_time
-            # save summary
-            summary = objax.jaxboard.Summary()
-            for k, v in monitors.items():
-                summary.scalar(f'train/{k}', v)
-            # # Uncomment following two lines to save summary with training images
-            # summary.image('input/train_img',
-            #               imagenet_data.normalize_image_for_view(batch['images'][0]))
-            summary.scalar('test/accuracy', accuracy * 100)
-            self.summary_writer.write(summary, step=cur_step)
-            # save checkpoint
-            checkpoint.save(self.all_vars, cur_step)
+            # In multi-host setup only first host saves summaries and checkpoints.
+            if jax.host_id() == 0:
+                # save summary
+                summary = objax.jaxboard.Summary()
+                for k, v in monitors.items():
+                    summary.scalar(f'train/{k}', v)
+                # # Uncomment following two lines to save summary with training images
+                # summary.image('input/train_img',
+                #               imagenet_data.normalize_image_for_view(batch['images'][0]))
+                summary.scalar('test/accuracy', accuracy * 100)
+                self.summary_writer.write(summary, step=cur_step)
+                # save checkpoint
+                checkpoint.save(self.all_vars, cur_step)
             # print info
             print('Step %d -- Epoch %.2f -- Loss %.2f  Accuracy %.2f'
                   % (cur_step, cur_step / steps_per_epoch,

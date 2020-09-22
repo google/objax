@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'map_to_device', 'positional_args_names',
-           'to_tuple']
+           'to_tuple', 'multi_host_barrier']
 
 import contextlib
 import inspect
