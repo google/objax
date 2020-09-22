@@ -24,7 +24,7 @@ def cutout(x, w):
     y0 = tf.cast(tf.round(offsets[0] * (tf.cast(s[0], tf.float32) - w)), tf.int32)
     x0 = tf.cast(tf.round(offsets[1] * (tf.cast(s[1], tf.float32) - w)), tf.int32)
     hr, wr = tf.range(s[0])[:, None, None], tf.range(s[1])[None, :, None]
-    mask = tf.cast((hr >= y0) & (hr < y0 + w) & (wr >= x0) & (wr < x0 + w), tf.float32)
+    mask = 1-tf.cast((hr >= y0) & (hr < y0 + w) & (wr >= x0) & (wr < x0 + w), tf.float32)
     return mask * x
 
 
