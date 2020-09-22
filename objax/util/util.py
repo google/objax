@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'map_to_device', 'positional_args_names',
-           'to_tuple', 'multi_host_barrier']
+__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'map_to_device', 'multi_host_barrier',
+           'positional_args_names', 'to_tuple']
 
 import contextlib
 import inspect
@@ -57,6 +57,11 @@ def ilog2(x: float):
 map_to_device: Callable[[List[jn.ndarray]], List[ShardedDeviceArray]] = jax.pmap(lambda x: x, axis_name='device')
 
 
+def multi_host_barrier():
+    """Barrier op for multi-host setup."""
+    jax.random.normal(jax.random.PRNGKey(0), ()).block_until_ready()
+
+
 def positional_args_names(f: Callable) -> List[str]:
     """Returns the ordered names of the positional arguments of a function."""
     return list(p.name for p in inspect.signature(f).parameters.values()
@@ -71,8 +76,3 @@ def to_tuple(v: Union[Tuple[Number, ...], Number, Iterable], n: int):
         return (v,) * n
     else:
         return tuple(v)
-
-
-def multi_host_barrier():
-    """Barrier op for multi-host setup."""
-    jax.random.normal(jax.random.PRNGKey(0), ()).block_until_ready()
