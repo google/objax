@@ -74,6 +74,12 @@ class ModuleList(Module, list):
                 vc.update(v.vars(scope=f'{scope}[{p}]'))
         return vc
 
+    def __getitem__(self, key: Union[int, slice]):
+        value = list.__getitem__(self, key)
+        if isinstance(key, slice):
+            return ModuleList(value)
+        return value
+
 
 class ModuleWrapper(Module):
     """Module whose sole purpose is to store a collectable VarCollection. This class is exclusively

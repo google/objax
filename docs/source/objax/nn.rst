@@ -122,12 +122,18 @@ objax.nn
         ml = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu,
                                   objax.nn.Linear(3, 4)])
         x = objax.random.normal((10, 2))
-        y = ml(x)  # Runs all the operations (Linear -> ReLU -> Linear).
+        y = ml(x)       # Runs all the operations (Linear -> ReLU -> Linear).
         print(y.shape)  # (10, 4)
 
         # objax.nn.Sequential is really a list.
-        ml.append(objax.nn.Linear(4, 5))
-        print(ml(x).shape)  # (10, 5)
+        ml.insert(2, objax.nn.BatchNorm0D(3))  # Add a batch norm layer after ReLU
+        y = ml(x, training=False)  # The batch norm expects a training argument.
+                                   # Sequential automatically pass arguments to the modules using them.
+
+        # You can run a subset of operations since it is a list.
+        y1 = ml[:2](x)                    # Run first two layers (Linear -> ReLU)
+        y2 = ml[2:](y1, training=False)   # Run all layers starting from third (BatchNorm0D -> Linear)
+        print(ml(x, training=False) - y2) # [[0. 0. ...]] - results are the same.
 
         print(ml.vars())
         # (Sequential)[0](Linear).b        3 (3,)
