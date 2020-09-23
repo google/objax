@@ -122,7 +122,7 @@ objax.nn
         ml = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu,
                                   objax.nn.Linear(3, 4)])
         x = objax.random.normal((10, 2))
-        y = ml(x)       # Runs all the operations (Linear -> ReLU -> BatchNorm0D -> Linear).
+        y = ml(x)       # Runs all the operations (Linear -> ReLU -> Linear).
         print(y.shape)  # (10, 4)
 
         # objax.nn.Sequential is really a list.
