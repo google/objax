@@ -341,6 +341,12 @@ class Sequential(ModuleList):
                 args = (args,)
         return self[-1](*args, **util.local_kwargs(kwargs, self[-1]))
 
+    def __getitem__(self, key: Union[int, slice]):
+        value = list.__getitem__(self, key)
+        if isinstance(key, slice):
+            return Sequential(value)
+        return value
+
 
 class SyncedBatchNorm(BatchNorm):
     """Synchronized batch normalization which aggregates batch statistics across all devices (GPUs/TPUs)."""

@@ -75,9 +75,9 @@ class ModuleList(Module, list):
         return vc
 
     def __getitem__(self, key: Union[int, slice]):
-        value = super().__getitem__(key)
+        value = list.__getitem__(self, key)
         if isinstance(key, slice):
-            return self.__class__(value)
+            return ModuleList(value)
         return value
 
 
