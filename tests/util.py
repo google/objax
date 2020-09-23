@@ -14,6 +14,7 @@
 
 """Unittests for objax.util."""
 
+import re
 import unittest
 
 import objax
@@ -21,7 +22,6 @@ import objax
 
 class TestUtil(unittest.TestCase):
     def test_easy_dict(self):
-        """Test EasyDict behavior."""
         d = objax.util.EasyDict(a=5, b=6)
         self.assertEqual(d, dict(a=5, b=6))
         self.assertEqual(d, objax.util.EasyDict({'a': 5, 'b': 6}))
@@ -30,6 +30,34 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(list(d.values()), [5, 6])
         self.assertEqual(list(d.keys()), ['a', 'b'])
         self.assertEqual([d.a, d.b], [5, 6])
+
+    def test_renamer(self):
+        r = objax.util.Renamer({'aa': 'x', 'bb': 'y'})
+        self.assertEqual(r('baab'), 'bxb')
+        self.assertEqual(r('baaab'), 'bxab')
+        self.assertEqual(r('baaaab'), 'bxxb')
+        self.assertEqual(r('abba'), 'aya')
+        self.assertEqual(r('acca'), 'acca')
+
+        def my_rename(x):
+            return x.replace('aa', 'x').replace('bb', 'y')
+
+        r = objax.util.Renamer(my_rename)
+        self.assertEqual(r('baab'), 'bxb')
+        self.assertEqual(r('baaab'), 'bxab')
+        self.assertEqual(r('baaaab'), 'bxxb')
+        self.assertEqual(r('abba'), 'aya')
+        self.assertEqual(r('acca'), 'acca')
+
+        r = objax.util.Renamer([(re.compile('a{2}'), 'x'), (re.compile('bb'), 'y')])
+        self.assertEqual(r('baab'), 'bxb')
+        self.assertEqual(r('baaab'), 'bxab')
+        self.assertEqual(r('baaaab'), 'bxxb')
+        self.assertEqual(r('abba'), 'aya')
+        self.assertEqual(r('acca'), 'acca')
+
+        r = objax.util.Renamer([(re.compile('a{2}'), 'x'), (re.compile('xa'), 'y')])
+        self.assertEqual(r('baaab'), 'byb')
 
     def test_args_indexes(self):
         """Test args_indexes"""

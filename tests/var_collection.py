@@ -14,6 +14,7 @@
 
 """Unittests for VarCollection."""
 
+import re
 import unittest
 
 import jax.numpy as jn
@@ -102,6 +103,44 @@ class TestVarCollection(unittest.TestCase):
         v2 = m2.vars()
         for k, v in m1.vars().items():
             self.assertEqual(v.value.tolist(), v2[k].value.tolist(), msg=f'Variable {k} value is differing.')
+
+    def test_rename(self):
+        vc = objax.VarCollection({
+            'baab': objax.TrainVar(jn.zeros(()) + 1),
+            'baaab': objax.TrainVar(jn.zeros(()) + 2),
+            'baaaab': objax.TrainVar(jn.zeros(()) + 3),
+            'abba': objax.TrainVar(jn.zeros(()) + 4),
+            'acca': objax.TrainVar(jn.zeros(()) + 5)})
+        vcr = vc.rename(objax.util.Renamer({'aa': 'x', 'bb': 'y'}))
+        self.assertEqual(vc['baab'], vcr['bxb'])
+        self.assertEqual(vc['baaab'], vcr['bxab'])
+        self.assertEqual(vc['baaaab'], vcr['bxxb'])
+        self.assertEqual(vc['abba'], vcr['aya'])
+        self.assertEqual(vc['acca'], vcr['acca'])
+
+        def my_rename(x):
+            return x.replace('aa', 'x').replace('bb', 'y')
+
+        vcr = vc.rename(objax.util.Renamer(my_rename))
+        self.assertEqual(vc['baab'], vcr['bxb'])
+        self.assertEqual(vc['baaab'], vcr['bxab'])
+        self.assertEqual(vc['baaaab'], vcr['bxxb'])
+        self.assertEqual(vc['abba'], vcr['aya'])
+        self.assertEqual(vc['acca'], vcr['acca'])
+
+        vcr = vc.rename(objax.util.Renamer([(re.compile('a{2}'), 'x'), (re.compile('bb'), 'y')]))
+        self.assertEqual(vc['baab'], vcr['bxb'])
+        self.assertEqual(vc['baaab'], vcr['bxab'])
+        self.assertEqual(vc['baaaab'], vcr['bxxb'])
+        self.assertEqual(vc['abba'], vcr['aya'])
+        self.assertEqual(vc['acca'], vcr['acca'])
+
+        vcr = vc.rename(objax.util.Renamer([(re.compile('a{2}'), 'x'), (re.compile('xa'), 'y')]))
+        self.assertEqual(vc['baab'], vcr['bxb'])
+        self.assertEqual(vc['baaab'], vcr['byb'])
+        self.assertEqual(vc['baaaab'], vcr['bxxb'])
+        self.assertEqual(vc['abba'], vcr['abba'])
+        self.assertEqual(vc['acca'], vcr['acca'])
 
 
 if __name__ == '__main__':

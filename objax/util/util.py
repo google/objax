@@ -20,7 +20,7 @@ import functools
 import inspect
 import re
 from numbers import Number
-from typing import Callable, List, Union, Tuple, Iterable, Dict, Pattern, Optional
+from typing import Callable, List, Union, Tuple, Iterable, Dict, Pattern, Optional, Sequence
 
 import jax
 import jax.numpy as jn
@@ -37,9 +37,17 @@ class EasyDict(dict):
 
 
 class Renamer:
+    """Helper class for renaming string contents."""
+
     def __init__(self,
-                 rules: Union[Dict[str, str], Tuple[Pattern[str], str], Callable[[str], str]],
+                 rules: Union[Dict[str, str], Sequence[Tuple[Pattern[str], str]], Callable[[str], str]],
                  chain: Optional['Renamer'] = None):
+        """Create a renamer object.
+
+        Args:
+            rules: the replacement mapping.
+            chain: optionally, another renamer to call after this one completes.
+        """
         self.chain = chain
         if callable(rules):
             self.subfn = rules
@@ -47,9 +55,15 @@ class Renamer:
             regex = re.compile('(%s)' % '|'.join(map(re.escape, rules.keys())))
             self.subfn = functools.partial(regex.sub, lambda m: rules[m.string[m.start():m.end()]])
         else:
-            self.subfn = functools.partial(rules[0].sub, rules[1])
+            def sequence_rename(x):
+                for regex, repl in rules:
+                    x = regex.sub(repl, x)
+                return x
 
-    def __call__(self, s: str):
+            self.subfn = sequence_rename
+
+    def __call__(self, s: str) -> str:
+        """Rename input string `s` using the rules provided to the constructor."""
         news = self.subfn(s)
         return self.chain(news) if self.chain else news
 
