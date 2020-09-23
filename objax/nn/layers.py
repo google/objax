@@ -17,8 +17,7 @@ __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
            'MovingAverage', 'ExponentialMovingAverage', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
-import inspect
-from typing import Callable, Iterable, Tuple, Optional, Union
+from typing import Callable, Iterable, Tuple, Optional, Union, List
 
 from jax import numpy as jn, random as jr, lax
 
@@ -332,19 +331,15 @@ class ExponentialMovingAverage(Module):
 class Sequential(ModuleList):
     """Executes modules in the order they were passed to the constructor."""
 
-    def __call__(self, x: JaxArray, **kwargs) -> JaxArray:
-        """Execute the sequence of operation contained on ``x`` and ``**kwargs`` and return result."""
-        for f in self:
-            s = inspect.signature(f).parameters
-            if s:
-                if next(reversed(s.values())).kind == inspect.Parameter.VAR_KEYWORD:
-                    local_kwargs = kwargs
-                else:
-                    local_kwargs = {k: v for k, v in kwargs.items() if k in s}
-            else:
-                local_kwargs = {}
-            x = f(x, **local_kwargs)
-        return x
+    def __call__(self, *args, **kwargs) -> Union[JaxArray, List[JaxArray]]:
+        """Execute the sequence of operations contained on ``*args`` and ``**kwargs`` and return result."""
+        if not self:
+            return args if len(args) > 1 else args[0]
+        for f in self[:-1]:
+            args = f(*args, **util.local_kwargs(kwargs, f))
+            if not isinstance(args, tuple):
+                args = (args,)
+        return self[-1](*args, **util.local_kwargs(kwargs, self[-1]))
 
 
 class SyncedBatchNorm(BatchNorm):

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'map_to_device', 'multi_host_barrier',
-           'positional_args_names', 'to_tuple']
+__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
+           'multi_host_barrier', 'positional_args_names', 'to_tuple']
 
 import contextlib
 import inspect
@@ -28,6 +28,7 @@ from jax.interpreters.pxla import ShardedDeviceArray
 
 class EasyDict(dict):
     """Custom dictionary that allows to access dict values as attributes."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
@@ -52,6 +53,17 @@ def dummy_context_mgr():
 def ilog2(x: float):
     """Integer log2."""
     return int(np.ceil(np.log2(x)))
+
+
+def local_kwargs(kwargs: dict, f: Callable) -> dict:
+    """Return the kwargs from dict that are inputs to function f."""
+    s = inspect.signature(f)
+    p = s.parameters
+    if next(reversed(p.values())).kind == inspect.Parameter.VAR_KEYWORD:
+        return kwargs
+    if len(kwargs) < len(p):
+        return {k: v for k, v in kwargs.items() if k in p}
+    return {k: kwargs[k] for k in p.keys() if k in kwargs}
 
 
 map_to_device: Callable[[List[jn.ndarray]], List[ShardedDeviceArray]] = jax.pmap(lambda x: x, axis_name='device')
