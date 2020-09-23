@@ -13,12 +13,14 @@
 # limitations under the License.
 
 __all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'map_to_device', 'positional_args_names',
-           'to_tuple']
+           'Renamer', 'to_tuple']
 
 import contextlib
+import functools
 import inspect
+import re
 from numbers import Number
-from typing import Callable, List, Union, Tuple, Iterable
+from typing import Callable, List, Union, Tuple, Iterable, Dict, Pattern, Optional
 
 import jax
 import jax.numpy as jn
@@ -28,9 +30,28 @@ from jax.interpreters.pxla import ShardedDeviceArray
 
 class EasyDict(dict):
     """Custom dictionary that allows to access dict values as attributes."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+class Renamer:
+    def __init__(self,
+                 rules: Union[Dict[str, str], Tuple[Pattern[str], str], Callable[[str], str]],
+                 chain: Optional['Renamer'] = None):
+        self.chain = chain
+        if callable(rules):
+            self.subfn = rules
+        elif isinstance(rules, dict):
+            regex = re.compile('(%s)' % '|'.join(map(re.escape, rules.keys())))
+            self.subfn = functools.partial(regex.sub, lambda m: rules[m.string[m.start():m.end()]])
+        else:
+            self.subfn = functools.partial(rules[0].sub, rules[1])
+
+    def __call__(self, s: str):
+        news = self.subfn(s)
+        return self.chain(news) if self.chain else news
 
 
 def args_indexes(f: Callable, args: Iterable[str]) -> Iterable[int]:
