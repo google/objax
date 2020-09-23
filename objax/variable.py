@@ -247,6 +247,7 @@ class VarCollection(Dict[str, BaseVar]):
         return '\n'.join(text)
 
     def rename(self, renamer: Renamer):
+        """Rename the entries in the VarCollection."""
         return VarCollection({renamer(k): v for k, v in self.items()})
 
     @contextmanager
