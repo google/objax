@@ -19,7 +19,7 @@ Note that some of the more complicated classes from module.py are tested in thei
 - objax.Parallel is tested in tests/parallel.py
 - objax.Vectorize is tested in tests/vectorize.py
 """
-
+import functools
 import inspect
 import unittest
 from typing import Tuple
@@ -86,6 +86,9 @@ class TestModule(unittest.TestCase):
                          [v.tolist() for v in my_func(x, x + 1)])
         self.assertEqual([v.tolist() for v in module_func(x, x + 1, named=2)],
                          [v.tolist() for v in my_func(x, x + 1, named=2)])
+        # partial doesn't retain names.
+        module_func = objax.Function(functools.partial(my_func, named=2), m.vars())
+        self.assertEqual(module_func.vars(), m.vars())
 
     def test_module_function_decorator(self):
         """Unit test for objax.Function.with_args"""

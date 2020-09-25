@@ -90,7 +90,10 @@ class Function(Module):
             f: the function or the module to represent.
             vc: the VarCollection of variables used by the function.
         """
-        self.vc = VarCollection((f'{{{f.__name__}}}.{k}', v) for k, v in vc.items())
+        if hasattr(f, '__name__'):
+            self.vc = VarCollection((f'{{{f.__name__}}}.{k}', v) for k, v in vc.items())
+        else:
+            self.vc = VarCollection(vc)
         self.__wrapped__ = f
 
     def __call__(self, *args, **kwargs):
