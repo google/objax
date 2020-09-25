@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Jit', 'Module', 'ModuleList', 'ModuleWrapper', 'Parallel', 'Vectorize']
+__all__ = ['ForceArgs', 'Jit', 'Module', 'ModuleList', 'ModuleWrapper', 'Parallel', 'Vectorize']
 
 from types import MethodType
 from typing import Optional, List, Union, Callable, Tuple
@@ -22,7 +22,7 @@ import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
-from objax.util import positional_args_names
+from objax.util import merge_args_kwargs, positional_args_names
 from objax.variable import BaseState, BaseVar, RandomState, VarCollection
 
 
@@ -51,6 +51,54 @@ class Module:
     def __call__(self, *args, **kwargs):
         """Optional module __call__ method, typically a forward pass computation for standard primitives."""
         raise NotImplementedError
+
+
+class ForceArgs(Module):
+    """Forces override of arguments of given module."""
+
+    @staticmethod
+    def undo(module: Module):
+        """Undo ForceArgs on each submodule of the module.
+
+        Args:
+            module: module for which to undo ForceArgs.
+        """
+        if isinstance(module, ForceArgs):
+            raise ValueError('ForceArgs.undo can not be called on ForceArgs, call it on parent module instead.')
+        if isinstance(module, ModuleList):
+            for idx, v in enumerate(module):
+                if isinstance(v, Module):
+                    if isinstance(v, ForceArgs):
+                        v = v._wrapped
+                        module[idx] = v
+                    ForceArgs.undo(v)
+        else:
+            for k, v in module.__dict__.items():
+                if isinstance(v, Module):
+                    if isinstance(v, ForceArgs):
+                        v = v._wrapped
+                        module.__dict__[k] = v
+                    ForceArgs.undo(v)
+
+    def __init__(self, module: Module, **kwargs):
+        """Initializes ForceArgs.
+
+        Args:
+            module: base module, which argument will be overridden.
+            kwargs: values of keyword arguments which will be forced to use.
+        """
+        if isinstance(module, ForceArgs):
+            raise ValueError('Can not force arguments on ForceArgs module.')
+        self._wrapped = module
+        self.forced_kwargs = kwargs
+
+    def vars(self, scope: str = '') -> VarCollection:
+        return self._wrapped.vars(scope=scope)
+
+    def __call__(self, *args, **kwargs):
+        kwargs.update(self.forced_kwargs)
+        args, kwargs = merge_args_kwargs(args, kwargs, self._wrapped)
+        return self._wrapped(*args, **kwargs)
 
 
 class ModuleList(Module, list):

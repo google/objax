@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'positional_args_names', 'to_tuple']
+           'merge_args_kwargs', 'multi_host_barrier', 'positional_args_names', 'to_tuple']
 
 import contextlib
 import inspect
@@ -67,6 +67,32 @@ def local_kwargs(kwargs: dict, f: Callable) -> dict:
 
 
 map_to_device: Callable[[List[jn.ndarray]], List[ShardedDeviceArray]] = jax.pmap(lambda x: x, axis_name='device')
+
+
+def merge_args_kwargs(args: Iterable, kwargs: dict, f: Callable) -> Tuple[List, dict]:
+    """Properly merge positional and keyword arguments according to signature of the function.
+
+    If some of the keyword arguments is not in the signature of the function, they will be removed.
+    If some argument is both in args and kwargs, then value from kwargs will be used.
+
+    Args:
+        args: positional arguments.
+        kwargs: keyword arguments.
+        f: callable, for which arguments should be fixed.
+
+    Return:
+        args: corrected list of positional arguments.
+        kwargs: corrected dictionary of keyword arguments.
+    """
+    args = list(args)
+    kwargs = local_kwargs(kwargs, f)
+    p = inspect.signature(f).parameters
+    for idx, (k, v) in enumerate(p.items()):
+        if (idx >= len(args)) or (v.kind == inspect.Parameter.VAR_POSITIONAL):
+            break
+        if k in kwargs:
+            args[idx] = kwargs.pop(k)
+    return args, kwargs
 
 
 def multi_host_barrier():

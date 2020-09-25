@@ -23,8 +23,8 @@ Note that some of the more complicated classes from module.py are tested in thei
 import unittest
 
 from jax import numpy as jn
-
 import objax
+import numpy as np
 
 
 class SampleModule(objax.Module):
@@ -38,6 +38,38 @@ class SampleModule(objax.Module):
 
     def __call__(self, x):
         return jn.dot(x, self.v1.value)
+
+
+class OpWithArg(objax.Module):
+
+    def __call__(self, x, some_arg):
+        return x + some_arg
+
+
+class ModelBlockWithArg(objax.Module):
+
+    def __init__(self):
+        self.seq = objax.nn.Sequential([OpWithArg(), OpWithArg()])
+        self.op1 = OpWithArg()
+
+    def __call__(self, x, some_arg):
+        # without forced args equivalent to (x + some_arg*3)
+        y = self.seq(x, some_arg=some_arg)
+        return self.op1(y, some_arg)
+
+
+class ModelWithArg(objax.Module):
+
+    def __init__(self):
+        self.block1 = ModelBlockWithArg()
+        self.block2 = ModelBlockWithArg()
+        self.op1 = OpWithArg()
+
+    def __call__(self, x, some_arg):
+        # without forces args equivalent to (x + some_arg*7)
+        y1 = self.block1(x, some_arg=some_arg)
+        y2 = self.block2(y1, some_arg)
+        return self.op1(y2, some_arg=some_arg)
 
 
 class TestModule(unittest.TestCase):
@@ -74,6 +106,24 @@ class TestModule(unittest.TestCase):
             new_key = f'({module_wrapper.__class__.__name__}){k}'
             self.assertIn(new_key, module_wrapper_vars)
             self.assertIs(module_wrapper_vars[new_key], v)
+
+    def test_force_args(self):
+        x = jn.array([1., 2.])
+        model = ModelWithArg()
+        np.testing.assert_almost_equal(model(x, some_arg=0.0), [1., 2.])
+        np.testing.assert_almost_equal(model(x, some_arg=1.0), [8., 9.])
+        # set forced args
+        model.block1.op1 = objax.ForceArgs(model.block1.op1, some_arg=-1.0)
+        np.testing.assert_almost_equal(model(x, some_arg=0.0), [0., 1.])
+        np.testing.assert_almost_equal(model(x, some_arg=1.0), [6., 7.])
+        # set forced args in a list
+        model.block1.seq[0] = objax.ForceArgs(model.block1.seq[0], some_arg=-1.0)
+        np.testing.assert_almost_equal(model(x, some_arg=0.0), [-1., 0.])
+        np.testing.assert_almost_equal(model(x, some_arg=1.0), [4., 5.])
+        # undo force args
+        objax.ForceArgs.undo(model)
+        np.testing.assert_almost_equal(model(x, some_arg=0.0), [1., 2.])
+        np.testing.assert_almost_equal(model(x, some_arg=1.0), [8., 9.])
 
 
 if __name__ == '__main__':
