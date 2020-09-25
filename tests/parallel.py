@@ -20,21 +20,10 @@ import jax.numpy as jn
 import numpy as np
 
 import objax
-from objax.typing import JaxArray
 
 # Split CPU cores into 8 devices for tests of objax.Parallel
-
 os.environ['XLA_FLAGS'] = ' '.join(os.environ.get('XLA_FLAGS', '').split(' ')
                                    + ['--xla_force_host_platform_device_count=8'])
-
-
-class LinearArgs(objax.nn.Linear):
-    def __call__(self, x: JaxArray, some_args: float) -> JaxArray:
-        """Returns the results of applying the linear transformation to input x."""
-        y = jn.dot(x, self.w.value) * some_args
-        if self.b:
-            y += self.b.value
-        return y
 
 
 class TestParallel(unittest.TestCase):
