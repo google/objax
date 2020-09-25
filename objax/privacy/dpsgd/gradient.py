@@ -53,7 +53,7 @@ class PrivateGradValues(Module):
         if not all(v == 0 for v in batch_axis):
             raise ValueError('batch_axis needs to be an all zero tuple for PrivateGradValues.')
 
-        gv = GradValues(f, vc)
+        self.__wrapped__ = gv = GradValues(f, vc)
 
         def clipped_grad(*args):
             grads, values = gv(*args)
