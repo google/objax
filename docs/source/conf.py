@@ -78,7 +78,7 @@ autodoc_default_options = {
     'undoc-members': True,
     'exclude-members': '__weakref__,_abc_impl'
 }
-autodoc_typehints = 'description'
+autodoc_typehints = 'none'
 
 # -- Options for HTML output -------------------------------------------------
 
