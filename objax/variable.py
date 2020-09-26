@@ -253,7 +253,7 @@ class VarCollection(Dict[str, BaseVar]):
         device.
         Important: replicating also updates the random state in order to have a new one per device.
         """
-        ndevices = jax.device_count()
+        ndevices = jax.local_device_count()
         replicated, saved_states = [], []
         for v in self:
             if isinstance(v, RandomState):

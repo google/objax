@@ -74,6 +74,12 @@ class ModuleList(Module, list):
                 vc.update(v.vars(scope=f'{scope}[{p}]'))
         return vc
 
+    def __getitem__(self, key: Union[int, slice]):
+        value = list.__getitem__(self, key)
+        if isinstance(key, slice):
+            return ModuleList(value)
+        return value
+
 
 class ModuleWrapper(Module):
     """Module whose sole purpose is to store a collectable VarCollection. This class is exclusively
@@ -176,7 +182,7 @@ class Parallel(ModuleWrapper):
         super().__init__(vc)
         static_argnums = sorted(static_argnums or ())
         self.reduce = reduce
-        self.ndevices = jax.device_count()
+        self.ndevices = jax.local_device_count()
         self.static_argnums = frozenset(static_argnums)
 
         def pmap(tensor_list: List[ShardedDeviceArray], random_list: List[ShardedDeviceArray], *args):
