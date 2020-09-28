@@ -20,6 +20,7 @@ Note that some of the more complicated classes from module.py are tested in thei
 - objax.Vectorize is tested in tests/vectorize.py
 """
 
+import inspect
 import unittest
 
 from jax import numpy as jn
@@ -112,15 +113,29 @@ class TestModule(unittest.TestCase):
         model = ModelWithArg()
         np.testing.assert_almost_equal(model(x, some_arg=0.0), [1., 2.])
         np.testing.assert_almost_equal(model(x, some_arg=1.0), [8., 9.])
-        # set forced args
+        # Ensure that can not use invalid argument in original module
+        with self.assertRaises(TypeError):
+            model(x, wrong_arg_name=0.0)
+        with self.assertRaises(TypeError):
+            model.block1.op1(x, wrong_arg_name=0.0)
+        # Set forced args
+        original_signature = inspect.signature(model.block1.op1)
         model.block1.op1 = objax.ForceArgs(model.block1.op1, some_arg=-1.0)
+        self.assertEqual(original_signature, inspect.signature(model.block1.op1))
         np.testing.assert_almost_equal(model(x, some_arg=0.0), [0., 1.])
         np.testing.assert_almost_equal(model(x, some_arg=1.0), [6., 7.])
-        # set forced args in a list
+        # ForceArgs does not allow to pass invalid args
+        with self.assertRaises(TypeError):
+            model.block1.op1(x, wrong_arg_name=1.0)
+        # Set forced args in a list
         model.block1.seq[0] = objax.ForceArgs(model.block1.seq[0], some_arg=-1.0)
         np.testing.assert_almost_equal(model(x, some_arg=0.0), [-1., 0.])
         np.testing.assert_almost_equal(model(x, some_arg=1.0), [4., 5.])
-        # undo force args
+        # Set invalid arg in forced args
+        model.block2.op1 = objax.ForceArgs(model.block2.op1, wrong_arg_name=1.0)
+        with self.assertRaises(TypeError):
+            model(x, some_arg=0.0)
+        # Undo force args
         objax.ForceArgs.undo(model)
         np.testing.assert_almost_equal(model(x, some_arg=0.0), [1., 2.])
         np.testing.assert_almost_equal(model(x, some_arg=1.0), [8., 9.])

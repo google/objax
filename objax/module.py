@@ -22,7 +22,7 @@ import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
-from objax.util import merge_args_kwargs, positional_args_names
+from objax.util import override_args_kwargs, positional_args_names
 from objax.variable import BaseState, BaseVar, RandomState, VarCollection
 
 
@@ -69,36 +69,35 @@ class ForceArgs(Module):
             for idx, v in enumerate(module):
                 if isinstance(v, Module):
                     if isinstance(v, ForceArgs):
-                        v = v._wrapped
+                        v = v.__wrapped__
                         module[idx] = v
                     ForceArgs.undo(v)
         else:
             for k, v in module.__dict__.items():
                 if isinstance(v, Module):
                     if isinstance(v, ForceArgs):
-                        v = v._wrapped
-                        module.__dict__[k] = v
+                        v = v.__wrapped__
+                        setattr(module, k, v)
                     ForceArgs.undo(v)
 
     def __init__(self, module: Module, **kwargs):
         """Initializes ForceArgs.
 
         Args:
-            module: base module, which argument will be overridden.
+            module: module which argument will be overridden.
             kwargs: values of keyword arguments which will be forced to use.
         """
         if isinstance(module, ForceArgs):
             raise ValueError('Can not force arguments on ForceArgs module.')
-        self._wrapped = module
+        self.__wrapped__ = module
         self.forced_kwargs = kwargs
 
     def vars(self, scope: str = '') -> VarCollection:
-        return self._wrapped.vars(scope=scope)
+        return self.__wrapped__.vars(scope=scope)
 
     def __call__(self, *args, **kwargs):
-        kwargs.update(self.forced_kwargs)
-        args, kwargs = merge_args_kwargs(args, kwargs, self._wrapped)
-        return self._wrapped(*args, **kwargs)
+        args, kwargs = override_args_kwargs(self.__wrapped__, args, kwargs, self.forced_kwargs)
+        return self.__wrapped__(*args, **kwargs)
 
 
 class ModuleList(Module, list):
