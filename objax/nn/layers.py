@@ -330,7 +330,7 @@ class ExponentialMovingAverage(Module):
 class RNN(Module):
     """ Recurrent Neural Network (RNN) block."""
 
-        def __init__(self,
+    def __init__(self,
                  nstate: int,
                  nin: int,
                  nout: int,
