@@ -16,7 +16,31 @@
 
 import unittest
 
+import jax.numpy as jn
+from jax.core import ConcretizationTypeError
+
 import objax
+from objax.typing import JaxArray
+
+
+class LinearArgs(objax.nn.Linear):
+    def __call__(self, x: JaxArray, some_args: float) -> JaxArray:
+        """Returns the results of applying the linear transformation to input x."""
+        y = jn.dot(x, self.w.value) * some_args
+        if self.b:
+            y += self.b.value
+        return y
+
+
+class LinearTrain(objax.nn.Linear):
+    def __call__(self, x: JaxArray, training: bool) -> JaxArray:
+        """Returns the results of applying the linear transformation to input x."""
+        y = jn.dot(x, self.w.value)
+        if training:
+            y = -y
+        if self.b:
+            y += self.b.value
+        return y
 
 
 class TestJit(unittest.TestCase):
@@ -43,6 +67,18 @@ class TestJit(unittest.TestCase):
         y3 = kj(x)
         self.assertAlmostEqual(((y1 - y3) ** 2).sum(), 0)
         self.assertNotEqual(((y1 - y2) ** 2).sum(), 0)
+
+    def test_jit_kwargs(self):
+        x = objax.random.normal((64, 3))
+        kj = objax.Jit(LinearArgs(3, 3))
+        y1 = kj(x, 1)
+        y2 = kj(x, some_args=1)
+        y3 = kj(x, some_args=2)
+        self.assertEqual(y1.tolist(), y2.tolist())
+        self.assertNotEqual(y1.tolist(), y3.tolist())
+        kj = objax.Jit(LinearTrain(3, 3))
+        with self.assertRaises(ConcretizationTypeError):
+            kj(x, training=True)
 
 
 if __name__ == '__main__':
