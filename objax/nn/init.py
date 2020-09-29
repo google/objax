@@ -157,3 +157,19 @@ def xavier_truncated_normal(shape: Tuple[int, ...], lower: float = -2, upper: fl
     truncated_std = scipy.stats.truncnorm.std(a=lower, b=upper, loc=0., scale=1)
     stddev = gain * xavier_normal_gain(shape) / truncated_std
     return random.truncated_normal(shape, stddev=stddev, lower=lower, upper=upper)
+
+
+def idetity_initializer(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
+    """Returns the identity matrix. This initializer was proposed in
+    `A Simple Way to Initialize Recurrent Networks of Rectified Linear Units
+    <https://arxiv.org/abs/1504.00941>`_.
+
+    Args:
+        shape: Shape of the tensor. It should have exactly rank 2.
+        gain: optional scaling factor.
+
+    Returns:
+        Tensor initialized to the identity matrix.
+    """
+    eye = np.eye(shape[-2], shape[-1])
+    return gain * eye
