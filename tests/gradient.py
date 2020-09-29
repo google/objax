@@ -13,13 +13,16 @@
 # limitations under the License.
 """Unittests for Grad, GradValues and PrivateGradValues."""
 
+import inspect
 import unittest
+from typing import Tuple, Dict, List
 
 import jax.numpy as jn
 import numpy as np
 from scipy.stats.distributions import chi2
 
 import objax
+from objax.typing import JaxArray
 from objax.zoo.dnnet import DNNet
 
 
@@ -152,6 +155,16 @@ class TestGrad(unittest.TestCase):
         b.assign(-b.value)
         g_new = grad(data, labels)
         self.assertNotEqual(g_old[0][0], g_new[0][0])
+
+    def test_grad_signature(self):
+        def f(x: JaxArray, y) -> Tuple[JaxArray, Dict[str, JaxArray]]:
+            return (x + y).mean(), {'x': x, 'y': y}
+
+        def df(x: JaxArray, y) -> List[JaxArray]:
+            pass  # Signature of the differential of f
+
+        g = objax.Grad(f, objax.VarCollection())
+        self.assertEqual(inspect.signature(g), inspect.signature(df))
 
 
 class TestGradValues(unittest.TestCase):
@@ -291,6 +304,16 @@ class TestGradValues(unittest.TestCase):
         b.assign(-b.value)
         g_new, v_new = gv(data, labels)
         self.assertNotEqual(g_old[0][0], g_new[0][0])
+
+    def test_gradvalues_signature(self):
+        def f(x: JaxArray, y) -> Tuple[JaxArray, Dict[str, JaxArray]]:
+            return (x + y).mean(), {'x': x, 'y': y}
+
+        def df(x: JaxArray, y) -> Tuple[List[JaxArray], Tuple[JaxArray, Dict[str, JaxArray]]]:
+            pass  # Signature of the (differential of f, f)
+
+        g = objax.GradValues(f, objax.VarCollection())
+        self.assertEqual(inspect.signature(g), inspect.signature(df))
 
 
 class TestPrivateGradValues(unittest.TestCase):
