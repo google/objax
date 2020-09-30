@@ -27,55 +27,51 @@ class TestConv(unittest.TestCase):
         Pass an input through a three-by-three convolution filter and
         test the shape and contents of the output.
         """
-
-        # Channels/Colors, #filters, filter_size (square)
-        conv_filter = objax.nn.Conv2D(1, 1, 3, padding=objax.ConvPadding.VALID)
-        weights = objax.TrainVar(jn.array([[[[1., 2., 1.], [1., 2., 1.], [1., 1., 1.]]]]).transpose((2, 3, 1, 0)))
-        conv_filter.w = weights
-        image = jn.array([[[[2., 1., 3., 4.],
-                            [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
-        # NCHW: Batch, Channels/Colors, Height, Width
-        features = conv_filter(image)
-        expected_features = jn.array([[[[61., 72.], [106., 117.]]]])
-        self.assertEqual(features.shape, (1, 1, 2, 2))
-        self.assertTrue(jn.array_equal(features, expected_features))
+        w_init = lambda s: jn.array([[[[1., 2., 1.], [1., 2., 1.], [1., 1., 1.]]]]).transpose((2, 3, 1, 0))
+        conv = objax.nn.Conv2D(1, 1, 3, padding=objax.ConvPadding.VALID, w_init=w_init)
+        x = jn.array([[[[2., 1., 3., 4.], [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
+        y = jn.array([[[[61., 72.], [106., 117.]]]])
+        self.assertEqual(conv(x).tolist(), y.tolist())
 
     def test_on_conv2d_two_by_two(self):
         """
         Pass an input through a two-by-two convolution filter and
         test the shape and contents of the output.
         """
-
-        # Channels/Colors, #filters, filter_size (square)
-        conv_filter = objax.nn.Conv2D(1, 1, 2, padding=objax.ConvPadding.VALID)
-        weights = objax.TrainVar(jn.array([[[[1., 2.], [3., 4.]]]]).transpose((2, 3, 1, 0)))
-        conv_filter.w = weights
-        image = jn.array([[[[2., 1., 3., 4.],
-                            [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
-        # NCHW: Batch, Channels/Colors, Height, Width
-        features = conv_filter(image)
-        expected_features = jn.array([[[[43., 53., 64.], [84., 94., 104.], [124., 134., 144.]]]])
-        self.assertEqual(features.shape, (1, 1, 3, 3))
-        self.assertTrue(jn.array_equal(features, expected_features))
+        w_init = lambda s: jn.array([[[[1., 2.], [3., 4.]]]]).transpose((2, 3, 1, 0))
+        conv = objax.nn.Conv2D(1, 1, 2, padding=objax.ConvPadding.VALID, w_init=w_init)
+        x = jn.array([[[[2., 1., 3., 4.], [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
+        y = jn.array([[[[43., 53., 64.], [84., 94., 104.], [124., 134., 144.]]]])
+        self.assertEqual(conv(x).tolist(), y.tolist())
 
     def test_on_conv2d_padding(self):
         """
         Pass an input through a two-by-two convolution filter with padding and
         test the shape and contents of the output.
         """
-
-        # Channels/Colors, #filters, filter_size (square)
-        conv_filter = objax.nn.Conv2D(1, 1, 2, padding=objax.ConvPadding.SAME)
-        weights = objax.TrainVar(jn.array([[[[1., 2.], [3., 4.]]]]).transpose((2, 3, 1, 0)))
-        conv_filter.w = weights
-        image = jn.array([[[[2., 1., 3., 4.],
-                            [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
-        # NCHW: Batch, Channels/Colors, Height, Width
-        features = conv_filter(image)
-        expected_features = jn.array([[[[43., 53., 64., 28.], [84., 94., 104., 44.],
-                                        [124., 134., 144., 60.], [41., 44., 47., 16.]]]])
-        self.assertEqual(features.shape, (1, 1, 4, 4))
-        self.assertTrue(jn.array_equal(features, expected_features))
+        w_init = lambda s: jn.array([[[[1., 2.], [3., 4.]]]]).transpose((2, 3, 1, 0))
+        conv = objax.nn.Conv2D(1, 1, 2, padding=objax.ConvPadding.SAME, w_init=w_init)
+        x = jn.array([[[[2., 1., 3., 4.], [5., 6., 7., 8.], [9., 10., 11., 12.], [13., 14., 15., 16.]]]])
+        y = jn.array([[[[43, 53, 64, 28], [84, 94, 104, 44], [124, 134, 144, 60], [41, 44, 47, 16]]]], 'f')
+        self.assertEqual(conv(x).tolist(), y.tolist())
+        conv = objax.nn.Conv2D(1, 1, 2, padding='same', w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y.tolist())
+        conv = objax.nn.Conv2D(1, 1, 2, padding='Same', w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y.tolist())
+        conv = objax.nn.Conv2D(1, 1, 2, padding='SAME', w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y.tolist())
+        conv = objax.nn.Conv2D(1, 1, 2, padding=(0, 1), w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y.tolist())
+        conv = objax.nn.Conv2D(1, 1, 2, padding=[(0, 1), (0, 1)], w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y.tolist())
+        y = [[[[8., 10., 15., 25., 12.], [24., 43., 53., 64., 28.], [46., 84., 94., 104., 44.],
+               [70., 124., 134., 144., 60.], [26., 41., 44., 47., 16.]]]]
+        conv = objax.nn.Conv2D(1, 1, 2, padding=1, w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y)
+        conv = objax.nn.Conv2D(1, 1, 2, padding=(1, 1), w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y)
+        conv = objax.nn.Conv2D(1, 1, 2, padding=[(1, 1), (1, 1)], w_init=w_init)
+        self.assertEqual(conv(x).tolist(), y)
 
     def test_on_conv2d_stride(self):
         """
