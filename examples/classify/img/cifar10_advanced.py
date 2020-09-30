@@ -59,7 +59,7 @@ class TrainLoop(objax.Module):
         checkpoint = objax.io.Checkpoint(logdir, keep_ckpts=5, makedir=True)
         start_epoch, last_ckpt = checkpoint.restore(self.vars())
         train_iter = iter(train)
-        progress = np.zeros(jax.device_count(), 'f')  # for multi-GPU
+        progress = np.zeros(jax.local_device_count(), 'f')  # for multi-GPU
 
         with SummaryWriter(os.path.join(logdir, 'tb')) as tensorboard:
             for epoch in range(start_epoch, num_train_epochs):

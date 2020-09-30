@@ -62,6 +62,49 @@ class TestSequential(unittest.TestCase):
         self.assertEqual(features.shape, (2, 3))
         self.assertTrue(jn.array_equal(features, expected_features))
 
+    def test_kwargs(self):
+        """Test sequential on modules that take named inputs in kwargs."""
+
+        class MyModule:
+            def __init__(self):
+                pass
+
+            def __call__(self, x, some_param):
+                return x + some_param
+
+        seq = objax.nn.Sequential([MyModule(), MyModule()])
+        self.assertEqual(seq(1, some_param=2), 5)
+        with self.assertRaises(TypeError):
+            seq(1)
+
+    def test_variadic(self):
+        """Test sequential on modules that take multiple inputs and have multiple outputs."""
+
+        class MyModule:
+            def __init__(self):
+                pass
+
+            def __call__(self, x, y):
+                return x + y, x - y
+
+        seq = objax.nn.Sequential([MyModule(), MyModule()])
+        self.assertEqual(seq(1, 2), (2, 4))
+
+    def test_slice(self):
+        """Test sequential slices with variadic module."""
+
+        class MyModule:
+            def __init__(self, m):
+                self.m = m
+
+            def __call__(self, x, y):
+                return self.m * x + y, self.m * x - y
+
+        seq = objax.nn.Sequential([MyModule(2), MyModule(3)])
+        self.assertEqual(seq(5, 7), (54, 48))
+        self.assertEqual(seq[:1](5, 7), (17, 3))
+        self.assertEqual(seq[1:](5, 7), (22, 8))
+
 
 if __name__ == '__main__':
     unittest.main()

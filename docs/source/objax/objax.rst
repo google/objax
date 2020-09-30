@@ -14,6 +14,7 @@ Modules
 
     Module
     ModuleList
+    Function
     Grad
     GradValues
     Jit
@@ -44,6 +45,38 @@ Modules
         # (ModuleList)[1](Linear).b        3 (3,)
         # (ModuleList)[1](Linear).w        6 (2, 3)
         # +Total(2)                        9
+
+
+.. autoclass:: Function
+    :members: vars
+
+    Usage example::
+
+        import objax
+        import jax.numpy as jn
+
+        m = objax.nn.Linear(2, 3)
+
+        def f1(x, y):
+            return ((m(x) - y) ** 2).mean()
+
+        # Method 1: Create module by calling objax.Function to tell which variables are used.
+        m1 = objax.Function(f1, m.vars())
+
+        # Method 2: Use the decorator.
+        @objax.Function.with_vars(m.vars())
+        def f2(x, y):
+            return ((m(x) - y) ** 2).mean()
+
+        # All behave like functions
+        x = jn.arange(10).reshape((5, 2))
+        y = jn.arange(15).reshape((5, 3))
+        print(type(f1), f1(x, y))  # <class 'function'> 237.01947
+        print(type(m1), m1(x, y))  # <class 'objax.module.Function'> 237.01947
+        print(type(f2), f2(x, y))  # <class 'objax.module.Function'> 237.01947
+
+    Usage of `Function` is not necessary: it is made available for aesthetic reasons (to accomodate for users personal
+    taste). It is also used internally to keep the code simple for Grad, Jit, Parallel, Vectorize and future primitives.
 
 .. autoclass:: Grad
    :members:

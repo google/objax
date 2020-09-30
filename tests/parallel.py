@@ -15,11 +15,11 @@
 """Unittests for Parallel Layer."""
 import os
 import unittest
-import numpy as np
+
 import jax.numpy as jn
+import numpy as np
 
 import objax
-
 
 # Split CPU cores into 8 devices for tests of objax.Parallel
 os.environ['XLA_FLAGS'] = ' '.join(os.environ.get('XLA_FLAGS', '').split(' ')

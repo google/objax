@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Jit', 'Module', 'ModuleList', 'ModuleWrapper', 'Parallel', 'Vectorize']
+__all__ = ['Function', 'Jit', 'Module', 'ModuleList', 'Parallel', 'Vectorize']
 
-from types import MethodType
 from typing import Optional, List, Union, Callable, Tuple
 
 import jax
@@ -74,27 +73,50 @@ class ModuleList(Module, list):
                 vc.update(v.vars(scope=f'{scope}[{p}]'))
         return vc
 
+    def __getitem__(self, key: Union[int, slice]):
+        value = list.__getitem__(self, key)
+        if isinstance(key, slice):
+            return ModuleList(value)
+        return value
 
-class ModuleWrapper(Module):
-    """Module whose sole purpose is to store a collectable VarCollection. This class is exclusively
-    used internally by Objax, for example in Jit, Vectorize and Parallel."""
 
-    def __init__(self, vc: VarCollection):
-        super().__init__()
-        self.vc = VarCollection((f'({self.__class__.__name__}){k}', v) for k, v in vc.items())
+class Function(Module):
+    """Turn a function into a Module by keeping the vars it uses."""
 
-    def vars(self, scope: str = '') -> VarCollection:
-        """Collect all the variables (and their names) contained in the VarCollection.
+    def __init__(self, f: Callable, vc: VarCollection):
+        """Function constructor.
 
         Args:
-            scope: string to prefix to the variable names.
-        Returns:
-            A VarCollection of all the variables.
+            f: the function or the module to represent.
+            vc: the VarCollection of variables used by the function.
         """
-        return VarCollection((scope + k, v) for k, v in self.vc.items())
+        if hasattr(f, '__name__'):
+            self.vc = VarCollection((f'{{{f.__name__}}}.{k}', v) for k, v in vc.items())
+        else:
+            self.vc = VarCollection(vc)
+        self.__wrapped__ = f
+
+    def __call__(self, *args, **kwargs):
+        """Call the the function."""
+        return self.__wrapped__(*args, **kwargs)
+
+    def vars(self, scope: str = '') -> VarCollection:
+        """Return the VarCollection of the variables used by the function."""
+        if scope:
+            return VarCollection((scope + k, v) for k, v in self.vc.items())
+        return VarCollection(self.vc)
+
+    @staticmethod
+    def with_vars(vc: VarCollection):
+        """Method to use as decorator in function definitions."""
+
+        def from_function(f: Callable):
+            return Function(f, vc)
+
+        return from_function
 
 
-class Jit(ModuleWrapper):
+class Jit(Module):
     """JIT (Just-In-Time) module takes a function or a module and compiles it for faster execution."""
 
     def __init__(self,
@@ -109,47 +131,31 @@ class Jit(ModuleWrapper):
             static_argnums: tuple of indexes of f's input arguments to treat as static (constants)).
                 A new graph is compiled for each different combination of values for such inputs.
         """
-        if vc is None:
-            if not isinstance(f, Module):
+        if not isinstance(f, Module):
+            if vc is None:
                 raise ValueError('You must supply the VarCollection used by the function f.')
-            vc = f.vars()
+            f = Function(f, vc)
 
-        super().__init__(vc)
-        self._call = self.jit_local_method(f, sorted(static_argnums or ()))
-
-    def jit_local_method(self, f, static_argnums):
-        """Compiles a function or module and returns method that can be attached to self instance.
-
-        Args:
-            f: function or module to compile.
-            static_argnums: indexes of the arguments to be treated as static.
-
-        Returns:
-            A method containing the compiled version of f.
-        """
-
-        def jit(tensor_list: List[JaxArray], *args):
+        def jit(tensor_list: List[JaxArray], kwargs, *args):
             original_values = self.vc.tensors()
-            self.vc.assign(tensor_list)
-            output = f(*args), self.vc.tensors(BaseState)
-            self.vc.assign(original_values)
-            return output
+            try:
+                self.vc.assign(tensor_list)
+                return f(*args, **kwargs), self.vc.tensors(BaseState)
+            finally:
+                self.vc.assign(original_values)
 
-        jitf = jax.jit(jit, static_argnums=tuple(x + 1 for x in static_argnums))
+        self.vc = vc or f.vars()
+        self._call = jax.jit(jit, static_argnums=tuple(x + 2 for x in sorted(static_argnums or ())))
+        self.__wrapped__ = f
 
-        def local_method(self, *args):
-            output, changes = jitf(self.vc.tensors(), *args)
-            self.vc.subset(BaseState).assign(changes)
-            return output
-
-        return MethodType(local_method, self)
-
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         """Call the compiled version of the function or module."""
-        return self._call(*args)
+        output, changes = self._call(self.vc.tensors(), kwargs, *args)
+        self.vc.subset(BaseState).assign(changes)
+        return output
 
 
-class Parallel(ModuleWrapper):
+class Parallel(Module):
     """Parallel module takes a function or a module and compiles it for running on multiple devices in parallel."""
 
     def __init__(self,
@@ -168,29 +174,32 @@ class Parallel(ModuleWrapper):
             static_argnums: tuple of indexes of f's input arguments to treat as static (constants)).
                 A new graph is compiled for each different combination of values for such inputs.
         """
-        if vc is None:
-            if not isinstance(f, Module):
+        if not isinstance(f, Module):
+            if vc is None:
                 raise ValueError('You must supply the VarCollection used by the function f.')
-            vc = f.vars()
-
-        super().__init__(vc)
-        static_argnums = sorted(static_argnums or ())
-        self.reduce = reduce
-        self.ndevices = jax.device_count()
-        self.static_argnums = frozenset(static_argnums)
+            f = Function(f, vc)
 
         def pmap(tensor_list: List[ShardedDeviceArray], random_list: List[ShardedDeviceArray], *args):
             original_values = self.vc.tensors()
-            self.vc.assign(tensor_list)
-            self.vc.subset(RandomState).assign(random_list)
-            output = f(*args), self.vc.tensors(BaseState)
-            self.vc.assign(original_values)
-            return output
+            try:
+                self.vc.assign(tensor_list)
+                self.vc.subset(RandomState).assign(random_list)
+                return f(*args), self.vc.tensors(BaseState)
+            finally:
+                self.vc.assign(original_values)
 
+        static_argnums = sorted(static_argnums or ())
+        self.ndevices = jax.local_device_count()
+        self.reduce = reduce
+        self.static_argnums = frozenset(static_argnums)
+        self.vc = vc or f.vars()
         self._call = jax.pmap(pmap, axis_name=axis_name, static_broadcasted_argnums=[x + 2 for x in static_argnums])
+        self.__wrapped__ = f
 
     def device_reshape(self, x: JaxArray) -> JaxArray:
         """Utility to reshape an input array in order to broadcast to multiple devices."""
+        assert x.shape[0] % self.ndevices == 0, f'Must be able to equally divide batch {x.shape} among ' \
+                                                f'{self.ndevices} devices, but does not go equally.'
         return x.reshape((self.ndevices, x.shape[0] // self.ndevices) + x.shape[1:])
 
     def __call__(self, *args):
@@ -203,7 +212,7 @@ class Parallel(ModuleWrapper):
         return jax.tree_map(self.reduce, output)
 
 
-class Vectorize(ModuleWrapper):
+class Vectorize(Module):
     """Vectorize module takes a function or a module and compiles it for running in parallel on a single device."""
 
     def __init__(self,
@@ -218,27 +227,28 @@ class Vectorize(ModuleWrapper):
             batch_axis: tuple of int or None for each of f's input arguments: the axis to use as batch during
                 vectorization. Use None to automatically broadcast.
         """
-        if vc is None:
-            if not isinstance(f, Module):
+        if not isinstance(f, Module):
+            if vc is None:
                 raise ValueError('You must supply the VarCollection used by the function f.')
-            vc = f.vars()
+            f = Function(f, vc)
 
-        super().__init__(vc)
+        def vmap(tensor_list: List[JaxArray], random_list: List[JaxArray], *args):
+            original_values = self.vc.tensors()
+            try:
+                self.vc.assign(tensor_list)
+                self.vc.subset(RandomState).assign(random_list)
+                return f(*args), self.vc.tensors(BaseState)
+            finally:
+                self.vc.assign(original_values)
+
         fargs = positional_args_names(f)
         assert len(batch_axis) >= len(fargs), f'The batched argument must be specified for all of {f} arguments {fargs}'
         self.batch_axis = batch_axis
         self.batch_axis_argnums = [(x, v) for x, v in enumerate(batch_axis) if v is not None]
         assert self.batch_axis_argnums, f'No arguments to function {f} are vectorizable'
-
-        def vmap(tensor_list: List[JaxArray], random_list: List[JaxArray], *args):
-            original_values = self.vc.tensors()
-            self.vc.assign(tensor_list)
-            self.vc.subset(RandomState).assign(random_list)
-            output = f(*args), self.vc.tensors(BaseState)
-            self.vc.assign(original_values)
-            return output
-
+        self.vc = vc or f.vars()
         self._call = jax.vmap(vmap, (None, 0) + batch_axis)
+        self.__wrapped__ = f
 
     def __call__(self, *args):
         """Call the vectorized version of the function or module."""
