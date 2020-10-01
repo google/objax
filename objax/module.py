@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Function', 'Jit', 'Module', 'ModuleList', 'Parallel', 'Vectorize']
+__all__ = ['ForceArgs', 'Function', 'Jit', 'Module', 'ModuleList', 'Parallel', 'Vectorize']
 
+from collections import namedtuple
 from typing import Optional, List, Union, Callable, Tuple
 
 import jax
@@ -21,7 +22,7 @@ import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
-from objax.util import positional_args_names
+from objax.util import override_args_kwargs, positional_args_names
 from objax.variable import BaseState, BaseVar, RandomState, VarCollection
 
 
@@ -50,6 +51,61 @@ class Module:
     def __call__(self, *args, **kwargs):
         """Optional module __call__ method, typically a forward pass computation for standard primitives."""
         raise NotImplementedError
+
+
+class ForceArgs(Module):
+    """Forces override of arguments of given module."""
+
+    ANY = namedtuple('Any', ())
+    """Token used in `ForceArgs.undo` to indicate undo of all values of specific argument."""
+
+    @staticmethod
+    def undo(module: Module, **kwargs):
+        """Undo ForceArgs on each submodule of the module. Modifications are done in-place.
+
+        Args:
+            module: module for which to undo ForceArgs.
+            **kwargs: dictionary of argument overrides to undo.
+                `name=val` remove override for value `val` of argument `name`.
+                `name=ForceArgs.ANY` remove all overrides of argument `name`.
+                If `**kwargs` is empty then all overrides will be undone.
+        """
+        if isinstance(module, ForceArgs):
+            if not kwargs:
+                module.forced_kwargs = {}
+            else:
+                module.forced_kwargs = {k: v for k, v in module.forced_kwargs.items()
+                                        if (k not in kwargs) or (kwargs[k] not in (v, ForceArgs.ANY))}
+            ForceArgs.undo(module.__wrapped__, **kwargs)
+        elif isinstance(module, ModuleList):
+            for idx, v in enumerate(module):
+                if isinstance(v, Module):
+                    ForceArgs.undo(v, **kwargs)
+                    if isinstance(v, ForceArgs) and not v.forced_kwargs:
+                        module[idx] = v.__wrapped__
+        else:
+            for k, v in module.__dict__.items():
+                if isinstance(v, Module):
+                    ForceArgs.undo(v, **kwargs)
+                    if isinstance(v, ForceArgs) and not v.forced_kwargs:
+                        setattr(module, k, v.__wrapped__)
+
+    def __init__(self, module: Module, **kwargs):
+        """Initializes ForceArgs.
+
+        Args:
+            module: module which argument will be overridden.
+            kwargs: values of keyword arguments which will be forced to use.
+        """
+        self.__wrapped__ = module
+        self.forced_kwargs = kwargs
+
+    def vars(self, scope: str = '') -> VarCollection:
+        return self.__wrapped__.vars(scope=scope)
+
+    def __call__(self, *args, **kwargs):
+        args, kwargs = override_args_kwargs(self.__wrapped__, args, kwargs, self.forced_kwargs)
+        return self.__wrapped__(*args, **kwargs)
 
 
 class ModuleList(Module, list):

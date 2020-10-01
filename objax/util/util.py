@@ -13,10 +13,11 @@
 # limitations under the License.
 
 __all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'positional_args_names', 'to_padding', 'to_tuple']
+           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'to_padding', 'to_tuple']
 
 import contextlib
 import inspect
+import itertools
 from numbers import Number
 from typing import Callable, List, Union, Tuple, Iterable
 
@@ -75,6 +76,30 @@ map_to_device: Callable[[List[jn.ndarray]], List[ShardedDeviceArray]] = jax.pmap
 def multi_host_barrier():
     """Barrier op for multi-host setup."""
     jax.random.normal(jax.random.PRNGKey(0), ()).block_until_ready()
+
+
+def override_args_kwargs(f: Callable, args: Iterable, kwargs: dict, new_kwargs: dict) -> Tuple[List, dict]:
+    """Overrides positional and keyword arguments according to signature of the function using new keyword arguments.
+
+    Args:
+        f: callable, which signature is used to determine how to override arguments.
+        args: original values of positional arguments.
+        kwargs: original values of keyword arguments.
+        new_kwargs: new keyword arguments, their values will override original arguments.
+
+    Return:
+        args: updated list of positional arguments.
+        kwargs: updated dictionary of keyword arguments.
+    """
+    args = list(args)
+    new_kwargs = new_kwargs.copy()
+    p = inspect.signature(f).parameters
+    for idx, (k, v) in enumerate(itertools.islice(p.items(), len(args))):
+        if v.kind not in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
+            break
+        if k in new_kwargs:
+            args[idx] = new_kwargs.pop(k)
+    return args, {**kwargs, **new_kwargs}
 
 
 def positional_args_names(f: Callable) -> List[str]:
