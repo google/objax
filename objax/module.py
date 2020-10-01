@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['ForceArgs', 'Function', 'Jit', 'Module', 'ModuleList', 'ModuleWrapper', 'Parallel', 'Vectorize']
+__all__ = ['ForceArgs', 'Function', 'Jit', 'Module', 'ModuleList', 'Parallel', 'Vectorize']
 
 from collections import namedtuple
 from typing import Any, Dict, Optional, List, Union, Callable, Tuple
@@ -59,14 +59,13 @@ class ForceArgs(Module):
     ANY = namedtuple('Any', ())
     """Token used in `ForceArgs.undo` to indicate undo of all values of specific argument."""
 
-    @staticmethod
-    def _remove_args(force_args: 'ForceArgs', args_to_remove: Dict[str, Any]):
+    def _remove_args(self, args_to_remove: Dict[str, Any]):
         """Removes given arguments from override list of `ForceArgs` instance."""
         if not args_to_remove:
-            force_args.forced_kwargs = {}
+            self.forced_kwargs = {}
         else:
-            force_args.forced_kwargs = {k: v for k, v in force_args.forced_kwargs.items()
-                                        if (k not in args_to_remove) or (args_to_remove[k] not in (v, ForceArgs.ANY))}
+            self.forced_kwargs = {k: v for k, v in self.forced_kwargs.items()
+                                  if (k not in args_to_remove) or (args_to_remove[k] not in (v, ForceArgs.ANY))}
 
     @staticmethod
     def undo(module: Module, **kwargs):
@@ -80,7 +79,7 @@ class ForceArgs(Module):
                 If `**kwargs` is empty then all overrides will be undone.
         """
         if isinstance(module, ForceArgs):
-            ForceArgs._remove_args(module, kwargs)
+            module._remove_args(kwargs)
             ForceArgs.undo(module.__wrapped__, **kwargs)
         elif isinstance(module, ModuleList):
             for idx, v in enumerate(module):
