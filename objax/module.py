@@ -16,7 +16,7 @@ __all__ = ['ForceArgs', 'Jit', 'Module', 'ModuleList', 'ModuleWrapper', 'Paralle
 
 from collections import namedtuple
 from types import MethodType
-from typing import Optional, List, Union, Callable, Tuple
+from typing import Any, Dict, Optional, List, Union, Callable, Tuple
 
 import jax
 import jax.numpy as jn
@@ -61,7 +61,7 @@ class ForceArgs(Module):
     """Token used in `ForceArgs.undo` to indicate undo of all values of specific argument."""
 
     @staticmethod
-    def _remove_args(force_args, args_to_remove: dict):
+    def _remove_args(force_args: 'ForceArgs', args_to_remove: Dict[str, Any]):
         """Removes given arguments from override list of `ForceArgs` instance."""
         if not args_to_remove:
             force_args.forced_kwargs = {}
@@ -88,15 +88,13 @@ class ForceArgs(Module):
                 if isinstance(v, Module):
                     ForceArgs.undo(v, **kwargs)
                     if isinstance(v, ForceArgs) and not v.forced_kwargs:
-                        v = v.__wrapped__
-                        module[idx] = v
+                        module[idx] = v.__wrapped__
         else:
             for k, v in module.__dict__.items():
                 if isinstance(v, Module):
                     ForceArgs.undo(v, **kwargs)
                     if isinstance(v, ForceArgs) and not v.forced_kwargs:
-                        v = v.__wrapped__
-                        setattr(module, k, v)
+                        setattr(module, k, v.__wrapped__)
 
     def __init__(self, module: Module, **kwargs):
         """Initializes ForceArgs.
