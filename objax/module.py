@@ -15,7 +15,7 @@
 __all__ = ['ForceArgs', 'Function', 'Jit', 'Module', 'ModuleList', 'Parallel', 'Vectorize']
 
 from collections import namedtuple
-from typing import Any, Dict, Optional, List, Union, Callable, Tuple
+from typing import Optional, List, Union, Callable, Tuple
 
 import jax
 import jax.numpy as jn
@@ -59,14 +59,6 @@ class ForceArgs(Module):
     ANY = namedtuple('Any', ())
     """Token used in `ForceArgs.undo` to indicate undo of all values of specific argument."""
 
-    def _remove_args(self, args_to_remove: Dict[str, Any]):
-        """Removes given arguments from override list of `ForceArgs` instance."""
-        if not args_to_remove:
-            self.forced_kwargs = {}
-        else:
-            self.forced_kwargs = {k: v for k, v in self.forced_kwargs.items()
-                                  if (k not in args_to_remove) or (args_to_remove[k] not in (v, ForceArgs.ANY))}
-
     @staticmethod
     def undo(module: Module, **kwargs):
         """Undo ForceArgs on each submodule of the module. Modifications are done in-place.
@@ -79,7 +71,11 @@ class ForceArgs(Module):
                 If `**kwargs` is empty then all overrides will be undone.
         """
         if isinstance(module, ForceArgs):
-            module._remove_args(kwargs)
+            if not kwargs:
+                module.forced_kwargs = {}
+            else:
+                module.forced_kwargs = {k: v for k, v in module.forced_kwargs.items()
+                                        if (k not in kwargs) or (kwargs[k] not in (v, ForceArgs.ANY))}
             ForceArgs.undo(module.__wrapped__, **kwargs)
         elif isinstance(module, ModuleList):
             for idx, v in enumerate(module):
