@@ -35,8 +35,8 @@ def flatten(x: JaxArray) -> JaxArray:
         x: input tensor with dimensions (n_1, n_2, ..., n_k)
 
     Returns:
-        The input tensor reshaped to two dimensions (n_1, n_sum),
-        where n_sum is equal to the sum of n_2 to n_k.
+        The input tensor reshaped to two dimensions (n_1, n_prod),
+        where n_prod is equal to the product of n_2 to n_k.
     """
     return x.reshape([x.shape[0], -1])
 
