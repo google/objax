@@ -53,10 +53,10 @@ class ModelBlockWithArg(objax.Module):
         self.seq = objax.nn.Sequential([OpWithArg(), OpWithArg()])
         self.op1 = OpWithArg()
 
-    def __call__(self, x, some_arg):
-        # without forced args equivalent to (x + some_arg*3)
-        y = self.seq(x, some_arg=some_arg)
-        return self.op1(y, some_arg)
+    def __call__(self, x, some_arg1, some_arg2):
+        # without forced args equivalent to (x + some_arg1 * 2 + some_arg2)
+        y = self.seq(x, some_arg=some_arg1)
+        return self.op1(y, some_arg2)
 
 
 class ModelWithArg(objax.Module):
@@ -66,11 +66,11 @@ class ModelWithArg(objax.Module):
         self.block2 = ModelBlockWithArg()
         self.op1 = OpWithArg()
 
-    def __call__(self, x, some_arg):
-        # without forces args equivalent to (x + some_arg*7)
-        y1 = self.block1(x, some_arg=some_arg)
-        y2 = self.block2(y1, some_arg)
-        return self.op1(y2, some_arg=some_arg)
+    def __call__(self, x, some_arg1, some_arg2):
+        # without forces args equivalent to (x + some_arg1 * 5 + some_arg2 * 2)
+        y1 = self.block1(x, some_arg1=some_arg1, some_arg2=some_arg2)
+        y2 = self.block2(y1, some_arg1, some_arg2)
+        return self.op1(y2, some_arg=some_arg1)
 
 
 class TestModule(unittest.TestCase):
@@ -109,36 +109,80 @@ class TestModule(unittest.TestCase):
             self.assertIs(module_wrapper_vars[new_key], v)
 
     def test_force_args(self):
+        # def __call__(self, x, some_arg1, some_arg2):
+        #     # without forces args equivalent to (x + some_arg1 * 5 + some_arg2 * 2)
         x = jn.array([1., 2.])
         model = ModelWithArg()
-        np.testing.assert_almost_equal(model(x, some_arg=0.0), [1., 2.])
-        np.testing.assert_almost_equal(model(x, some_arg=1.0), [8., 9.])
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [1., 2.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [6., 7.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [8., 9.])
         # Ensure that can not use invalid argument in original module
         with self.assertRaises(TypeError):
-            model(x, wrong_arg_name=0.0)
+            model(x, some_arg1=0.0, some_arg2=0.0, wrong_arg_name=0.0)
+        with self.assertRaises(TypeError):
+            model(x, wrong_arg_name1=0.0, wrong_arg_name2=0.0)
         with self.assertRaises(TypeError):
             model.block1.op1(x, wrong_arg_name=0.0)
-        # Set forced args
+        # Set forced args.
         original_signature = inspect.signature(model.block1.op1)
         model.block1.op1 = objax.ForceArgs(model.block1.op1, some_arg=-1.0)
+        # At this point following arguments are forced:
+        #   model.block1.op1(..., some_arg=-1.0)
         self.assertEqual(original_signature, inspect.signature(model.block1.op1))
-        np.testing.assert_almost_equal(model(x, some_arg=0.0), [0., 1.])
-        np.testing.assert_almost_equal(model(x, some_arg=1.0), [6., 7.])
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [0., 1.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [5., 6.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [6., 7.])
         # ForceArgs does not allow to pass invalid args
         with self.assertRaises(TypeError):
             model.block1.op1(x, wrong_arg_name=1.0)
         # Set forced args in a list
         model.block1.seq[0] = objax.ForceArgs(model.block1.seq[0], some_arg=-1.0)
-        np.testing.assert_almost_equal(model(x, some_arg=0.0), [-1., 0.])
-        np.testing.assert_almost_equal(model(x, some_arg=1.0), [4., 5.])
+        # At this point following arguments are forced:
+        #   model.block1.op1(..., some_arg=-1.0)
+        #   model.block1.seq[0](..., some_arg=-1.0)
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [-1., 0.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [3., 4.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [4., 5.])
         # Set invalid arg in forced args
         model.block2.op1 = objax.ForceArgs(model.block2.op1, wrong_arg_name=1.0)
         with self.assertRaises(TypeError):
             model(x, some_arg=0.0)
-        # Undo force args
+        # Remove force args with invalid name
+        objax.ForceArgs.undo(model, wrong_arg_name=objax.ForceArgs.ANY)
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [-1., 0.])
+        # Set few other forces args with nested ForceArgs
+        model.block1 = objax.ForceArgs(model.block1, some_arg1=10.0)
+        model.block1 = objax.ForceArgs(model.block1, some_arg2=20.0)
+        # At this point following arguments are forced:
+        #   model.block1(..., some_arg1=10.0, some_arg2=20.0)
+        #   model.block1.op1(..., some_arg=-1.0)
+        #   model.block1.seq[0](..., some_arg=-1.0)
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [9., 10.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [12., 13.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [13., 14.])
+        # Resetting some of the forced args
+        objax.ForceArgs.undo(model, some_arg1=30)  # noop because some_arg1=30 is not used
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [9., 10.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [12., 13.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [13., 14.])
+        objax.ForceArgs.undo(model, some_arg1=10)  # undo some_arg1=10
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [-1., 0.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [3., 4.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [4., 5.])
+        objax.ForceArgs.undo(model)  # undo all forced args
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [1., 2.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [6., 7.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [8., 9.])
+        # Try forced args on the root
+        model = objax.ForceArgs(model, some_arg1=-1.0)
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [-4., -3.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [-4., -3.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [-2., -1.])
+        # Reset forced args on the model root
         objax.ForceArgs.undo(model)
-        np.testing.assert_almost_equal(model(x, some_arg=0.0), [1., 2.])
-        np.testing.assert_almost_equal(model(x, some_arg=1.0), [8., 9.])
+        np.testing.assert_almost_equal(model(x, some_arg1=0.0, some_arg2=0.0), [1., 2.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=0.0), [6., 7.])
+        np.testing.assert_almost_equal(model(x, some_arg1=1.0, some_arg2=1.0), [8., 9.])
 
 
 if __name__ == '__main__':

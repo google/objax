@@ -14,6 +14,7 @@
 
 __all__ = ['ForceArgs', 'Jit', 'Module', 'ModuleList', 'ModuleWrapper', 'Parallel', 'Vectorize']
 
+from collections import namedtuple
 from types import MethodType
 from typing import Optional, List, Union, Callable, Tuple
 
@@ -56,29 +57,46 @@ class Module:
 class ForceArgs(Module):
     """Forces override of arguments of given module."""
 
+    ANY = namedtuple('Any', ())
+    """Token used in `ForceArgs.undo` to indicate undo of all values of specific argument."""
+
     @staticmethod
-    def undo(module: Module):
-        """Undo ForceArgs on each submodule of the module.
+    def _remove_args(force_args, args_to_remove: dict):
+        """Removes given arguments from override list of `ForceArgs` instance."""
+        if not args_to_remove:
+            force_args.forced_kwargs = {}
+        else:
+            force_args.forced_kwargs = {k: v for k, v in force_args.forced_kwargs.items()
+                                        if (k not in args_to_remove) or (args_to_remove[k] not in (v, ForceArgs.ANY))}
+
+    @staticmethod
+    def undo(module: Module, **kwargs):
+        """Undo ForceArgs on each submodule of the module. Modifications are done in-place.
 
         Args:
             module: module for which to undo ForceArgs.
+            **kwargs: dictionary of argument overrides to undo.
+                `name=val` remove override for value `val` of argument `name`.
+                `name=ForceArgs.ANY` remove all overrides of argument `name`.
+                If `**kwargs` is empty then all overrides will be undone.
         """
         if isinstance(module, ForceArgs):
-            raise ValueError('ForceArgs.undo can not be called on ForceArgs, call it on parent module instead.')
-        if isinstance(module, ModuleList):
+            ForceArgs._remove_args(module, kwargs)
+            ForceArgs.undo(module.__wrapped__, **kwargs)
+        elif isinstance(module, ModuleList):
             for idx, v in enumerate(module):
                 if isinstance(v, Module):
-                    if isinstance(v, ForceArgs):
+                    ForceArgs.undo(v, **kwargs)
+                    if isinstance(v, ForceArgs) and not v.forced_kwargs:
                         v = v.__wrapped__
                         module[idx] = v
-                    ForceArgs.undo(v)
         else:
             for k, v in module.__dict__.items():
                 if isinstance(v, Module):
-                    if isinstance(v, ForceArgs):
+                    ForceArgs.undo(v, **kwargs)
+                    if isinstance(v, ForceArgs) and not v.forced_kwargs:
                         v = v.__wrapped__
                         setattr(module, k, v)
-                    ForceArgs.undo(v)
 
     def __init__(self, module: Module, **kwargs):
         """Initializes ForceArgs.
@@ -87,8 +105,6 @@ class ForceArgs(Module):
             module: module which argument will be overridden.
             kwargs: values of keyword arguments which will be forced to use.
         """
-        if isinstance(module, ForceArgs):
-            raise ValueError('Can not force arguments on ForceArgs module.')
         self.__wrapped__ = module
         self.forced_kwargs = kwargs
 
