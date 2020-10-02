@@ -56,7 +56,7 @@ class Module:
 class ForceArgs(Module):
     """Forces override of arguments of given module."""
 
-    ANY = namedtuple('Any', ())
+    ANY = namedtuple('ANY', ())
     """Token used in `ForceArgs.undo` to indicate undo of all values of specific argument."""
 
     @staticmethod
@@ -91,7 +91,7 @@ class ForceArgs(Module):
                         setattr(module, k, v.__wrapped__)
 
     def __init__(self, module: Module, **kwargs):
-        """Initializes ForceArgs.
+        """Initializes ForceArgs by wrapping another module.
 
         Args:
             module: module which argument will be overridden.
@@ -101,9 +101,17 @@ class ForceArgs(Module):
         self.forced_kwargs = kwargs
 
     def vars(self, scope: str = '') -> VarCollection:
+        """Returns the VarCollection of the wrapped module.
+        
+        Args:
+            scope: string to prefix to the variable names.
+        Returns:
+            A VarCollection of all the variables of wrapped module.
+        """
         return self.__wrapped__.vars(scope=scope)
 
     def __call__(self, *args, **kwargs):
+        """Calls wrapped module using forced args to override wrapped module arguments."""
         args, kwargs = override_args_kwargs(self.__wrapped__, args, kwargs, self.forced_kwargs)
         return self.__wrapped__(*args, **kwargs)
 

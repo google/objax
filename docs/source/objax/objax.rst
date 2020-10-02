@@ -14,6 +14,7 @@ Modules
 
     Module
     ModuleList
+    ForceArgs
     Function
     Grad
     GradValues
@@ -77,6 +78,34 @@ Modules
 
     Usage of `Function` is not necessary: it is made available for aesthetic reasons (to accomodate for users personal
     taste). It is also used internally to keep the code simple for Grad, Jit, Parallel, Vectorize and future primitives.
+
+.. autoclass:: ForceArgs
+    :members:
+
+    One example of `ForceArgs` usage is to override `training` argument for batch normalization::
+
+        import objax
+        from objax.zoo.resnet_v2 import ResNet50
+
+        model = ResNet50(in_channels=3, num_classes=1000)
+
+        # Modify model to force training=False on first resnet block.
+        # First two ops in the resnet are convolution and padding,
+        # resnet blocks are starting at index 2.
+        model[2] = objax.ForceArgs(model[2], training=False)
+
+        # model(x, training=True) will be using `training=False` on model[2] due to ForceArgs
+        # ...
+
+        # Undo specific value of forced arguments in `model` and all submodules of `model`
+        objax.ForceArgs.undo(model, training=True)
+
+        # Undo all values of specific argument in `model` and all submodules of `model`
+        objax.ForceArgs.undo(model, training=objax.ForceArgs.ANY)
+
+        # Undo all values of all arguments in `model` and all submodules of `model`
+        objax.ForceArgs.undo(model)
+
 
 .. autoclass:: Grad
    :members:
