@@ -16,15 +16,18 @@ __all__ = ['load_var_collection', 'save_var_collection']
 
 import collections
 import os
-from typing import IO, BinaryIO, Union
+from typing import IO, BinaryIO, Union, Optional
 
 import jax.numpy as jn
 import numpy as np
 
+from objax.util import Renamer
 from objax.variable import TrainRef, VarCollection
 
 
-def load_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
+def load_var_collection(file: Union[str, IO[BinaryIO]],
+                        vc: VarCollection,
+                        renamer: Optional[Renamer] = None):
     """Loads values of all variables in the given variables collection from file.
 
     Values loaded from file will replace old values in the variables collection.
@@ -34,20 +37,23 @@ def load_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
     Args:
         file: filename or python file handle of the input file.
         vc: variables collection which will be loaded from file.
+        renamer: optional renamer to pre-process variables names from the file being read.
 
     Raises:
         ValueError: if variable from variables collection is not found in the input file.
     """
+    renamer = renamer or (lambda x: x)
     do_close = isinstance(file, str)
     if do_close:
         file = open(file, 'rb')
     data = np.load(file, allow_pickle=False)
-    name_index = {k: str(i) for i, k in enumerate(data['names'])}
+    name_index = {renamer(k): str(i) for i, k in enumerate(data['names'])}
     name_vars = collections.defaultdict(list)
     for k, v in vc.items():
         if isinstance(v, TrainRef):
             v = v.ref
         name_vars[v].append(k)
+    misses = []
     for v, names in name_vars.items():
         for name in names:
             index = name_index.get(name)
@@ -55,7 +61,9 @@ def load_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
                 v.assign(jn.array(data[index]))
                 break
         else:
-            raise ValueError(f'Missing value for variables {names}')
+            misses += names
+    if misses:
+        raise ValueError(f'Missing value for variables {misses}')
     if do_close:
         file.close()
 
