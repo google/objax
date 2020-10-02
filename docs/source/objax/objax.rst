@@ -161,6 +161,8 @@ Modules
         jit_f = objax.Jit(lambda x: m(x), m.vars())   # Jit a function: provide vars it uses
 
     For more information, refer to :ref:`JIT Compilation`.
+    Also note that one can pass variables to be used by Jit for a module `m`: the rest will be optimized away as
+    constants, for more information refer to :ref:`Constant optimization`.
 
 .. autoclass:: Parallel
    :members: vars
@@ -180,6 +182,8 @@ Modules
             y = para_m(x)
 
     For more information, refer to :ref:`Parallelism`.
+    Also note that one can pass variables to be used by Jit for a module `m`: the rest will be optimized away as
+    constants, for more information refer to :ref:`Constant optimization`.
 
 .. autoclass:: Vectorize
    :members: vars
