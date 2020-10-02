@@ -13,14 +13,16 @@
 # limitations under the License.
 
 __all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'to_padding', 'to_tuple']
+           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer', 'to_padding', 'to_tuple']
 
 import contextlib
+import functools
 import inspect
-import itertools
+import re
 from numbers import Number
-from typing import Callable, List, Union, Tuple, Iterable
+from typing import Callable, List, Union, Tuple, Iterable, Dict, Pattern, Optional, Sequence
 
+import itertools
 import jax
 import jax.numpy as jn
 import numpy as np
@@ -36,6 +38,38 @@ class EasyDict(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+class Renamer:
+    """Helper class for renaming string contents."""
+
+    def __init__(self,
+                 rules: Union[Dict[str, str], Sequence[Tuple[Pattern[str], str]], Callable[[str], str]],
+                 chain: Optional['Renamer'] = None):
+        """Create a renamer object.
+
+        Args:
+            rules: the replacement mapping.
+            chain: optionally, another renamer to call after this one completes.
+        """
+        self.chain = chain
+        if callable(rules):
+            self.subfn = rules
+        elif isinstance(rules, dict):
+            regex = re.compile('(%s)' % '|'.join(map(re.escape, rules.keys())))
+            self.subfn = functools.partial(regex.sub, lambda m: rules[m.group(0)])
+        else:
+            def sequence_rename(x):
+                for regex, repl in rules:
+                    x = regex.sub(repl, x)
+                return x
+
+            self.subfn = sequence_rename
+
+    def __call__(self, s: str) -> str:
+        """Rename input string `s` using the rules provided to the constructor."""
+        news = self.subfn(s)
+        return self.chain(news) if self.chain else news
 
 
 def args_indexes(f: Callable, args: Iterable[str]) -> Iterable[int]:

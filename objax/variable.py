@@ -24,7 +24,7 @@ import jax.random as jr
 import numpy as np
 
 from objax.typing import JaxArray
-from objax.util import map_to_device
+from objax.util import map_to_device, Renamer
 
 
 def reduce_mean(x: JaxArray) -> JaxArray:
@@ -245,6 +245,10 @@ class VarCollection(Dict[str, BaseVar]):
             text.append(f'{name:{longest_string}} {size:8d} {v.value.shape}')
         text.append(f'{f"+Total({count})":{longest_string}} {total:8d}')
         return '\n'.join(text)
+
+    def rename(self, renamer: Renamer):
+        """Rename the entries in the VarCollection."""
+        return VarCollection({renamer(k): v for k, v in self.items()})
 
     @contextmanager
     def replicate(self):

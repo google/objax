@@ -232,7 +232,6 @@ Variables
    :inherited-members:
 
 .. autoclass:: VarCollection
-   :members:
 
     Usage example::
 
@@ -263,6 +262,46 @@ Variables
         jit_f = objax.Jit(lambda x: m(x), vc)
 
     For more information and examples, refer to :ref:`VarCollection`.
+
+    .. automethod:: assign
+    .. automethod:: rename
+
+        Renaming entries in a `VarCollection` is a powerful tool that can be used for
+
+        - mapping weights between models that differ slightly.
+        - loading data checkpoints from foreign ML frameworks.
+
+        Usage example::
+
+            import re
+            import objax
+
+            m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
+            print(m.vars())
+            # (Sequential)[0](Linear).b        3 (3,)
+            # (Sequential)[0](Linear).w        6 (2, 3)
+            # +Total(2)                        9
+
+            # For example remove modules from the name
+            renamer = objax.util.Renamer([(re.compile('\([^)]+\)'), '')])
+            print(m.vars().rename(renamer))
+            # [0].b                       3 (3,)
+            # [0].w                       6 (2, 3)
+            # +Total(2)                   9
+
+            # One can chain renamers, their syntax is flexible and it can use a string mapping:
+            renamer_all = objax.util.Renamer({'[': '.', ']': ''}, renamer)
+            print(m.vars().rename(renamer_all))
+            # .0.b                        3 (3,)
+            # .0.w                        6 (2, 3)
+            # +Total(2)                   9
+
+
+    .. automethod:: replicate
+    .. automethod:: subset
+    .. automethod:: tensors
+    .. automethod:: update
+
 
 Constants
 ---------
