@@ -33,6 +33,8 @@ class TestOptimizers(unittest.TestCase):
                     'rastrigin_adam': 0.7,
                     'logistic_momentum': 1.0,
                     'square_momentum': 0.01,
+                    'logistic_momentum_override': 5.0,
+                    'square_momentum_override': 0.3,
                     'logistic_sgd': 20.0,
                     'square_sgd': 0.5
                     }
@@ -40,9 +42,14 @@ class TestOptimizers(unittest.TestCase):
                            'rastrigin_adam': 1e-3,
                            'logistic_momentum': 1e-10,
                            'square_momentum': 1e-3,
+                           'logistic_momentum_override': 1e-3,
+                           'square_momentum_override': 1e-3,
                            'logistic_sgd': 1e-10,
                            'square_sgd': 1e-3,
                            }
+        self.override_momentums = {'logistic_momentum_override': 0.75,
+                                   'square_momentum_override': 0.5,
+                                   }
 
     def _get_optimizer(self, model_vars: VarCollection, optimizer: str):
         if optimizer == 'momentum':
@@ -85,21 +92,27 @@ class TestOptimizers(unittest.TestCase):
             return model_vars, loss
         raise ValueError
 
-    def _check_run(self, gv, opt, loss, lr, num_steps, tolerance):
+    def _check_run(self, gv, opt, loss, lr, num_steps, tolerance, momentum):
         """Run opt for num_steps times and check if the final loss is small."""
         for i in range(num_steps):
             g, v = gv()
-            opt(lr, g)
+            if momentum:
+                opt(lr, g, momentum)
+            else:
+                opt(lr, g)
         self.assertLess(loss(), tolerance)
 
-    def _test_loss_opt(self, loss_name: str, opt_name: str):
+    def _test_loss_opt(self, loss_name: str, opt_name: str, override: bool = False):
         """Given loss and optimizer name, get definitions and run test."""
         model_vars, loss = self._get_loss(loss_name)
         gv = objax.GradValues(loss, model_vars)
         opt = self._get_optimizer(model_vars, opt_name)
-        lr = self.lrs['{}_{}'.format(loss_name, opt_name)]
-        tolerance = self.tolerances['{}_{}'.format(loss_name, opt_name)]
-        self._check_run(gv, opt, loss, lr, self.num_steps, tolerance)
+        test_name = '{}_{}'.format(loss_name, opt_name)
+        test_name = test_name + '_override' if override else test_name
+        lr = self.lrs[test_name]
+        tolerance = self.tolerances[test_name]
+        momentum = self.override_momentums[test_name] if override and test_name in self.override_momentums else None
+        self._check_run(gv, opt, loss, lr, self.num_steps, tolerance, momentum)
         return model_vars, loss
 
     def test_square_adam(self):
@@ -117,6 +130,14 @@ class TestOptimizers(unittest.TestCase):
     def test_square_momentum(self):
         """Test square loss for momentum optimizer."""
         model_vars, loss = self._test_loss_opt('square', 'momentum')
+
+    def test_logistic_momentum_override(self):
+        """Test logistic loss for momentum optimizer."""
+        model_vars, loss = self._test_loss_opt('logistic', 'momentum', True)
+
+    def test_square_momentum_override(self):
+        """Test logistic loss for momentum optimizer."""
+        model_vars, loss = self._test_loss_opt('square', 'momentum', True)
 
     def test_logistic_sgd(self):
         """Test logistic loss for sgd optimizer."""

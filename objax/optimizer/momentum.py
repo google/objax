@@ -14,7 +14,7 @@
 
 __all__ = ['Momentum']
 
-from typing import List
+from typing import List, Optional
 
 from jax import numpy as jn
 
@@ -38,19 +38,21 @@ class Momentum(Module):
         self.train_vars = ModuleList(TrainRef(x) for x in vc.subset(TrainVar))
         self.m = ModuleList(StateVar(jn.zeros_like(x.value)) for x in self.train_vars)
 
-    def __call__(self, lr: float, grads: List[jn.ndarray]):
+    def __call__(self, lr: float, grads: List[jn.ndarray], momentum: Optional[float] = None):
         """Updates variables and other state based on momentum (or Nesterov) SGD.
 
         Args:
            lr: the learning rate.
            grads: the gradients to apply.
+           momentum: optional, override the default momentum.
         """
         assert len(grads) == len(self.train_vars), 'Expecting as many gradients as trainable variables'
+        momentum = momentum or self.momentum
         if self.nesterov:
             for g, p, m in zip(grads, self.train_vars, self.m):
-                m.value = g + self.momentum * m.value
-                p.value -= lr * (g + self.momentum * m.value)
+                m.value = g + momentum * m.value
+                p.value -= lr * (g + momentum * m.value)
         else:
             for g, p, m in zip(grads, self.train_vars, self.m):
-                m.value = g + self.momentum * m.value
+                m.value = g + momentum * m.value
                 p.value -= lr * m.value
