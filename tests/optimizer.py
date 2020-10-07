@@ -48,7 +48,7 @@ class TestOptimizers(unittest.TestCase):
                            'square_sgd': 1e-3,
                            }
         self.override_momentums = {'logistic_momentum_override': 0.75,
-                                   'square_momentum_override': 0.5,
+                                   'square_momentum_override': 0.05,
                                    }
 
     def _get_optimizer(self, model_vars: VarCollection, optimizer: str):

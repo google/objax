@@ -47,7 +47,8 @@ class Momentum(Module):
            momentum: optional, override the default momentum.
         """
         assert len(grads) == len(self.train_vars), 'Expecting as many gradients as trainable variables'
-        momentum = momentum or self.momentum
+        if momentum is None:
+            momentum = self.momentum
         if self.nesterov:
             for g, p, m in zip(grads, self.train_vars, self.m):
                 m.value = g + momentum * m.value
