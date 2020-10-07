@@ -171,5 +171,6 @@ def idetity_initializer(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
     Returns:
         Tensor initialized to the identity matrix.
     """
-    eye = np.eye(shape[-2], shape[-1])
+    assert  len(shape) == 2
+    return gain * jn.eye(*shape)
     return gain * eye
