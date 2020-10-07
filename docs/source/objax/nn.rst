@@ -166,6 +166,7 @@ objax.nn.init
     kaiming_normal_gain
     kaiming_normal
     kaiming_truncated_normal
+    orthogonal
     truncated_normal
     xavier_normal_gain
     xavier_normal
@@ -191,6 +192,9 @@ objax.nn.init
    :members:
 
 .. autoclass:: kaiming_truncated_normal
+   :members:
+
+.. autoclass:: orthogonal
    :members:
 
 .. autoclass:: truncated_normal
