@@ -102,7 +102,7 @@ class ForceArgs(Module):
 
     def vars(self, scope: str = '') -> VarCollection:
         """Returns the VarCollection of the wrapped module.
-        
+
         Args:
             scope: string to prefix to the variable names.
         Returns:
