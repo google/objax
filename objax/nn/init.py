@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['gain_leaky_relu', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal', 'truncated_normal',
+__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal', 'truncated_normal',
            'xavier_normal', 'xavier_truncated_normal']
 
 from typing import Tuple
@@ -39,6 +39,24 @@ def gain_leaky_relu(relu_slope: float = 0.1):
         The recommended gain value for leaky_relu.
     """
     return np.sqrt(2 / (1 + relu_slope ** 2))
+
+
+def identity(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
+    """Returns the identity matrix. This initializer was proposed in
+    `A Simple Way to Initialize Recurrent Networks of Rectified Linear Units
+    <https://arxiv.org/abs/1504.00941>`_.
+
+    Args:
+        shape: Shape of the tensor. It should have exactly rank 2.
+        gain: optional scaling factor.
+
+    Returns:
+        Tensor initialized to the identity matrix.
+    """
+    assert  len(shape) == 2
+    return gain * jn.eye(*shape)
+    return gain * eye
+
 
 
 def kaiming_normal(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
@@ -157,20 +175,3 @@ def xavier_truncated_normal(shape: Tuple[int, ...], lower: float = -2, upper: fl
     truncated_std = scipy.stats.truncnorm.std(a=lower, b=upper, loc=0., scale=1)
     stddev = gain * xavier_normal_gain(shape) / truncated_std
     return random.truncated_normal(shape, stddev=stddev, lower=lower, upper=upper)
-
-
-def identity(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
-    """Returns the identity matrix. This initializer was proposed in
-    `A Simple Way to Initialize Recurrent Networks of Rectified Linear Units
-    <https://arxiv.org/abs/1504.00941>`_.
-
-    Args:
-        shape: Shape of the tensor. It should have exactly rank 2.
-        gain: optional scaling factor.
-
-    Returns:
-        Tensor initialized to the identity matrix.
-    """
-    assert  len(shape) == 2
-    return gain * jn.eye(*shape)
-    return gain * eye
