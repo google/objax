@@ -159,7 +159,7 @@ def xavier_truncated_normal(shape: Tuple[int, ...], lower: float = -2, upper: fl
     return random.truncated_normal(shape, stddev=stddev, lower=lower, upper=upper)
 
 
-def idetity_initializer(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
+def identity(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
     """Returns the identity matrix. This initializer was proposed in
     `A Simple Way to Initialize Recurrent Networks of Rectified Linear Units
     <https://arxiv.org/abs/1504.00941>`_.
