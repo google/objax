@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal', 'truncated_normal',
-           'xavier_normal', 'xavier_truncated_normal']
+__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal', 
+            'truncated_normal', 'xavier_normal', 'xavier_truncated_normal']
 
 from typing import Tuple
 
@@ -55,7 +55,7 @@ def identity(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
     Returns:
         Tensor initialized to the identity matrix.
     """
-    assert  len(shape) == 2
+    assert len(shape) == 2
     return gain * jn.eye(*shape)
 
 
