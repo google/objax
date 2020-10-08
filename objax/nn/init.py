@@ -20,6 +20,8 @@ from typing import Tuple
 import numpy as np
 import scipy.stats
 
+from jax import numpy as jn
+
 from objax import random
 from objax.typing import JaxArray
 
@@ -55,8 +57,6 @@ def identity(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
     """
     assert  len(shape) == 2
     return gain * jn.eye(*shape)
-    return gain * eye
-
 
 
 def kaiming_normal(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
