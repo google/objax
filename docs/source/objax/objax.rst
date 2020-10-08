@@ -14,6 +14,8 @@ Modules
 
     Module
     ModuleList
+    ForceArgs
+    Function
     Grad
     GradValues
     Jit
@@ -44,6 +46,66 @@ Modules
         # (ModuleList)[1](Linear).b        3 (3,)
         # (ModuleList)[1](Linear).w        6 (2, 3)
         # +Total(2)                        9
+
+
+.. autoclass:: Function
+    :members: vars
+
+    Usage example::
+
+        import objax
+        import jax.numpy as jn
+
+        m = objax.nn.Linear(2, 3)
+
+        def f1(x, y):
+            return ((m(x) - y) ** 2).mean()
+
+        # Method 1: Create module by calling objax.Function to tell which variables are used.
+        m1 = objax.Function(f1, m.vars())
+
+        # Method 2: Use the decorator.
+        @objax.Function.with_vars(m.vars())
+        def f2(x, y):
+            return ((m(x) - y) ** 2).mean()
+
+        # All behave like functions
+        x = jn.arange(10).reshape((5, 2))
+        y = jn.arange(15).reshape((5, 3))
+        print(type(f1), f1(x, y))  # <class 'function'> 237.01947
+        print(type(m1), m1(x, y))  # <class 'objax.module.Function'> 237.01947
+        print(type(f2), f2(x, y))  # <class 'objax.module.Function'> 237.01947
+
+    Usage of `Function` is not necessary: it is made available for aesthetic reasons (to accomodate for users personal
+    taste). It is also used internally to keep the code simple for Grad, Jit, Parallel, Vectorize and future primitives.
+
+.. autoclass:: ForceArgs
+    :members:
+
+    One example of `ForceArgs` usage is to override `training` argument for batch normalization::
+
+        import objax
+        from objax.zoo.resnet_v2 import ResNet50
+
+        model = ResNet50(in_channels=3, num_classes=1000)
+
+        # Modify model to force training=False on first resnet block.
+        # First two ops in the resnet are convolution and padding,
+        # resnet blocks are starting at index 2.
+        model[2] = objax.ForceArgs(model[2], training=False)
+
+        # model(x, training=True) will be using `training=False` on model[2] due to ForceArgs
+        # ...
+
+        # Undo specific value of forced arguments in `model` and all submodules of `model`
+        objax.ForceArgs.undo(model, training=True)
+
+        # Undo all values of specific argument in `model` and all submodules of `model`
+        objax.ForceArgs.undo(model, training=objax.ForceArgs.ANY)
+
+        # Undo all values of all arguments in `model` and all submodules of `model`
+        objax.ForceArgs.undo(model)
+
 
 .. autoclass:: Grad
    :members:
@@ -99,6 +161,8 @@ Modules
         jit_f = objax.Jit(lambda x: m(x), m.vars())   # Jit a function: provide vars it uses
 
     For more information, refer to :ref:`JIT Compilation`.
+    Also note that one can pass variables to be used by Jit for a module `m`: the rest will be optimized away as
+    constants, for more information refer to :ref:`Constant optimization`.
 
 .. autoclass:: Parallel
    :members: vars
@@ -118,6 +182,8 @@ Modules
             y = para_m(x)
 
     For more information, refer to :ref:`Parallelism`.
+    Also note that one can pass variables to be used by Parallel for a module `m`: the rest will be optimized away as
+    constants, for more information refer to :ref:`Constant optimization`.
 
 .. autoclass:: Vectorize
    :members: vars
@@ -166,7 +232,6 @@ Variables
    :inherited-members:
 
 .. autoclass:: VarCollection
-   :members:
 
     Usage example::
 
@@ -197,6 +262,46 @@ Variables
         jit_f = objax.Jit(lambda x: m(x), vc)
 
     For more information and examples, refer to :ref:`VarCollection`.
+
+    .. automethod:: assign
+    .. automethod:: rename
+
+        Renaming entries in a `VarCollection` is a powerful tool that can be used for
+
+        - mapping weights between models that differ slightly.
+        - loading data checkpoints from foreign ML frameworks.
+
+        Usage example::
+
+            import re
+            import objax
+
+            m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
+            print(m.vars())
+            # (Sequential)[0](Linear).b        3 (3,)
+            # (Sequential)[0](Linear).w        6 (2, 3)
+            # +Total(2)                        9
+
+            # For example remove modules from the name
+            renamer = objax.util.Renamer([(re.compile('\([^)]+\)'), '')])
+            print(m.vars().rename(renamer))
+            # [0].b                       3 (3,)
+            # [0].w                       6 (2, 3)
+            # +Total(2)                   9
+
+            # One can chain renamers, their syntax is flexible and it can use a string mapping:
+            renamer_all = objax.util.Renamer({'[': '.', ']': ''}, renamer)
+            print(m.vars().rename(renamer_all))
+            # .0.b                        3 (3,)
+            # .0.w                        6 (2, 3)
+            # +Total(2)                   9
+
+
+    .. automethod:: replicate
+    .. automethod:: subset
+    .. automethod:: tensors
+    .. automethod:: update
+
 
 Constants
 ---------
