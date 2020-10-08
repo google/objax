@@ -14,7 +14,7 @@
 
 __all__ = ['Adam']
 
-from typing import List
+from typing import List, Optional
 
 from jax import numpy as jn
 
@@ -44,17 +44,23 @@ class Adam(Module):
         self.m = ModuleList(StateVar(jn.zeros_like(x.value)) for x in self.train_vars)
         self.v = ModuleList(StateVar(jn.zeros_like(x.value)) for x in self.train_vars)
 
-    def __call__(self, lr: float, grads: List[JaxArray]):
+    def __call__(self, lr: float, grads: List[JaxArray], beta1: Optional[float] = None, beta2: Optional[float] = None):
         """Updates variables and other state based on Adam algorithm.
 
         Args:
             lr: the learning rate.
             grads: the gradients to apply.
+            beta1: optional, override the default beta1.
+            beta2: optional, override the default beta2.
         """
         assert len(grads) == len(self.train_vars), 'Expecting as many gradients as trainable variables'
+        if beta1 is None:
+            beta1 = self.beta1
+        if beta2 is None:
+            beta2 = self.beta2
         self.step.value += 1
-        lr *= jn.sqrt(1 - self.beta2 ** self.step.value) / (1 - self.beta1 ** self.step.value)
+        lr *= jn.sqrt(1 - beta2 ** self.step.value) / (1 - beta1 ** self.step.value)
         for g, p, m, v in zip(grads, self.train_vars, self.m, self.v):
-            m.value += (1 - self.beta1) * (g - m.value)
-            v.value += (1 - self.beta2) * (g ** 2 - v.value)
+            m.value += (1 - beta1) * (g - m.value)
+            v.value += (1 - beta2) * (g ** 2 - v.value)
             p.value -= lr * m.value * functional.rsqrt(v.value + self.eps)

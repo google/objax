@@ -1,5 +1,5 @@
 objax.privacy.dpsgd package
-=====================
+===========================
 
 .. currentmodule:: objax.privacy.dpsgd
 
