@@ -163,6 +163,7 @@ objax.nn.init
 
 .. autosummary::
     gain_leaky_relu
+    identity
     kaiming_normal_gain
     kaiming_normal
     kaiming_truncated_normal
@@ -179,6 +180,9 @@ objax.nn.init
 
    .. math::
     \sqrt{\frac{2}{1 + \text{relu_slope}^2}}.
+
+.. autoclass:: identity
+   :members:
 
 .. autoclass:: kaiming_normal_gain
    :members:

@@ -16,11 +16,12 @@
 
 __all__ = ['FileOrStr', 'JaxArray', 'JaxDType']
 
-from typing import Union, IO, BinaryIO
+from typing import Union, IO, BinaryIO, Sequence, Tuple
 
 import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
+ConvPaddingInt = Union[Sequence[Tuple[int, int]], Tuple[int, int], int]
 FileOrStr = Union[str, IO[BinaryIO]]
 JaxArray = Union[jn.ndarray, jn.DeviceArray, ShardedDeviceArray]
 JaxDType = Union[jn.complex64, jn.complex128, jn.bfloat16,
