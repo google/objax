@@ -93,7 +93,7 @@ class TestNNInit(unittest.TestCase):
                 init = np.asarray(objax.nn.init.orthogonal(s, gain=gain))
                 I = init@init.T if s[0] < s[1] else init.T@init
                 I /= gain**2
-                diff = I - np.eye(min(s[0], s[1]))
+                diff = I - np.eye(np.min(s))
                 self.assertAlmostEqual(np.linalg.norm(diff), 0, delta=1e-2, msg=(s, gain))
     
     def test_kaiming_normal_gain(self):
