@@ -20,6 +20,8 @@ from typing import Tuple
 import numpy as np
 import scipy.stats
 
+from jax import numpy as jn
+
 from objax import random
 from objax.typing import JaxArray
 
@@ -123,7 +125,7 @@ def orthogonal(shape: Tuple[int, ...], gain: float = 1, axis : int = -1) -> JaxA
       q_mat = q_mat.T
     q_mat = np.reshape(q_mat, (n_rows,) + tuple(np.delete(shape, axis)))
     q_mat = np.moveaxis(q_mat, 0, axis)
-    return gain * q_mat
+    return gain * jn.array(q_mat)
 
 
 def xavier_normal(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
