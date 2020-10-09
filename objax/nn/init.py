@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal', 
-            'orthogonal', 'truncated_normal', 'xavier_normal', 'xavier_truncated_normal']
+__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal',
+           'orthogonal', 'truncated_normal', 'xavier_normal', 'xavier_truncated_normal']
 
 from typing import Tuple
 
@@ -109,8 +109,8 @@ def kaiming_truncated_normal(shape: Tuple[int, ...], lower: float = -2, upper: f
     return random.truncated_normal(shape, stddev=stddev, lower=lower, upper=upper)
 
 
-def orthogonal(shape: Tuple[int, ...], gain: float = 1, axis : int = -1) -> JaxArray:
-    """Returns a uniformly distributed orthogonal tensor from 
+def orthogonal(shape: Tuple[int, ...], gain: float = 1, axis: int = -1) -> JaxArray:
+    """Returns a uniformly distributed orthogonal tensor from
     `Exact solutions to the nonlinear dynamics of learning in deep linear neural networks
     <https://openreview.net/forum?id=_wzZwKpTDF_9C>`_.
 
@@ -138,7 +138,7 @@ def orthogonal(shape: Tuple[int, ...], gain: float = 1, axis : int = -1) -> JaxA
     # Enforce Q is uniformly distributed
     q_mat *= np.sign(np.diag(r_mat))
     if n_rows < n_cols:
-      q_mat = q_mat.T
+        q_mat = q_mat.T
     q_mat = np.reshape(q_mat, (n_rows,) + tuple(np.delete(shape, axis)))
     q_mat = np.moveaxis(q_mat, 0, axis)
     return gain * jn.array(q_mat)
