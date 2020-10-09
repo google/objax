@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal', 
-            'truncated_normal', 'xavier_normal', 'xavier_truncated_normal']
+__all__ = ['gain_leaky_relu', 'identity', 'kaiming_normal', 'kaiming_normal_gain', 'kaiming_truncated_normal',
+           'orthogonal', 'truncated_normal', 'xavier_normal', 'xavier_truncated_normal']
 
 from typing import Tuple
 
@@ -107,6 +107,41 @@ def kaiming_truncated_normal(shape: Tuple[int, ...], lower: float = -2, upper: f
     truncated_std = scipy.stats.truncnorm.std(a=lower, b=upper, loc=0., scale=1)
     stddev = gain * kaiming_normal_gain(shape) / truncated_std
     return random.truncated_normal(shape, stddev=stddev, lower=lower, upper=upper)
+
+
+def orthogonal(shape: Tuple[int, ...], gain: float = 1, axis: int = -1) -> JaxArray:
+    """Returns a uniformly distributed orthogonal tensor from
+    `Exact solutions to the nonlinear dynamics of learning in deep linear neural networks
+    <https://openreview.net/forum?id=_wzZwKpTDF_9C>`_.
+
+    Args:
+        shape: shape of the output tensor.
+        gain: optional scaling factor.
+        axis: the orthogonalizarion axis
+
+    Returns:
+        An orthogonally initialized tensor.
+        These tensors will be row-orthonormal along the access specified by
+        ``axis``. If the rank of the weight is greater than 2, the shape will be
+        flattened in all other dimensions and then will be row-orthonormal along the
+        final dimension. Note that this only works if the ``axis`` dimension is
+        larger, otherwise the tensor will be transposed (equivalently, it will be
+        column orthonormal instead of row orthonormal).
+        If the shape is not square, the matrices will have orthonormal rows or
+        columns depending on which side is smaller.
+    """
+    n_rows = shape[axis]
+    n_cols = np.prod(shape) // n_rows
+    matrix_shape = (n_rows, n_cols) if n_rows > n_cols else (n_cols, n_rows)
+    norm_dst = random.normal(matrix_shape)
+    q_mat, r_mat = np.linalg.qr(norm_dst)
+    # Enforce Q is uniformly distributed
+    q_mat *= np.sign(np.diag(r_mat))
+    if n_rows < n_cols:
+        q_mat = q_mat.T
+    q_mat = np.reshape(q_mat, (n_rows,) + tuple(np.delete(shape, axis)))
+    q_mat = np.moveaxis(q_mat, 0, axis)
+    return gain * jn.array(q_mat)
 
 
 def xavier_normal(shape: Tuple[int, ...], gain: float = 1) -> JaxArray:
