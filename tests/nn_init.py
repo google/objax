@@ -86,14 +86,14 @@ class TestNNInit(unittest.TestCase):
                 diff_sum = np.linalg.norm(init - gain * np.eye(s[0], s[1]))
                 self.assertAlmostEqual(diff_sum, 0, delta=1e-2, msg=(s, gain))
 
-   def test_orthogonal(self):
-       """Orthogonal."""
-       for s in ((10, 100), (100, 10), (10, 10)):
+    def test_orthogonal(self):
+        """Orthogonal."""
+        for s in ((10, 100), (100, 10), (10, 10)):
             for gain in (1, 2):
                 init = np.asarray(objax.nn.init.orthogonal(s, gain=gain))
                 I = init@init.T if s[0] < s[1] else init.T@init
                 I /= gain**2
-                diff = I - np.eye(np.min(s[0], s[1]))
+                diff = I - np.eye(min(s[0], s[1]))
                 self.assertAlmostEqual(np.linalg.norm(diff), 0, delta=1e-2, msg=(s, gain))
     
     def test_kaiming_normal_gain(self):
