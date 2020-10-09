@@ -60,8 +60,8 @@ def logit(x):
 class Norm(objax.module.Module):
     def __init__(self, n_state, axis=-1, epsilon=1e-5):
         super().__init__()
-        self.g = TrainVar(np.zeros(n_state))
-        self.b = TrainVar(np.ones(n_state))
+        self.g = TrainVar(np.ones(n_state))
+        self.b = TrainVar(np.zeros(n_state))
         self.axis = axis
         self.epsilon = epsilon
 
