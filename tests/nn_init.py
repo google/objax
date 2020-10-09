@@ -78,7 +78,7 @@ class TestNNInit(unittest.TestCase):
                     self.assertAlmostEqual(init.mean(), 0, delta=1e-2, msg=(s, gain, (a, b)))
                     self.assertAlmostEqual(init.std(), std * gain, delta=1e-2, msg=(s, gain, (a, b)))
 
-    def orthogonal(self):
+    def test_orthogonal(self):
         """Orthogonal."""
         for s in ((10, 100), (100, 10), (10, 10)):
             for gain in (1, 2):
