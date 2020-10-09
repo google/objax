@@ -91,11 +91,11 @@ class TestNNInit(unittest.TestCase):
         for s in ((10, 100), (100, 10), (10, 10)):
             for gain in (1, 2):
                 init = np.asarray(objax.nn.init.orthogonal(s, gain=gain))
-                I = init@init.T if s[0] < s[1] else init.T@init
-                I /= gain**2
-                diff = I - np.eye(np.min(s))
+                I_ = init @ init.T if s[0] < s[1] else init.T @ init
+                I_ /= gain**2
+                diff = I_ - np.eye(np.min(s))
                 self.assertAlmostEqual(np.linalg.norm(diff), 0, delta=1e-2, msg=(s, gain))
-    
+
     def test_kaiming_normal_gain(self):
         """Kaiming normal gain."""
         shapes = ((4, 3, 2, 10000), (12, 2, 10000), (24, 10000), (32, 10000))
