@@ -331,6 +331,7 @@ class ExponentialMovingAverage(Module):
         self.avg.value += (self.avg.value - x) * (self.momentum - 1)
         return self.avg.value
 
+
 class SimpleRNN(Module):
     """Simple Recurrent Neural Network (RNN) block."""
 
@@ -362,11 +363,11 @@ class SimpleRNN(Module):
         self.w_hh = TrainVar(w_init((self.nstate, self.nstate)))
         self.b_h = TrainVar(jn.zeros(self.nstate))
 
-        self.output_layer = Linear(self.nstate, self.num_outputs, w_init = w_init)
+        self.output_layer = Linear(self.nstate, self.num_outputs, w_init=w_init)
 
     def __call__(self, inputs: JaxArray,
                  initial_state: JaxArray = None,
-                 only_return_final = False) -> Tuple[JaxArray, JaxArray]:
+                 only_return_final: bool = False) -> Tuple[JaxArray, JaxArray]:
         """Forward pass through RNN.
 
         Args:
@@ -381,7 +382,7 @@ class SimpleRNN(Module):
         """
         outputs = []
 
-        if initial_state == None:
+        if initial_state is None:
             state = jn.zeros((inputs.shape[0], self.nstate))
         else:
             state = initial_state
@@ -400,6 +401,7 @@ class SimpleRNN(Module):
             return y, state
         else:
             return jn.concatenate(outputs, axis=0), state
+
 
 class Sequential(ModuleList):
     """Executes modules in the order they were passed to the constructor."""

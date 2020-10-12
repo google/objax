@@ -16,16 +16,13 @@
 
 import unittest
 
-import numpy as np
 import jax.numpy as jn
-import tensorflow as tf
 
-import objax
 from objax.nn.layers import SimpleRNN
 from objax.functional import one_hot
 from objax.functional.core.activation import relu
 from objax.nn.init import identity
-from objax.zoo.resnet_v2 import convert_keras_model, load_pretrained_weights_from_keras
+
 
 class TestSimpleRNN(unittest.TestCase):
 
@@ -33,7 +30,7 @@ class TestSimpleRNN(unittest.TestCase):
         nin = nout = 3
         batch_size = 1
         num_hiddens = 1
-        model = SimpleRNN(num_hiddens, nin, nout, activation = relu, w_init = identity)
+        model = SimpleRNN(num_hiddens, nin, nout, activation=relu, w_init=identity)
 
         X = jn.arange(batch_size)
         X_one_hot = one_hot(X, nin)
@@ -47,6 +44,7 @@ class TestSimpleRNN(unittest.TestCase):
         state = jn.array([[2.]])
         Z, _ = model(X_one_hot, state)
         self.assertTrue(jn.array_equal(Z, jn.array([[3., 0., 0.]])))
+
 
 if __name__ == '__main__':
     unittest.main()

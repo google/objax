@@ -22,7 +22,11 @@ import tensorflow_datasets as tfds
 
 import objax
 from objax.functional import one_hot
+<<<<<<< HEAD:examples/text_generation/shakespeare_rnn.py
 from objax.nn import SimpleRNN
+=======
+from objax.nn import RNN
+>>>>>>> 2c04d4e (Move RNN to layers.py and make it stateless.):examples/rnn/shakespeare.py
 
 
 def tokenize(lines, token_type='word'):
