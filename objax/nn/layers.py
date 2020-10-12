@@ -14,7 +14,7 @@
 
 __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
            'Conv2D', 'ConvTranspose2D', 'Dropout', 'Linear',
-           'MovingAverage', 'ExponentialMovingAverage', 'Sequential',
+           'MovingAverage', 'ExponentialMovingAverage', 'RNN', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
 from typing import Callable, Iterable, Tuple, Optional, Union, List
@@ -331,6 +331,63 @@ class ExponentialMovingAverage(Module):
         self.avg.value += (self.avg.value - x) * (self.momentum - 1)
         return self.avg.value
 
+class RNN(Module):
+    """ Recurrent Neural Network (RNN) block."""
+
+    def __init__(self,
+                 nstate: int,
+                 nin: int,
+                 nout: int,
+                 activation: Callable = jn.tanh,
+                 w_init: Callable = kaiming_normal):
+        """Creates an RNN instance.
+
+        Args:
+            nstate: number of hidden units.
+            nin: number of input units.
+            nout: number of output units.
+            activation: actication function for hidden layer.
+            w_init: weight initializer for RNN model weights.
+        """
+        self.num_inputs = nin
+        self.num_outputs = nout
+        self.nstate = nstate
+        self.activation = activation
+
+        # Hidden layer parameters
+        self.w_xh = TrainVar(w_init((self.num_inputs, self.nstate)))
+        self.w_hh = TrainVar(w_init((self.nstate, self.nstate)))
+        self.b_h = TrainVar(jn.zeros(self.nstate))
+
+        self.output_layer = Linear(self.nstate, self.num_outputs)
+
+    def __call__(self, inputs: JaxArray, only_return_final=False) -> JaxArray:
+        """Forward pass through RNN.
+
+        Args:
+            inputs: ``JaxArray`` with dimensions ``num_steps, batch_size, vocabulary_size``.
+            only_return_final: return only the last output if ``True``, or all output otherwise.`
+
+        Returns:
+            Output tensor with dimensions ``N * batch_size, vocabulary_size``.
+            N = 1 if ``only_return_final`` is ``True`` and ``num_steps`` otherwise.
+        """
+        outputs = []
+        state = jn.zeros((inputs.shape[1], self.nstate))
+        for x in inputs:
+            state = self.activation(
+                jn.dot(x, self.w_xh.value)
+                + jn.dot(state, self.w_hh.value)
+                + self.b_h.value
+            )
+            y = self.output_layer(state)
+            if not only_return_final:
+                outputs.append(y)
+
+        if only_return_final:
+            return y
+        else:
+            return jn.concatenate(outputs, axis=0)
 
 class Sequential(ModuleList):
     """Executes modules in the order they were passed to the constructor."""

@@ -22,7 +22,7 @@ import tensorflow_datasets as tfds
 
 import objax
 from objax.functional import one_hot
-from objax.zoo.rnn import RNN
+from objax.nn import RNN
 
 
 def tokenize(lines, token_type='word'):
@@ -137,25 +137,20 @@ num_epochs = 500
 num_hiddens = 256
 lr = 0.0001
 theta = 1
-print(jax.local_devices())
 
 train_iter, vocab = load_shakespeare(batch_size, num_steps, 'char')
 vocab_size = len(vocab)
 
 model = RNN(num_hiddens, vocab_size, vocab_size)
 model_vars = model.vars()
-model.init_state(batch_size)
 
 # Sample call for forward pass
 X = jn.arange(batch_size * num_steps).reshape(batch_size, num_steps).T
 X_one_hot = one_hot(X, vocab_size)
 Z = model(X_one_hot)
-print("X_one_hot.shape:", X_one_hot.shape)
-print("Z.shape:", Z.shape)
 
 
 def predict_char(prefix, num_predicts, model, vocab):
-    model.init_state(batch_size=1)
     outputs = [vocab[prefix[0]]]
     get_input = lambda: one_hot(jn.array([outputs[-1]]).reshape(1, 1), len(vocab))
     for y in prefix[1:]:  # Warmup state with prefix
@@ -172,12 +167,11 @@ print(predict_char('to be or not to be', 10, model, vocab))
 
 opt = objax.optimizer.Adam(model_vars)
 ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999)
-predict = ema.replace_vars(objax.Jit(lambda x: objax.functional.softmax(model(x)), model_vars))
 
 
 def loss(x, label):  # sum(label * log(softmax(logit)))
-    logit = model(x)
-    return objax.functional.loss.cross_entropy_logits(logit, label).mean()
+    logits = model(x)
+    return objax.functional.loss.cross_entropy_logits(logits, label).mean()
 
 
 gv = objax.GradValues(loss, model.vars())
