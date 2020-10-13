@@ -215,7 +215,7 @@ class ConvTranspose2D(Conv2D):
             strides: convolution strides, either tuple (stride_y, stride_x) or single number if they're the same.
             dilations: spacing between kernel points (also known as astrous convolution),
                        either tuple (dilation_y, dilation_x) or single number if they're the same.
-            padding: padding of the input tensor, either Padding.SAME or Padding.VALID.
+            padding: padding of the input tensor, either Padding.SAME, Padding.VALID or numerical values.
             use_bias: if True then convolution will have bias term.
             w_init: initializer for convolution kernel (a function that takes in a HWIO shape and returns a 4D matrix).
         """

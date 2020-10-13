@@ -16,14 +16,14 @@
 
 import unittest
 
-import jax.numpy as jn
+import jax.numpy as  jn
 import numpy as np
 
 import objax
 
 
 def shaparange(s):
-    return jn.arange(np.prod(s)).reshape(s)
+    return jn.arange(np.prod(s), dtype=np.float).reshape(s)
 
 
 class TestPooling(unittest.TestCase):
@@ -40,6 +40,42 @@ class TestPooling(unittest.TestCase):
         self.assertEqual(y.tolist(), z.tolist())
         y = objax.functional.average_pool_2d(x, size=(2, 3))
         z = x.reshape((2, 3, 5, 2, 10, 3)).mean((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+
+    def test_max_pooling2d(self):
+        x = shaparange((2, 3, 10, 30))
+        y = objax.functional.max_pool_2d(x, size=5)
+        z = x.reshape((2, 3, 2, 5, 6, 5)).max((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.max_pool_2d(x, size=5, strides=1)
+        z = np.zeros((2, 3, 6, 26), dtype=np.float)
+        for i in range(6):
+            for j in range(26):
+                z[:, :, i, j] = x[:, :, i:i + 5, j:j + 5].max((-2, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.max_pool_2d(x, size=(2, 3))
+        z = x.reshape((2, 3, 5, 2, 10, 3)).max((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+
+    def test_pooling2d_padding(self):
+        x = shaparange((2, 3, 10, 30))
+        y = objax.functional.average_pool_2d(x, size=5, padding=(2, 3))
+        z = np.pad(x, ((0, 0), (0, 0), (2, 3), (2, 3))).reshape((2, 3, 3, 5, 7, 5)).mean((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.max_pool_2d(x, size=5, padding=(2, 3))
+        z = np.pad(x, ((0, 0), (0, 0), (2, 3), (2, 3))).reshape((2, 3, 3, 5, 7, 5)).max((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.average_pool_2d(x, size=5, padding=((2, 3), (3, 2)))
+        z = np.pad(x, ((0, 0), (0, 0), (2, 3), (3, 2))).reshape((2, 3, 3, 5, 7, 5)).mean((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.max_pool_2d(x, size=5, padding=((2, 3), (3, 2)))
+        z = np.pad(x, ((0, 0), (0, 0), (2, 3), (3, 2))).reshape((2, 3, 3, 5, 7, 5)).max((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.average_pool_2d(x, size=2, padding=1)
+        z = np.pad(x, ((0, 0), (0, 0), (1, 1), (1, 1))).reshape((2, 3, 6, 2, 16, 2)).mean((-3, -1))
+        self.assertEqual(y.tolist(), z.tolist())
+        y = objax.functional.max_pool_2d(x, size=2, padding=1)
+        z = np.pad(x, ((0, 0), (0, 0), (1, 1), (1, 1))).reshape((2, 3, 6, 2, 16, 2)).max((-3, -1))
         self.assertEqual(y.tolist(), z.tolist())
 
     def test_space_batch(self):
