@@ -166,6 +166,7 @@ class Conv2D(Module):
         super().__init__()
         assert nin % groups == 0, 'nin should be divisible by groups'
         assert nout % groups == 0, 'nout should be divisible by groups'
+        self.nin = nin
         self.b = TrainVar(jn.zeros((nout, 1, 1))) if use_bias else None
         self.w = TrainVar(w_init((*util.to_tuple(k, 2), nin // groups, nout)))  # HWIO
         self.padding = util.to_padding(padding, 2)
@@ -175,6 +176,11 @@ class Conv2D(Module):
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the convolution to input x."""
+        assert x.shape[-1]%self.nin == 0, \
+            'Attempting to convolve an input with {} input channels ' \
+            'when the convolution expects {} channels.' \
+            'For reference, self.w.shape={} and x.shape={}.'.format(x.shape[1], self.nin, 
+                                                                    self.w.value.shape, x.shape)
         y = lax.conv_general_dilated(x, self.w.value, self.strides, self.padding,
                                      rhs_dilation=self.dilations,
                                      feature_group_count=self.groups,
