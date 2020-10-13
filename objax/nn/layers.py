@@ -176,7 +176,7 @@ class Conv2D(Module):
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the convolution to input x."""
-        assert x.shape[-1]%self.nin == 0, \
+        assert x.shape[1]%self.nin == 0, \
             'Attempting to convolve an input with {} input channels ' \
             'when the convolution expects {} channels.' \
             'For reference, self.w.shape={} and x.shape={}.'.format(x.shape[1], self.nin, 
