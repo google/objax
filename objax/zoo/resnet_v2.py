@@ -100,9 +100,9 @@ class ResNetV2Block(objax.Module):
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1), (self.norm_2, self.conv_2))
         else:
             self.norm_0 = normalization_fn(nin, **bn_args())
-            self.conv_0 = Conv2D(nin, nout, 3, strides=1, **conv_args(3, nout))
+            self.conv_0 = Conv2D(nin, nout, 3, strides=1, **conv_args(3, nout, (1, 1)))
             self.norm_1 = normalization_fn(nout, **bn_args())
-            self.conv_1 = Conv2D(nout, nout, 3, strides=stride, **conv_args(3, nout))
+            self.conv_1 = Conv2D(nout, nout, 3, strides=stride, **conv_args(3, nout, (1, 1)))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1))
 
     def __call__(self, x: JaxArray, training: bool) -> JaxArray:
