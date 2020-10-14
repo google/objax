@@ -32,7 +32,7 @@ __all__ = ['ResNetV2', 'ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet1
 
 def conv_args(kernel_size: int,
               nout: int,
-              padding: Optional[Union[ConvPadding, str, ConvPaddingInt]] = ConvPadding.SAME):
+              padding: Optional[Union[ConvPadding, str, ConvPaddingInt]] = ConvPadding.VALID):
     """Returns list of arguments which are common to all convolutions.
 
     Args:
@@ -151,7 +151,7 @@ class ResNetV2BlockGroup(objax.nn.Sequential):
                 ResNetV2Block(
                     nin=(nin if i == 0 else nout),
                     nout=nout,
-                    stride=(1 if i > 0 else stride),
+                    stride=(stride if i == num_blocks - 1 else 1),
                     use_projection=(i == 0 and use_projection),
                     bottleneck=bottleneck,
                     normalization_fn=normalization_fn,
