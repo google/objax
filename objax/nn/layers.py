@@ -17,8 +17,7 @@ __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
            'MovingAverage', 'ExponentialMovingAverage', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
-import inspect
-from typing import Callable, Iterable, Tuple, Optional, Union
+from typing import Callable, Iterable, Tuple, Optional, Union, List
 
 from jax import numpy as jn, random as jr, lax
 
@@ -26,7 +25,7 @@ from objax import functional, random, util
 from objax.constants import ConvPadding
 from objax.module import ModuleList, Module
 from objax.nn.init import kaiming_normal, xavier_normal
-from objax.typing import JaxArray
+from objax.typing import JaxArray, ConvPaddingInt
 from objax.variable import TrainVar, StateVar
 
 
@@ -146,7 +145,7 @@ class Conv2D(Module):
                  strides: Union[Tuple[int, int], int] = 1,
                  dilations: Union[Tuple[int, int], int] = 1,
                  groups: int = 1,
-                 padding: ConvPadding = ConvPadding.SAME,
+                 padding: Union[ConvPadding, str, ConvPaddingInt] = ConvPadding.SAME,
                  use_bias: bool = True,
                  w_init: Callable = kaiming_normal):
         """Creates a Conv2D module instance.
@@ -160,7 +159,7 @@ class Conv2D(Module):
                        either tuple (dilation_y, dilation_x) or single number if they're the same.
             groups: number of input and output channels group. When groups > 1 convolution operation is applied
                     individually for each group. nin and nout must both be divisible by groups.
-            padding: padding of the input tensor, either Padding.SAME or Padding.VALID.
+            padding: padding of the input tensor, either Padding.SAME, Padding.VALID or numerical values.
             use_bias: if True then convolution will have bias term.
             w_init: initializer for convolution kernel (a function that takes in a HWIO shape and returns a 4D matrix).
         """
@@ -169,14 +168,14 @@ class Conv2D(Module):
         assert nout % groups == 0, 'nout should be divisible by groups'
         self.b = TrainVar(jn.zeros((nout, 1, 1))) if use_bias else None
         self.w = TrainVar(w_init((*util.to_tuple(k, 2), nin // groups, nout)))  # HWIO
-        self.padding = padding
+        self.padding = util.to_padding(padding, 2)
         self.strides = util.to_tuple(strides, 2)
         self.dilations = util.to_tuple(dilations, 2)
         self.groups = groups
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the convolution to input x."""
-        y = lax.conv_general_dilated(x, self.w.value, self.strides, self.padding.value,
+        y = lax.conv_general_dilated(x, self.w.value, self.strides, self.padding,
                                      rhs_dilation=self.dilations,
                                      feature_group_count=self.groups,
                                      dimension_numbers=('NCHW', 'HWIO', 'NCHW'))
@@ -204,7 +203,7 @@ class ConvTranspose2D(Conv2D):
                  k: Union[Tuple[int, int], int],
                  strides: Union[Tuple[int, int], int] = 1,
                  dilations: Union[Tuple[int, int], int] = 1,
-                 padding: ConvPadding = ConvPadding.SAME,
+                 padding: Union[ConvPadding, str, ConvPaddingInt] = ConvPadding.SAME,
                  use_bias: bool = True,
                  w_init: Callable = kaiming_normal):
         """Creates a ConvTranspose2D module instance.
@@ -216,7 +215,7 @@ class ConvTranspose2D(Conv2D):
             strides: convolution strides, either tuple (stride_y, stride_x) or single number if they're the same.
             dilations: spacing between kernel points (also known as astrous convolution),
                        either tuple (dilation_y, dilation_x) or single number if they're the same.
-            padding: padding of the input tensor, either Padding.SAME or Padding.VALID.
+            padding: padding of the input tensor, either Padding.SAME, Padding.VALID or numerical values.
             use_bias: if True then convolution will have bias term.
             w_init: initializer for convolution kernel (a function that takes in a HWIO shape and returns a 4D matrix).
         """
@@ -226,7 +225,7 @@ class ConvTranspose2D(Conv2D):
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the transposed convolution to input x."""
-        y = lax.conv_transpose(x, self.w.value, self.strides, self.padding.value,
+        y = lax.conv_transpose(x, self.w.value, self.strides, self.padding,
                                rhs_dilation=self.dilations,
                                dimension_numbers=('NCHW', 'HWIO', 'NCHW'), transpose_kernel=True)
         if self.b:
@@ -332,19 +331,21 @@ class ExponentialMovingAverage(Module):
 class Sequential(ModuleList):
     """Executes modules in the order they were passed to the constructor."""
 
-    def __call__(self, x: JaxArray, **kwargs) -> JaxArray:
-        """Execute the sequence of operation contained on ``x`` and ``**kwargs`` and return result."""
-        for f in self:
-            s = inspect.signature(f).parameters
-            if s:
-                if next(reversed(s.values())).kind == inspect.Parameter.VAR_KEYWORD:
-                    local_kwargs = kwargs
-                else:
-                    local_kwargs = {k: v for k, v in kwargs.items() if k in s}
-            else:
-                local_kwargs = {}
-            x = f(x, **local_kwargs)
-        return x
+    def __call__(self, *args, **kwargs) -> Union[JaxArray, List[JaxArray]]:
+        """Execute the sequence of operations contained on ``*args`` and ``**kwargs`` and return result."""
+        if not self:
+            return args if len(args) > 1 else args[0]
+        for f in self[:-1]:
+            args = f(*args, **util.local_kwargs(kwargs, f))
+            if not isinstance(args, tuple):
+                args = (args,)
+        return self[-1](*args, **util.local_kwargs(kwargs, self[-1]))
+
+    def __getitem__(self, key: Union[int, slice]):
+        value = list.__getitem__(self, key)
+        if isinstance(key, slice):
+            return Sequential(value)
+        return value
 
 
 class SyncedBatchNorm(BatchNorm):

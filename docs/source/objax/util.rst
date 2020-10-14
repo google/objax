@@ -8,16 +8,20 @@ objax.util
 
 .. autosummary::
 
-   EasyDict
-   args_indexes
-   dummy_context_mgr
-   ilog2
-   positional_args_names
-   to_tuple
+    EasyDict
+    Renamer
+    args_indexes
+    dummy_context_mgr
+    ilog2
+    positional_args_names
+    to_tuple
 
 .. autoclass:: EasyDict
     :members:
     :inherited-members:
+
+.. autoclass:: Renamer
+    :members:
 
 .. autofunction:: args_indexes
 

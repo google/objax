@@ -24,7 +24,7 @@ import jax.random as jr
 import numpy as np
 
 from objax.typing import JaxArray
-from objax.util import map_to_device
+from objax.util import map_to_device, Renamer
 
 
 def reduce_mean(x: JaxArray) -> JaxArray:
@@ -246,6 +246,10 @@ class VarCollection(Dict[str, BaseVar]):
         text.append(f'{f"+Total({count})":{longest_string}} {total:8d}')
         return '\n'.join(text)
 
+    def rename(self, renamer: Renamer):
+        """Rename the entries in the VarCollection."""
+        return VarCollection({renamer(k): v for k, v in self.items()})
+
     @contextmanager
     def replicate(self):
         """A context manager to use in a with statement that replicates the variables in this collection to multiple
@@ -253,7 +257,7 @@ class VarCollection(Dict[str, BaseVar]):
         device.
         Important: replicating also updates the random state in order to have a new one per device.
         """
-        ndevices = jax.device_count()
+        ndevices = jax.local_device_count()
         replicated, saved_states = [], []
         for v in self:
             if isinstance(v, RandomState):

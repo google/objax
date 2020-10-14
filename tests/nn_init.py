@@ -70,6 +70,7 @@ class TestNNInit(unittest.TestCase):
         for s in ((4, 3, 2, 10000), (12, 2, 10000), (24, 10000), (32, 10000)):
             for gain in (1, 2):
                 for a, b in ((-100, 100), (-2, 2), (-0.1, 0.1)):
+                    objax.random.DEFAULT_GENERATOR.seed(123)  # TODO: remove once JAX#4548 is released.
                     init = np.asarray(objax.nn.init.xavier_truncated_normal(s, lower=a, upper=b, gain=gain))
                     std = np.sqrt(2 / (np.prod(s[:-1]) + s[-1]))
                     truncated_std = scipy.stats.truncnorm.std(a=a, b=b, loc=0., scale=1)
@@ -77,6 +78,24 @@ class TestNNInit(unittest.TestCase):
                     self.assertLessEqual(init.max() - 1e-6, b * std * gain / truncated_std, msg=(s, gain, (a, b)))
                     self.assertAlmostEqual(init.mean(), 0, delta=1e-2, msg=(s, gain, (a, b)))
                     self.assertAlmostEqual(init.std(), std * gain, delta=1e-2, msg=(s, gain, (a, b)))
+
+    def test_identity(self):
+        """Identity"""
+        for s in ((16, 16), (24, 10000), (10000, 32)):
+            for gain in (1, 2):
+                init = np.asarray(objax.nn.init.identity(s, gain=gain))
+                diff_sum = np.linalg.norm(init - gain * np.eye(s[0], s[1]))
+                self.assertAlmostEqual(diff_sum, 0, delta=1e-2, msg=(s, gain))
+
+    def test_orthogonal(self):
+        """Orthogonal."""
+        for s in ((10, 100), (100, 10), (10, 10)):
+            for gain in (1, 2):
+                init = np.asarray(objax.nn.init.orthogonal(s, gain=gain))
+                eye = init @ init.T if s[0] < s[1] else init.T @ init
+                eye /= gain**2
+                diff = eye - np.eye(np.min(s))
+                self.assertAlmostEqual(np.linalg.norm(diff), 0, delta=1e-2, msg=(s, gain))
 
     def test_kaiming_normal_gain(self):
         """Kaiming normal gain."""

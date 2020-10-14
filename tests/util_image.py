@@ -15,6 +15,7 @@
 """Unittests for objax.util.image."""
 
 import io
+import tempfile
 import unittest
 from typing import Tuple
 
@@ -30,7 +31,6 @@ class TestUtilImage(unittest.TestCase):
         return np.arange(np.prod(dims), dtype=float).reshape(dims)
 
     def test_nchw(self):
-        """Test nchw."""
         x = self.ndimarange((2, 3, 4, 5))
         self.assertEqual(objax.util.image.nchw(x).tolist(), x.transpose((0, 3, 1, 2)).tolist())
         self.assertEqual(objax.util.image.nchw(jn.array(x)).tolist(), x.transpose((0, 3, 1, 2)).tolist())
@@ -39,7 +39,6 @@ class TestUtilImage(unittest.TestCase):
         self.assertEqual(objax.util.image.nchw(jn.array(x)).tolist(), x.transpose((0, 1, 4, 2, 3)).tolist())
 
     def test_nhwc(self):
-        """Test nhwc."""
         x = self.ndimarange((2, 3, 4, 5))
         self.assertEqual(objax.util.image.nhwc(x).tolist(), x.transpose((0, 2, 3, 1)).tolist())
         self.assertEqual(objax.util.image.nhwc(jn.array(x)).tolist(), x.transpose((0, 2, 3, 1)).tolist())
@@ -61,7 +60,6 @@ class TestUtilImage(unittest.TestCase):
         self.assertEqual((x - 1).clip(0, 255).tolist(), z.tolist())
 
     def test_to_png(self):
-        """Test to_png."""
         x = np.zeros((3, 32, 32), np.float) + 1 / 255
         x[:, :12, :12] = 1
         x[:, -12:, -12:] = -1
@@ -74,6 +72,28 @@ class TestUtilImage(unittest.TestCase):
         z = np.array(Image.open(io.BytesIO(y)))
         z = (z.transpose((2, 0, 1)) - 127.5) / 127.5
         self.assertEqual(x.tolist(), z.tolist())
+
+    def test_to_png_from_file(self):
+        x = objax.random.randint((3, 32, 24), 0, 256)
+        x = objax.util.image.normalize_to_unit_float(x)
+        bin = objax.util.image.to_png(x)
+        y = objax.util.image.from_file(io.BytesIO(bin))
+        self.assertEqual(x.tolist(), y.tolist())
+
+    def test_image_grid(self):
+        x = objax.random.randint((5, 7, 3, 8, 4), 0, 256)
+        y = objax.util.image.image_grid(x)
+        z = x.transpose((2, 0, 3, 1, 4)).reshape((3, 40, 28))
+        self.assertEqual(y.tolist(), z.tolist())
+
+    def test_from_file_with_filename(self):
+        x = objax.random.randint((3, 32, 24), 0, 256)
+        x = objax.util.image.normalize_to_unit_float(x)
+        with tempfile.NamedTemporaryFile('wb', suffix='.png') as f:
+            f.write(objax.util.image.to_png(x))
+            f.flush()
+            y = objax.util.image.from_file(f.name)
+        self.assertEqual(x.tolist(), y.tolist())
 
 
 if __name__ == '__main__':
