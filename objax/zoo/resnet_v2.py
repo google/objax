@@ -91,17 +91,17 @@ class ResNetV2Block(objax.Module):
             self.proj_conv = Conv2D(nin, nout, 1, strides=stride, **conv_args(1, nout))
 
         if bottleneck:
-            self.norm_0 = normalization_fn(nin, **bn_args(bn_mom, bn_eps))
+            self.norm_0 = normalization_fn(nin, **bn_args())
             self.conv_0 = Conv2D(nin, nout // 4, 1, strides=1, **conv_args(1, nout // 4))
-            self.norm_1 = normalization_fn(nout // 4, **bn_args(bn_mom, bn_eps))
+            self.norm_1 = normalization_fn(nout // 4, **bn_args())
             self.conv_1 = Conv2D(nout // 4, nout // 4, 3, strides=stride, **conv_args(3, nout // 4, (1, 1)))
-            self.norm_2 = normalization_fn(nout // 4, **bn_args(bn_mom, bn_eps))
+            self.norm_2 = normalization_fn(nout // 4, **bn_args())
             self.conv_2 = Conv2D(nout // 4, nout, 1, strides=1, **conv_args(1, nout))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1), (self.norm_2, self.conv_2))
         else:
-            self.norm_0 = normalization_fn(nin, **bn_args(bn_mom, bn_eps))
+            self.norm_0 = normalization_fn(nin, **bn_args())
             self.conv_0 = Conv2D(nin, nout, 3, strides=1, **conv_args(3, nout))
-            self.norm_1 = normalization_fn(nout, **bn_args(bn_mom, bn_eps))
+            self.norm_1 = normalization_fn(nout, **bn_args())
             self.conv_1 = Conv2D(nout, nout, 3, strides=stride, **conv_args(3, nout))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1))
 
@@ -206,7 +206,7 @@ class ResNetV2(objax.nn.Sequential):
                 normalization_fn=normalization_fn,
                 activation_fn=activation_fn))
 
-        ops.extend([normalization_fn(nout, **bn_args(bn_mom, bn_eps)),
+        ops.extend([normalization_fn(nout, **bn_args()),
                     activation_fn,
                     lambda x: x.mean((2, 3)),
                     objax.nn.Linear(nout,
