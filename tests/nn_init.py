@@ -70,6 +70,7 @@ class TestNNInit(unittest.TestCase):
         for s in ((4, 3, 2, 10000), (12, 2, 10000), (24, 10000), (32, 10000)):
             for gain in (1, 2):
                 for a, b in ((-100, 100), (-2, 2), (-0.1, 0.1)):
+                    objax.random.DEFAULT_GENERATOR.seed(123)  # TODO: remove once JAX#4548 is released.
                     init = np.asarray(objax.nn.init.xavier_truncated_normal(s, lower=a, upper=b, gain=gain))
                     std = np.sqrt(2 / (np.prod(s[:-1]) + s[-1]))
                     truncated_std = scipy.stats.truncnorm.std(a=a, b=b, loc=0., scale=1)
