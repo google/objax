@@ -18,16 +18,21 @@ See https://arxiv.org/abs/1603.05027 for detail.
 """
 
 import functools
-from typing import Callable, Sequence, Union
+from typing import Callable, Sequence, Union, Optional
+
+from jax import numpy as jn
 
 import objax
+from objax.constants import ConvPadding
 from objax.nn import Conv2D
-from objax.typing import JaxArray
+from objax.typing import JaxArray, ConvPaddingInt
 
 __all__ = ['ResNetV2', 'ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet152', 'ResNet200']
 
 
-def conv_args(kernel_size: int, nout: int):
+def conv_args(kernel_size: int,
+              nout: int,
+              padding: Optional[Union[ConvPadding, str, ConvPaddingInt]] = ConvPadding.SAME):
     """Returns list of arguments which are common to all convolutions.
 
     Args:
@@ -40,7 +45,20 @@ def conv_args(kernel_size: int, nout: int):
     stddev = objax.functional.rsqrt(0.5 * kernel_size * kernel_size * nout)
     return dict(w_init=functools.partial(objax.random.normal, stddev=stddev),
                 use_bias=False,
-                padding=objax.constants.ConvPadding.SAME)
+                padding=padding)
+
+
+def bn_args(momentum: float = 0.99, eps: float = 1.001e-05):
+    """Returns list of arguments which are common to all batch normalization layers.
+
+    Args:
+        momentum: value used to compute exponential moving average of batch statistics.
+        eps: small value which is used for numerical stability.
+
+    Returns:
+        Dictionary with common batch normalization layer arguments.
+    """
+    return dict(momentum=momentum, eps=eps)
 
 
 class ResNetV2Block(objax.Module):
@@ -67,27 +85,31 @@ class ResNetV2Block(objax.Module):
         """
         self.use_projection = use_projection
         self.activation_fn = activation_fn
+        self.stride = stride
 
         if self.use_projection:
             self.proj_conv = Conv2D(nin, nout, 1, strides=stride, **conv_args(1, nout))
 
         if bottleneck:
-            self.norm_0 = normalization_fn(nin)
+            self.norm_0 = normalization_fn(nin, **bn_args(bn_mom, bn_eps))
             self.conv_0 = Conv2D(nin, nout // 4, 1, strides=1, **conv_args(1, nout // 4))
-            self.norm_1 = normalization_fn(nout // 4)
-            self.conv_1 = Conv2D(nout // 4, nout // 4, 3, strides=stride, **conv_args(3, nout // 4))
-            self.norm_2 = normalization_fn(nout // 4)
+            self.norm_1 = normalization_fn(nout // 4, **bn_args(bn_mom, bn_eps))
+            self.conv_1 = Conv2D(nout // 4, nout // 4, 3, strides=stride, **conv_args(3, nout // 4, (1, 1)))
+            self.norm_2 = normalization_fn(nout // 4, **bn_args(bn_mom, bn_eps))
             self.conv_2 = Conv2D(nout // 4, nout, 1, strides=1, **conv_args(1, nout))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1), (self.norm_2, self.conv_2))
         else:
-            self.norm_0 = normalization_fn(nin)
+            self.norm_0 = normalization_fn(nin, **bn_args(bn_mom, bn_eps))
             self.conv_0 = Conv2D(nin, nout, 3, strides=1, **conv_args(3, nout))
-            self.norm_1 = normalization_fn(nout)
+            self.norm_1 = normalization_fn(nout, **bn_args(bn_mom, bn_eps))
             self.conv_1 = Conv2D(nout, nout, 3, strides=stride, **conv_args(3, nout))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1))
 
     def __call__(self, x: JaxArray, training: bool) -> JaxArray:
-        shortcut = x
+        if self.stride > 1:
+            shortcut = objax.functional.max_pool_2d(x, size=1, strides=self.stride)
+        else:
+            shortcut = x
 
         for i, (bn_i, conv_i) in enumerate(self.layers):
             x = bn_i(x, training)
@@ -167,9 +189,10 @@ class ResNetV2(objax.nn.Sequential):
         assert len(group_use_projection) == len(blocks_per_group)
         nin = in_channels
         nout = 64
-        ops = [Conv2D(nin, nout, k=7, strides=2, **conv_args(7, 64)),
+        ops = [Conv2D(nin, nout, k=7, strides=2, **conv_args(7, 64, (3, 3))),
+               functools.partial(jn.pad, pad_width=((0, 0), (0, 0), (1, 1), (1, 1))),
                functools.partial(objax.functional.max_pool_2d,
-                                 size=3, strides=2, padding=objax.constants.ConvPadding.SAME)]
+                                 size=3, strides=2, padding=ConvPadding.VALID)]
         for i in range(len(blocks_per_group)):
             nin = nout
             nout = channels_per_group[i]
@@ -183,7 +206,7 @@ class ResNetV2(objax.nn.Sequential):
                 normalization_fn=normalization_fn,
                 activation_fn=activation_fn))
 
-        ops.extend([normalization_fn(nout),
+        ops.extend([normalization_fn(nout, **bn_args(bn_mom, bn_eps)),
                     activation_fn,
                     lambda x: x.mean((2, 3)),
                     objax.nn.Linear(nout,
