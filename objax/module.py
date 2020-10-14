@@ -270,6 +270,9 @@ class Parallel(Module):
         """Call the compiled function or module on multiple devices in parallel.
         Important: Make sure you call this function within the scope of VarCollection.replicate() statement.
         """
+        assert all(isinstance(x.value,ShardedDeviceArray) for x in self.vars().values()), \
+            'Parallel module variables must be of type ShardedDeviceArray. ' \
+            'Did you forget to call vars().replicate() on this module?'
         args = [x if i in self.static_argnums else self.device_reshape(x) for i, x in enumerate(args)]
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
         self.vc.subset(BaseState).assign(changes)
