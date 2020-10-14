@@ -435,8 +435,8 @@ def convert_model(model_keras, model_objax, num_blocks: list, include_top: bool 
 def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_classes: int = 1000):
     """Function to load weights from keras models.
     """
-    model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]}
-                      'ResNet101': {'num_blocks': [3, 4, 23, 3]}
+    model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
+                      'ResNet101': {'num_blocks': [3, 4, 23, 3]},
                       'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
     assert tf is not None, 'Please install tensorflow dependency to be able to load keras weights.'
     assert arch in model_registry, f'Model weights does not exist for {arch}.'
