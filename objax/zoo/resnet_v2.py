@@ -286,6 +286,7 @@ class ResNet50(ResNetV2):
         super().__init__(in_channels=in_channels,
                          num_classes=num_classes,
                          blocks_per_group=(3, 4, 6, 3),
+                         group_strides=(2, 2, 2, 1),
                          bottleneck=True,
                          normalization_fn=normalization_fn,
                          activation_fn=activation_fn)
@@ -310,6 +311,7 @@ class ResNet101(ResNetV2):
         super().__init__(in_channels=in_channels,
                          num_classes=num_classes,
                          blocks_per_group=(3, 4, 23, 3),
+                         group_strides=(2, 2, 2, 1),
                          bottleneck=True,
                          normalization_fn=normalization_fn,
                          activation_fn=activation_fn)
@@ -334,6 +336,7 @@ class ResNet152(ResNetV2):
         super().__init__(in_channels=in_channels,
                          num_classes=num_classes,
                          blocks_per_group=(3, 8, 36, 3),
+                         group_strides=(2, 2, 2, 1),
                          bottleneck=True,
                          normalization_fn=normalization_fn,
                          activation_fn=activation_fn)
@@ -358,6 +361,7 @@ class ResNet200(ResNetV2):
         super().__init__(in_channels=in_channels,
                          num_classes=num_classes,
                          blocks_per_group=(3, 24, 36, 3),
+                         group_strides=(2, 2, 2, 1),
                          bottleneck=True,
                          normalization_fn=normalization_fn,
                          activation_fn=activation_fn)
