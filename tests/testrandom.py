@@ -113,6 +113,10 @@ class TestRandom(unittest.TestCase):
         self.assertTrue(np.all(value1 == value2))
         self.assertFalse(np.all(value1 == value3))
 
+        g4 = objax.random.Generator(123)
+        value = [objax.random.randint(shape=(1,), low=0, high=65536, generator=g4) for _ in range(2)]
+        self.assertNotEqual(value[0], value[1])
+
 
 if __name__ == '__main__':
     unittest.main()
