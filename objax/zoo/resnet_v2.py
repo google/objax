@@ -440,12 +440,15 @@ def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_
                       'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
     assert tf is not None, 'Please install tensorflow dependency to be able to load keras weights.'
     assert arch in model_registry, f'Model weights does not exist for {arch}.'
-    if num_classse != 1000:
+    if num_classes != 1000:
         include_top = False
     if include_top:
         assert num_classes == 1000, 'Number of classes should be 1000 when including top layer.'
 
-    model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=include_top, weights='imagenet', classes=1000)
+    model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=include_top,
+                                                              weights='imagenet',
+                                                              classes=1000,
+                                                              classifier_activation='linear')
     model_objax = objax.zoo.resnet_v2.__dict__[arch](in_channels=3, num_classes=num_classes)
     num_blocks = model_registry[arch]['num_blocks']
 
