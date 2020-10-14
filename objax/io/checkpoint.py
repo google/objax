@@ -93,7 +93,7 @@ class Checkpoint:
             all_ckpts = glob.glob(os.path.join(self.logdir, self.DIR_NAME, self.FILE_MATCH))
             if not all_ckpts:
                 if self.verbose:
-                    print('WARNING: Empty path provided; not restoring from any checkpoint.')
+                    print('No checkpoints found. Skipping restoring variables.')
                 return 0, ''
             idx = self.checkpoint_idx(max(all_ckpts))
         ckpt = os.path.join(self.logdir, self.DIR_NAME, self.FILE_FORMAT % idx)
