@@ -52,14 +52,18 @@ class TestResNetV2Pretrained(unittest.TestCase):
     def check_compatibility(self, model_keras, model_objax):
         data = np.random.uniform(size=(2, 3, 224, 224))
         # training=False
-        output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=False)
+        output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=False).numpy()
+        if output_keras.ndim == 4:
+            output_keras = output_keras.transpose((0, 3, 1, 2))
         output_objax = model_objax(data, training=False)
-        sq_diff = (output_objax - output_keras.numpy()) ** 2
+        sq_diff = (output_objax - output_keras) ** 2
         self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-07)
         # training=True
-        output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=True)
+        output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=True).numpy()
+        if output_keras.ndim == 4:
+            output_keras = output_keras.transpose((0, 3, 1, 2))
         output_objax = model_objax(data, training=True)
-        sq_diff = (output_objax - output_keras.numpy()) ** 2
+        sq_diff = (output_objax - output_keras) ** 2
         self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-07)
 
     def check_output_shape(self, model, num_classes):
@@ -80,9 +84,10 @@ class TestResNetV2Pretrained(unittest.TestCase):
     def test_resnet_without_top(self):
         for arch in ['ResNet50', 'ResNet101', 'ResNet152']:
             model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=False,
-                                                                      weights='imagenet')
+                                                                      weights='imagenet',
+                                                                      pooling=None)
             model_objax = load_pretrained_weights_from_keras(arch, include_top=False, num_classes=10)
-            self.check_compatibility(model_keras, model_objax[:-1])
+            self.check_compatibility(model_keras, model_objax[:-2])
             self.check_output_shape(model_objax, 10)
 
 
