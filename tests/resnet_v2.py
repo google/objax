@@ -22,7 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 import objax
-from objax.zoo.resnet_v2 import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152, ResNet200,
+from objax.zoo.resnet_v2 import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152, ResNet200
 from objax.zoo.resnet_v2 import load_pretrained_weights_from_keras
 
 

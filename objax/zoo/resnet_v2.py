@@ -411,13 +411,13 @@ def convert_resblock(objax_block, keras_block):
         norm_2      : 2_bn
     """
     if hasattr(objax_block, 'proj_conv'):
-        convert_conv_layer(objax_block.proj_conv, [l for l in keras_block if l.name.endswith('0_conv')][0])
-    convert_conv_layer(objax_block.conv_0, [l for l in keras_block if l.name.endswith('1_conv')][0])
-    convert_conv_layer(objax_block.conv_1, [l for l in keras_block if l.name.endswith('2_conv')][0])
-    convert_conv_layer(objax_block.conv_2, [l for l in keras_block if l.name.endswith('3_conv')][0])
-    convert_bn_layer(objax_block.norm_0, [l for l in keras_block if l.name.endswith('preact_bn')][0])
-    convert_bn_layer(objax_block.norm_1, [l for l in keras_block if l.name.endswith('1_bn')][0])
-    convert_bn_layer(objax_block.norm_2, [l for l in keras_block if l.name.endswith('2_bn')][0])
+        convert_conv_layer(objax_block.proj_conv, [layer for layer in keras_block if layer.name.endswith('0_conv')][0])
+    convert_conv_layer(objax_block.conv_0, [layer for layer in keras_block if layer.name.endswith('1_conv')][0])
+    convert_conv_layer(objax_block.conv_1, [layer for layer in keras_block if layer.name.endswith('2_conv')][0])
+    convert_conv_layer(objax_block.conv_2, [layer for layer in keras_block if layer.name.endswith('3_conv')][0])
+    convert_bn_layer(objax_block.norm_0, [layer for layer in keras_block if layer.name.endswith('preact_bn')][0])
+    convert_bn_layer(objax_block.norm_1, [layer for layer in keras_block if layer.name.endswith('1_bn')][0])
+    convert_bn_layer(objax_block.norm_2, [layer for layer in keras_block if layer.name.endswith('2_bn')][0])
 
 
 def convert_model(model_keras, model_objax, num_blocks: list, include_top: bool = True):
@@ -425,8 +425,8 @@ def convert_model(model_keras, model_objax, num_blocks: list, include_top: bool 
     convert_conv_layer(model_objax[0], model_keras.get_layer('conv1_conv'))
     for b, j in enumerate(num_blocks):
         for i in range(j):
-            convert_resblock(model_objax[b+3][i], [l for l in model_keras.layers if l.name.startswith(
-                'conv{}_block{}'.format(b+2, i+1))])
+            convert_resblock(model_objax[b + 3][i], [layer for layer in model_keras.layers if layer.name.startswith(
+                'conv{}_block{}'.format(b + 2, i + 1))])
     convert_bn_layer(model_objax[7], model_keras.get_layer('post_bn'))
     if include_top:
         convert_linear_layer(model_objax[10], model_keras.get_layer('predictions'))
