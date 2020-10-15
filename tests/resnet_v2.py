@@ -49,7 +49,7 @@ class TestResNetV2(unittest.TestCase):
 
 class TestResNetV2Pretrained(unittest.TestCase):
 
-    def check_compatibility(model_keras, model_objax):
+    def check_compatibility(self, model_keras, model_objax):
         data = np.random.uniform(size=(2, 3, 224, 224))
         # training=False
         output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=False)
@@ -62,7 +62,7 @@ class TestResNetV2Pretrained(unittest.TestCase):
         sq_diff = (output_objax - output_keras.numpy()) ** 2
         self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-07)
 
-    def check_output_shape(model, num_classes):
+    def check_output_shape(self, model, num_classes):
         data = np.random.uniform(size=(2, 3, 224, 224))
         output = model(data, training=False)
         self.assertEqual(output.shape, (2, num_classes))
@@ -74,16 +74,16 @@ class TestResNetV2Pretrained(unittest.TestCase):
                                                                       classes=1000,
                                                                       classifier_activation='linear')
             model_objax = load_pretrained_weights_from_keras(arch, include_top=True, num_classes=1000)
-            check_compatibility(model_keras, model_objax)
-            check_output_shape(model_objax, 1000)
+            self.check_compatibility(model_keras, model_objax)
+            self.check_output_shape(model_objax, 1000)
 
     def test_resnet_without_top(self):
         for arch in ['ResNet50', 'ResNet101', 'ResNet152']:
             model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=False,
                                                                       weights='imagenet')
             model_objax = load_pretrained_weights_from_keras(arch, include_top=False, num_classes=10)
-            check_compatibility(model_keras, model_objax[:-1])
-            check_output_shape(model_objax, 10)
+            self.check_compatibility(model_keras, model_objax[:-1])
+            self.check_output_shape(model_objax, 10)
 
 
 if __name__ == '__main__':
