@@ -16,7 +16,7 @@ For GPU support, we assume you have already some version of CUDA installed. Here
 
     # Specify your installed CUDA version.
     CUDA_VERSION=11.0
-    pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
+    pip install -f https://storage.googleapis.com/jax-releases/jax_releases.html jaxlib==`python3 -c 'import jaxlib; print(jaxlib.__version__)'`+cuda`echo $CUDA_VERSION | sed s:\\\.::g`
 
 Useful shell configurations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,7 +86,7 @@ The setup in Ubuntu or similar Linux distributions is as follows:
 
     # If you have CUDA installed, specify your installed CUDA version.
     CUDA_VERSION=11.0
-    pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
+    pip install -f https://storage.googleapis.com/jax-releases/jax_releases.html jaxlib==`python3 -c 'import jaxlib; print(jaxlib.__version__)'`+cuda`echo $CUDA_VERSION | sed s:\\\.::g`
 
 The current folder must be in :code:`PYTHONPATH`.
 This can be done with the following command:
