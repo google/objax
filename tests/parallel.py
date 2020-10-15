@@ -72,7 +72,7 @@ class TestParallel(unittest.TestCase):
             states += [f[1].running_var.value, f[1].running_mean.value]
         f.vars().assign(tensors)
 
-        self.assertEqual(((values[0] - values[1]) ** 2).sum(), 0)
+        self.assertAlmostEqual(((values[0] - values[1]) ** 2).sum(), 0, places=8)
         self.assertGreater(((states[0] - states[2]) ** 2).sum(), 0)
         self.assertGreater(((states[1] - states[3]) ** 2).sum(), 0)
 
@@ -100,7 +100,7 @@ class TestParallel(unittest.TestCase):
             states += [f[1].running_var.value, f[1].running_mean.value]
         f.vars().assign(tensors)
 
-        self.assertEqual(((values[0] - values[1]) ** 2).sum(), 0)
+        self.assertAlmostEqual(((values[0] - values[1]) ** 2).sum(), 0, places=8)
         self.assertGreater(((states[0] - states[2]) ** 2).sum(), 0)
         self.assertGreater(((states[1] - states[3]) ** 2).sum(), 0)
 
@@ -237,7 +237,7 @@ class TestParallel(unittest.TestCase):
             states += [f[1].running_var.value, f[1].running_mean.value]
         f.vars().assign(tensors)
 
-        self.assertEqual(((values[0] - values[1]) ** 2).sum(), 0)
+        self.assertAlmostEqual(((values[0] - values[1]) ** 2).sum(), 0, places=8)
         self.assertGreater(((states[0] - states[2]) ** 2).sum(), 0)
         self.assertGreater(((states[1] - states[3]) ** 2).sum(), 0)
 
