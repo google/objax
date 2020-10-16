@@ -237,6 +237,34 @@ class ConvTranspose2D(Conv2D):
         return y
 
 
+class DotAttention(Module):
+    """"""
+    def __init__(self, qin: int, kin: int, vin: int, dout: int, w_init: Callable = xavier_normal):
+        """Creates a dot-product attention module instance.
+
+        Args:
+            qin: number of channels of the queries tensor.
+            kin: number of channels of the keys tensor.
+            vin: number of channels of the values tensor.
+            dout: dimension of the output tensor.
+            w_init: weight initializer for embeddings.
+        """
+        super().__init__()
+        self.w_q = TrainVar(w_init((qin, dout)))
+        self.w_k = TrainVar(w_init((kin, dout)))
+        self.w_v = TrainVar(w_init((vin, dout)))
+
+
+    def __call__(self, x_q: JaxArray, x_k: JaxArray, x_v: JaxArray) -> JaxArray:
+        """Returns the results of applying the linear transformation to input x."""
+        q = jn.dot(x_q, self.w_q.value)
+        k = jn.dot(x_k, self.w_k.value)
+        v = jn.dot(x_v, self.w_v.value)
+        scores = jn.einsum('bthd,bThd->bhtT', q, k)/jn.sqrt(k.shape[-1])
+        weights = functional.softmax(scores) 
+        return jn.einsum('bhtT,bThd->bthd', weights, v)
+
+
 class Dropout(Module):
     """In the training phase, a dropout layer zeroes some elements of the input tensor with probability 1-keep and
     scale the other elements by a factor of 1/keep."""
