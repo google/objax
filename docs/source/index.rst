@@ -107,6 +107,13 @@ Read more about this in :doc:`advanced/jit`.
    advanced/jit
    advanced/io
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer documentation
+
+   dev/setup
+   dev/adding_module
+
   
 
 Indices and tables
