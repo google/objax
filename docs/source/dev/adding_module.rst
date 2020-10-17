@@ -30,6 +30,10 @@ When writing code we follow PEP8 style guide with the following two exceptions:
 
 * We maximum line length to 120 characters.
 * We allow to assign lambda, e.g. :code:`f = lambda x: x`
+* In addition we recommend trying to keep APIs ordered alphabetically when feasible within source code files.
+
+Note: Remember to add your new APIs in `__all__` variable (also ordered alphabetically)
+at the top of the file to make them visible.
 
 Script :code:`./tests/run_linter.sh` automatically checks majority of code style violations.
 `PyCharm code formatter <https://www.jetbrains.com/help/pycharm/command-line-formatter.html>`_
@@ -38,8 +42,8 @@ could be used to automatically reformat code.
 Writing unit tests
 ------------------
 
-Unit tests are required for all code changes and new code of Objax library.
-However test are not required for `examples <https://github.com/google/objax/tree/master/examples>`_.
+Unit tests are required for most code changes and new code of Objax library.
+However tests are not required for `examples <https://github.com/google/objax/tree/master/examples>`_.
 
 All unit tests are placed into `tests <https://github.com/google/objax/tree/master/tests>`_ directory.
 They are grouped into different files based on what they are testing.
@@ -63,7 +67,7 @@ for `<objax.readthedocs.io>`_.
 Docstrings
 ^^^^^^^^^^
 
-All public facing classes, functions and class methods
+All **public facing** classes, functions and class methods
 should have a short `docstring <https://www.python.org/dev/peps/pep-0257>`_
 describing what they are doing.
 Functions and methods should also have a description of their arguments and
@@ -92,7 +96,7 @@ Here is an example of how to write docstring for a function:
         """
         return logsumexp(logits, axis=1) - (logits * labels).sum(1)
 
-If you only updating existing docstrings these changes will be automatically reflected
+If you are only updating existing docstrings these changes will be automatically reflected
 in `<objax.readthedocs.io>`_ after pull request is merged into repository.
 When adding docstrings for new classes and functions, you also may need to
 update `reST` files as described below.
