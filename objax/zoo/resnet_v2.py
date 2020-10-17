@@ -421,7 +421,7 @@ def convert_resblock(objax_block, keras_block):
 
 
 def convert_model(model_keras, model_objax, num_blocks: list, include_top: bool = True):
-    """Convert keras implementation of ResNetV2 into objax."""
+    """Convert Keras implementation of ResNetV2 into Objax."""
     convert_conv_layer(model_objax[0], model_keras.get_layer('conv1_conv'))
     for b, j in enumerate(num_blocks):
         for i in range(j):
