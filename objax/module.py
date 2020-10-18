@@ -270,6 +270,12 @@ class Parallel(Module):
         """Call the compiled function or module on multiple devices in parallel.
         Important: Make sure you call this function within the scope of VarCollection.replicate() statement.
         """
+        unreplicated = [k for k, v in self.vc.items() if not isinstance(v.value, (ShardedDeviceArray,
+                                                                                  jax.interpreters.partial_eval.JaxprTracer))]
+        assert not unreplicated, \
+            f'Some variables were not replicated: {unreplicated}. ' \
+            'Did you forget to call VarCollection.replicate on them?'
+
         args = [x if i in self.static_argnums else self.device_reshape(x) for i, x in enumerate(args)]
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
         self.vc.subset(BaseState).assign(changes)
