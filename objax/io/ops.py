@@ -58,7 +58,9 @@ def load_var_collection(file: Union[str, IO[BinaryIO]],
         for name in names:
             index = name_index.get(name)
             if index is not None:
+                v._name = name # make the debugging easier if the assign fails
                 v.assign(jn.array(data[index]))
+                v._name = ""
                 break
         else:
             misses += names

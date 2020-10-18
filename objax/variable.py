@@ -42,6 +42,7 @@ class BaseVar(abc.ABC):
                     combine the multiple states produced in an objax.Vectorize or an objax.Parallel call.
         """
         self._reduce = reduce
+        self._name = None # Only for debugging: allows printing the name of the variable in some cases
 
     @property
     @abc.abstractmethod
@@ -55,6 +56,7 @@ class BaseVar(abc.ABC):
 
     def assign(self, tensor: JaxArray):
         """Sets the value of the variable."""
+        self.assert_assigned_type_and_shape_match(tensor)
         self.value = tensor
 
     def reduce(self, tensors: JaxArray):
@@ -62,6 +64,14 @@ class BaseVar(abc.ABC):
         value to a single device."""
         if self._reduce:
             self.assign(self._reduce(tensors))
+
+    def assert_assigned_type_and_shape_match(self, tensor):
+        assert isinstance(tensor, JaxArray.__args__), \
+            f'Assignments to variable must be an instance of JaxArray,  but received f{type(tensor)}.'
+        name_if_has = " " + self._name if self._name is not None else ""
+        shape_mismatch_error = f"Assign can not change shape of variable{name_if_has}. The current variable shape is {self.value.shape}, " \
+                               f"but the requested new shape is {tensor.shape}."
+        assert self.value.shape == tensor.shape, shape_mismatch_error
 
 
 class TrainVar(BaseVar):
@@ -89,6 +99,7 @@ class TrainVar(BaseVar):
         raise ValueError('Direct assignment not allowed, use TrainRef to update a TrainVar.')
 
     def assign(self, tensor: JaxArray):
+        self.assert_assigned_type_and_shape_match(tensor)
         self._value = tensor
 
 
