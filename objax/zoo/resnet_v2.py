@@ -431,8 +431,7 @@ def convert_keras_model(model_keras, model_objax, num_blocks: list, include_top:
 
 
 def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_classes: int = 1000):
-    """Function to load weights from Keras models.
-    """
+    """Function to load weights from Keras models."""
     model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
                       'ResNet101': {'num_blocks': [3, 4, 23, 3]},
                       'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
