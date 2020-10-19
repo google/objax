@@ -28,12 +28,14 @@ from objax.nn import Conv2D
 from objax.typing import JaxArray, ConvPaddingInt
 
 try:
+    # Imports tensorflow when loading model weights from pretrained keras model.
     import tensorflow as tf
     tf.config.experimental.set_visible_devices([], 'GPU')
 except ImportError:
     tf = None
 
-__all__ = ['ResNetV2', 'ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet152', 'ResNet200']
+__all__ = ['ResNetV2', 'ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet152', 'ResNet200',
+           'load_pretrained_weights_from_keras']
 
 
 def conv_args(kernel_size: int,
@@ -52,19 +54,6 @@ def conv_args(kernel_size: int,
     return dict(w_init=functools.partial(objax.random.normal, stddev=stddev),
                 use_bias=False,
                 padding=padding)
-
-
-def bn_args(momentum: float = 0.99, eps: float = 1.001e-05):
-    """Returns list of arguments which are common to all batch normalization layers.
-
-    Args:
-        momentum: value used to compute exponential moving average of batch statistics.
-        eps: small value which is used for numerical stability.
-
-    Returns:
-        Dictionary with common batch normalization layer arguments.
-    """
-    return dict(momentum=momentum, eps=eps)
 
 
 class ResNetV2Block(objax.Module):
@@ -97,17 +86,17 @@ class ResNetV2Block(objax.Module):
             self.proj_conv = Conv2D(nin, nout, 1, strides=stride, **conv_args(1, nout))
 
         if bottleneck:
-            self.norm_0 = normalization_fn(nin, **bn_args())
+            self.norm_0 = normalization_fn(nin)
             self.conv_0 = Conv2D(nin, nout // 4, 1, strides=1, **conv_args(1, nout // 4))
-            self.norm_1 = normalization_fn(nout // 4, **bn_args())
+            self.norm_1 = normalization_fn(nout // 4)
             self.conv_1 = Conv2D(nout // 4, nout // 4, 3, strides=stride, **conv_args(3, nout // 4, (1, 1)))
-            self.norm_2 = normalization_fn(nout // 4, **bn_args())
+            self.norm_2 = normalization_fn(nout // 4)
             self.conv_2 = Conv2D(nout // 4, nout, 1, strides=1, **conv_args(1, nout))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1), (self.norm_2, self.conv_2))
         else:
-            self.norm_0 = normalization_fn(nin, **bn_args())
+            self.norm_0 = normalization_fn(nin)
             self.conv_0 = Conv2D(nin, nout, 3, strides=1, **conv_args(3, nout, (1, 1)))
-            self.norm_1 = normalization_fn(nout, **bn_args())
+            self.norm_1 = normalization_fn(nout)
             self.conv_1 = Conv2D(nout, nout, 3, strides=stride, **conv_args(3, nout, (1, 1)))
             self.layers = ((self.norm_0, self.conv_0), (self.norm_1, self.conv_1))
 
@@ -212,7 +201,7 @@ class ResNetV2(objax.nn.Sequential):
                 normalization_fn=normalization_fn,
                 activation_fn=activation_fn))
 
-        ops.extend([normalization_fn(nout, **bn_args()),
+        ops.extend([normalization_fn(nout),
                     activation_fn,
                     lambda x: x.mean((2, 3)),
                     objax.nn.Linear(nout,
@@ -373,8 +362,8 @@ class ResNet200(ResNetV2):
                          activation_fn=activation_fn)
 
 
-def convert_bn_layer(objax_layer, keras_layer):
-    """Convert variables of batch normalization layer from objax to keras."""
+def convert_bn_layer(keras_layer, objax_layer):
+    """Converts variables of batch normalization layer from Keras to Objax."""
     shape = objax_layer.gamma.value.shape
     objax_layer.gamma = objax.TrainVar(jn.array(keras_layer.__dict__['gamma'].numpy()).reshape(shape))
     objax_layer.beta = objax.TrainVar(jn.array(keras_layer.__dict__['beta'].numpy()).reshape(shape))
@@ -382,24 +371,28 @@ def convert_bn_layer(objax_layer, keras_layer):
     objax_layer.running_var = objax.StateVar(jn.array(keras_layer.__dict__['moving_variance'].numpy()).reshape(shape))
 
 
-def convert_conv_layer(objax_layer, keras_layer):
-    """Convert variables of convolution layer from objax to keras."""
+def convert_conv_layer(keras_layer, objax_layer):
+    """Converts variables of convolution layer from Keras to Objax."""
     objax_layer.w = objax.TrainVar(jn.array(keras_layer.__dict__['kernel'].numpy()))
-    if 'bias' in keras_layer.__dict__ and keras_layer.__dict__['bias'] is not None:
+    if keras_layer.__dict__.get('bias') is not None:
         bias_shape = (objax_layer.w.value.shape[-1], 1, 1)
         objax_layer.b = objax.TrainVar(jn.array(keras_layer.__dict__['bias'].numpy()).reshape(bias_shape))
+    else:
+        objax_layer.b = None
 
 
-def convert_linear_layer(objax_layer, keras_layer):
-    """Convert variables of linear layer from objax to keras."""
+def convert_linear_layer(keras_layer, objax_layer):
+    """Converts variables of linear layer from Keras to Objax."""
     objax_layer.w = objax.TrainVar(jn.array(keras_layer.__dict__['kernel'].numpy()))
-    if objax_layer.b:
+    if keras_layer.__dict__.get('bias') is not None:
         bias_shape = objax_layer.b.value.shape
         objax_layer.b = objax.TrainVar(jn.array(keras_layer.__dict__['bias'].numpy()).reshape(bias_shape))
+    else:
+        objax_layer.b = None
 
 
-def convert_resblock(objax_block, keras_block):
-    """Convert variables of residual block from objax to keras.
+def convert_resblock(keras_block, objax_block):
+    """Converts variables of residual block from Keras to Objax.
 
     Name mapping between blocks:
         proj_conv   : 0_conv (when exists)
@@ -410,48 +403,54 @@ def convert_resblock(objax_block, keras_block):
         norm_1      : 1_bn
         norm_2      : 2_bn
     """
+    def _find_layer(suffix):
+        """Finds a layer whose name contains a suffix."""
+        return next(layer for layer in keras_block if layer.name.endswith(suffix))
+
     if hasattr(objax_block, 'proj_conv'):
-        convert_conv_layer(objax_block.proj_conv, [layer for layer in keras_block if layer.name.endswith('0_conv')][0])
-    convert_conv_layer(objax_block.conv_0, [layer for layer in keras_block if layer.name.endswith('1_conv')][0])
-    convert_conv_layer(objax_block.conv_1, [layer for layer in keras_block if layer.name.endswith('2_conv')][0])
-    convert_conv_layer(objax_block.conv_2, [layer for layer in keras_block if layer.name.endswith('3_conv')][0])
-    convert_bn_layer(objax_block.norm_0, [layer for layer in keras_block if layer.name.endswith('preact_bn')][0])
-    convert_bn_layer(objax_block.norm_1, [layer for layer in keras_block if layer.name.endswith('1_bn')][0])
-    convert_bn_layer(objax_block.norm_2, [layer for layer in keras_block if layer.name.endswith('2_bn')][0])
+        convert_conv_layer(_find_layer('0_conv'), objax_block.proj_conv)
+    convert_conv_layer(_find_layer('1_conv'), objax_block.conv_0)
+    convert_conv_layer(_find_layer('2_conv'), objax_block.conv_1)
+    convert_conv_layer(_find_layer('3_conv'), objax_block.conv_2)
+    convert_bn_layer(_find_layer('preact_bn'), objax_block.norm_0)
+    convert_bn_layer(_find_layer('1_bn'), objax_block.norm_1)
+    convert_bn_layer(_find_layer('2_bn'), objax_block.norm_2)
 
 
-def convert_model(model_keras, model_objax, num_blocks: list, include_top: bool = True):
-    """Convert keras implementation of ResNetV2 into objax."""
+def convert_keras_model(model_keras, model_objax, num_blocks: list, include_top: bool = True):
+    """Converts Keras implementation of ResNetV2 into Objax."""
     convert_conv_layer(model_objax[0], model_keras.get_layer('conv1_conv'))
     for b, j in enumerate(num_blocks):
         for i in range(j):
-            convert_resblock(model_objax[b + 3][i], [layer for layer in model_keras.layers if layer.name.startswith(
-                'conv{}_block{}'.format(b + 2, i + 1))])
+            convert_resblock(model_objax[b + 3][i],
+                             [layer for layer in model_keras.layers
+                              if layer.name.startswith('conv{}_block{}'.format(b + 2, i + 1))])
     convert_bn_layer(model_objax[7], model_keras.get_layer('post_bn'))
     if include_top:
         convert_linear_layer(model_objax[10], model_keras.get_layer('predictions'))
 
 
 def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_classes: int = 1000):
-    """Function to load weights from keras models.
+    """Function to load weights from Keras models.
     """
     model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
                       'ResNet101': {'num_blocks': [3, 4, 23, 3]},
                       'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
     assert tf is not None, 'Please install tensorflow dependency to be able to load keras weights.'
     assert arch in model_registry, f'Model weights does not exist for {arch}.'
-    if num_classes != 1000:
-        include_top = False
-    if include_top:
-        assert num_classes == 1000, 'Number of classes should be 1000 when including top layer.'
+    assert not include_top or num_classes == 1000, ('Number of classes should be 1000 when including top layer.')
+
 
     model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=include_top,
                                                               weights='imagenet',
                                                               classes=1000,
                                                               classifier_activation='linear')
-    model_objax = objax.zoo.resnet_v2.__dict__[arch](in_channels=3, num_classes=num_classes)
+    model_objax = objax.zoo.resnet_v2.__dict__[arch](in_channels=3,
+                                                     num_classes=num_classes,
+                                                     normalization_fn=functools.partial(
+                                                        objax.nn.BatchNorm2D, momentum=0.99, eps=1.001e-05))
     num_blocks = model_registry[arch]['num_blocks']
 
-    convert_model(model_keras, model_objax, num_blocks, include_top)
+    convert_keras_model(model_keras, model_objax, num_blocks, include_top)
     del model_keras
     return model_objax

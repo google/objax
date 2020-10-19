@@ -71,22 +71,31 @@ class TestResNetV2Pretrained(unittest.TestCase):
         output = model(data, training=False)
         self.assertEqual(output.shape, (2, num_classes))
 
-    def test_resnet_include_top(self):
-        for arch in ['ResNet50', 'ResNet101', 'ResNet152']:
-            model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=True,
-                                                                      weights='imagenet',
-                                                                      classes=1000,
-                                                                      classifier_activation='linear')
-            model_objax = load_pretrained_weights_from_keras(arch, include_top=True, num_classes=1000)
-            self.check_compatibility(model_keras, model_objax)
-            self.check_output_shape(model_objax, 1000)
+    @parameterized.expand([
+        ("ResNet50V2", "ResNet50"),
+        ("ResNet101V2", "ResNet101"),
+        ("ResNet152V2", "ResNet152"),
+    ])
+    def test_resnet_include_top(self, keras_name, objax_name):
+        model_keras = tf.keras.applications.__dict__[keras_name](include_top=True,
+                                                                 weights='imagenet',
+                                                                 classes=1000,
+                                                                 classifier_activation='linear')
+        model_objax = load_pretrained_weights_from_keras(objax_name, include_top=True, num_classes=1000)
+        self.check_compatibility(model_keras, model_objax)
+        self.check_output_shape(model_objax, 1000)
 
-    def test_resnet_without_top(self):
+    @parameterized.expand([
+        ("ResNet50V2", "ResNet50"),
+        ("ResNet101V2", "ResNet101"),
+        ("ResNet152V2", "ResNet152"),
+    ])
+    def test_resnet_without_top(self, keras_name, objax_name):
         for arch in ['ResNet50', 'ResNet101', 'ResNet152']:
-            model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=False,
-                                                                      weights='imagenet',
-                                                                      pooling=None)
-            model_objax = load_pretrained_weights_from_keras(arch, include_top=False, num_classes=10)
+            model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
+                                                                     weights='imagenet',
+                                                                     pooling=None)
+            model_objax = load_pretrained_weights_from_keras(objax_name, include_top=False, num_classes=10)
             self.check_compatibility(model_keras, model_objax[:-2])
             self.check_output_shape(model_objax, 10)
 
