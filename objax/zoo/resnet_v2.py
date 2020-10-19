@@ -419,15 +419,15 @@ def convert_resblock(keras_block, objax_block):
 
 def convert_keras_model(model_keras, model_objax, num_blocks: list, include_top: bool = True):
     """Converts Keras implementation of ResNetV2 into Objax."""
-    convert_conv_layer(model_objax[0], model_keras.get_layer('conv1_conv'))
+    convert_conv_layer(model_keras.get_layer('conv1_conv'), model_objax[0])
     for b, j in enumerate(num_blocks):
         for i in range(j):
-            convert_resblock(model_objax[b + 3][i],
-                             [layer for layer in model_keras.layers
-                              if layer.name.startswith('conv{}_block{}'.format(b + 2, i + 1))])
-    convert_bn_layer(model_objax[7], model_keras.get_layer('post_bn'))
+            convert_resblock([layer for layer in model_keras.layers
+                              if layer.name.startswith('conv{}_block{}'.format(b + 2, i + 1))],
+                              model_objax[b + 3][i])
+    convert_bn_layer(model_keras.get_layer('post_bn'), model_objax[7])
     if include_top:
-        convert_linear_layer(model_objax[10], model_keras.get_layer('predictions'))
+        convert_linear_layer(model_keras.get_layer('predictions'), model_objax[10])
 
 
 def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_classes: int = 1000):
