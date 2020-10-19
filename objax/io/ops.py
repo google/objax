@@ -66,8 +66,9 @@ def load_var_collection(file: Union[str, IO[BinaryIO]],
             misses += names
     if misses:
         not_used = set(name_index.keys()) - used_vars
-        raise ValueError(f'Missing value for variables currently in the model: {misses}. ' \
-                         f'The following variables on disk were not used, maybe the missing variable was renamed from one of these: {not_used}.')
+        raise ValueError(f'Missing value for variables currently in the model: {misses}. '
+                         f'The following variables on disk were not used, '
+                         f'maybe the missing variable was renamed from one of these: {not_used}.')
     if do_close:
         file.close()
 

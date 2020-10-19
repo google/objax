@@ -176,9 +176,9 @@ class Conv2D(Module):
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the convolution to input x."""
-        assert x.shape[1] == self.nin, f'Attempting to convolve an input with {x.shape[1]} input channels ' \
-                                   f'when the convolution expects {self.nin} channels.' \
-                                   f'For reference, self.w.value.shape={self.w.value.shape} and x.shape={x.shape}.'
+        assert x.shape[1] == self.nin, (f'Attempting to convolve an input with {x.shape[1]} input channels '
+                                        f'when the convolution expects {self.nin} channels. For reference, '
+                                        f'self.w.value.shape={self.w.value.shape} and x.shape={x.shape}.')
         y = lax.conv_general_dilated(x, self.w.value, self.strides, self.padding,
                                      rhs_dilation=self.dilations,
                                      feature_group_count=self.groups,
