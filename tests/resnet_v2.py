@@ -57,14 +57,14 @@ class TestResNetV2Pretrained(unittest.TestCase):
             output_keras = output_keras.transpose((0, 3, 1, 2))
         output_objax = model_objax(data, training=False)
         sq_diff = (output_objax - output_keras) ** 2
-        self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-07)
+        self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-06)
         # training=True
         output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=True).numpy()
         if output_keras.ndim == 4:
             output_keras = output_keras.transpose((0, 3, 1, 2))
         output_objax = model_objax(data, training=True)
         sq_diff = (output_objax - output_keras) ** 2
-        self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-07)
+        self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-06)
 
     def check_output_shape(self, model, num_classes):
         data = np.random.uniform(size=(2, 3, 224, 224))
