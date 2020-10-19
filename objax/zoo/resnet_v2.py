@@ -445,8 +445,9 @@ def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_
                                                               classifier_activation='linear')
     model_objax = objax.zoo.resnet_v2.__dict__[arch](in_channels=3,
                                                      num_classes=num_classes,
-                                                     normalization_fn=functools.partial(
-                                                        objax.nn.BatchNorm2D, momentum=0.99, eps=1.001e-05))
+                                                     normalization_fn=functools.partial(objax.nn.BatchNorm2D,
+                                                                                        momentum=0.99,
+                                                                                        eps=1.001e-05))
     convert_keras_model(model_keras, model_objax, model_registry[arch]['num_blocks'], include_top)
     del model_keras
     return model_objax
