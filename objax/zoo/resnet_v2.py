@@ -424,7 +424,7 @@ def convert_keras_model(model_keras, model_objax, num_blocks: list, include_top:
         for i in range(j):
             convert_resblock([layer for layer in model_keras.layers
                               if layer.name.startswith('conv{}_block{}'.format(b + 2, i + 1))],
-                              model_objax[b + 3][i])
+                             model_objax[b + 3][i])
     convert_bn_layer(model_keras.get_layer('post_bn'), model_objax[7])
     if include_top:
         convert_linear_layer(model_keras.get_layer('predictions'), model_objax[10])
@@ -439,7 +439,6 @@ def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_
     assert arch in model_registry, f'Model weights does not exist for {arch}.'
     assert not include_top or num_classes == 1000, ('Number of classes should be 1000 when including top layer.')
 
-
     model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=include_top,
                                                               weights='imagenet',
                                                               classes=1000,
@@ -448,8 +447,6 @@ def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_
                                                      num_classes=num_classes,
                                                      normalization_fn=functools.partial(
                                                         objax.nn.BatchNorm2D, momentum=0.99, eps=1.001e-05))
-    num_blocks = model_registry[arch]['num_blocks']
-
-    convert_keras_model(model_keras, model_objax, num_blocks, include_top)
+    convert_keras_model(model_keras, model_objax, model_registry[arch]['num_blocks'], include_top)
     del model_keras
     return model_objax
