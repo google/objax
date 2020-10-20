@@ -371,18 +371,8 @@ def convert_bn_layer(keras_layer, objax_layer):
     objax_layer.running_var = objax.StateVar(jn.array(keras_layer.__dict__['moving_variance'].numpy()).reshape(shape))
 
 
-def convert_conv_layer(keras_layer, objax_layer):
-    """Converts variables of convolution layer from Keras to Objax."""
-    objax_layer.w = objax.TrainVar(jn.array(keras_layer.__dict__['kernel'].numpy()))
-    if keras_layer.__dict__.get('bias') is not None:
-        bias_shape = (objax_layer.w.value.shape[-1], 1, 1)
-        objax_layer.b = objax.TrainVar(jn.array(keras_layer.__dict__['bias'].numpy()).reshape(bias_shape))
-    else:
-        objax_layer.b = None
-
-
-def convert_linear_layer(keras_layer, objax_layer):
-    """Converts variables of linear layer from Keras to Objax."""
+def convert_conv_or_linear_layer(keras_layer, objax_layer):
+    """Converts variables of convolution/linear layer from Keras to Objax."""
     objax_layer.w = objax.TrainVar(jn.array(keras_layer.__dict__['kernel'].numpy()))
     if keras_layer.__dict__.get('bias') is not None:
         bias_shape = objax_layer.b.value.shape
@@ -408,10 +398,10 @@ def convert_resblock(keras_block, objax_block):
         return next(layer for layer in keras_block if layer.name.endswith(suffix))
 
     if hasattr(objax_block, 'proj_conv'):
-        convert_conv_layer(_find_layer('0_conv'), objax_block.proj_conv)
-    convert_conv_layer(_find_layer('1_conv'), objax_block.conv_0)
-    convert_conv_layer(_find_layer('2_conv'), objax_block.conv_1)
-    convert_conv_layer(_find_layer('3_conv'), objax_block.conv_2)
+        convert_conv_or_linear_layer(_find_layer('0_conv'), objax_block.proj_conv)
+    convert_conv_or_linear_layer(_find_layer('1_conv'), objax_block.conv_0)
+    convert_conv_or_linear_layer(_find_layer('2_conv'), objax_block.conv_1)
+    convert_conv_or_linear_layer(_find_layer('3_conv'), objax_block.conv_2)
     convert_bn_layer(_find_layer('preact_bn'), objax_block.norm_0)
     convert_bn_layer(_find_layer('1_bn'), objax_block.norm_1)
     convert_bn_layer(_find_layer('2_bn'), objax_block.norm_2)
@@ -419,7 +409,7 @@ def convert_resblock(keras_block, objax_block):
 
 def convert_keras_model(model_keras, model_objax, num_blocks: list, include_top: bool = True):
     """Converts Keras implementation of ResNetV2 into Objax."""
-    convert_conv_layer(model_keras.get_layer('conv1_conv'), model_objax[0])
+    convert_conv_or_linear_layer(model_keras.get_layer('conv1_conv'), model_objax[0])
     for b, j in enumerate(num_blocks):
         for i in range(j):
             convert_resblock([layer for layer in model_keras.layers
@@ -427,11 +417,20 @@ def convert_keras_model(model_keras, model_objax, num_blocks: list, include_top:
                              model_objax[b + 3][i])
     convert_bn_layer(model_keras.get_layer('post_bn'), model_objax[7])
     if include_top:
-        convert_linear_layer(model_keras.get_layer('predictions'), model_objax[10])
+        convert_conv_or_linear_layer(model_keras.get_layer('predictions'), model_objax[10])
 
 
 def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_classes: int = 1000):
-    """Function to load weights from Keras models."""
+    """Function to load weights from Keras models.
+
+    Args:
+        arch: network architecture in ['ResNet50', 'ResNet101', 'ResNet152'].
+        include_top: if True then include top linear classification layer.
+        num_classees: number of classes. If include_top is True, num_classes should be 1000.
+
+    Returns:
+        Objax ResNetV2 models with pretrained weights from Keras.
+    """
     model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
                       'ResNet101': {'num_blocks': [3, 4, 23, 3]},
                       'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
