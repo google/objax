@@ -4,7 +4,14 @@
 
 This directory contains fully functional code examples that you can use to learn more about Objax.
 
-See:
+Examples from classic machine learning:
 * [Image Classification](image_classification/README.md)
-* [Model-Agnostic Meta-Learning](optimization/README.md)
 * [Text Generation](text_generation/README.md)
+
+Examples from recent research:
+* [Model-Agnostic Meta-Learning](optimization/README.md)
+* [FixMatch](fixmatch/README.md)
+
+Other examples:
+* [Tutorials](tutorials/README.md)
+* [JaxBoard](jaxboard/README.md)
