@@ -25,7 +25,7 @@ from absl import app, flags
 from tqdm import tqdm, trange
 
 import objax
-from examples.classify.img.tfdata.data import DataSet
+from examples.image_classification.tfdata.data import DataSet
 from objax.jaxboard import SummaryWriter, Summary
 from objax.util import EasyDict
 from objax.zoo import convnet, wide_resnet

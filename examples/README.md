@@ -2,9 +2,9 @@
 
 # Examples
 
-This directory contains fully functional code examples that you can use to learn more about Objax
+This directory contains fully functional code examples that you can use to learn more about Objax.
 
 See:
-* [Image Classification](classify/img/README.md)
+* [Image Classification](image_classification/README.md)
 * [Model-Agnostic Meta-Learning](optimization/README.md)
-* [Recurrent Neural Networks (RNN)](rnn/README.md)
+* [Text Generation](text_generation/README.md)

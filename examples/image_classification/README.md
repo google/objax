@@ -1,4 +1,4 @@
-[home](../../../README.md) > [examples](../../README.md) > [classify](../README.md) > img
+[home](../../README.md) > [examples](../README.md) > image_classification
 
 # Image Classification Examples
 
@@ -27,8 +27,12 @@ This directory contains various classification examples on image datasets:
 
 * [Imagenet](http://www.image-net.org/challenges/LSVRC/2012/)
 
-  * `pretrained_vgg.py` - example which shows how to load pre-trained weights for a VGG model and use it
+  * `imagenet_pretrained_vgg.py` - example which shows how to load pre-trained weights for a VGG model and use it
     to classify input images. For more details see [documentation](pretrained_vgg.md).
 
-  * `imagenet/imagenet_train.py` - example which shows how to train Resnet50 model on Imagenet.
+  * `imagenet_resnet50_train.py` - example which shows how to train Resnet50 model on Imagenet.
     For more details see example [documentation](imagenet/README.md).
+
+* [Horses or Humans](https://www.kaggle.com/sanikamal/horses-or-humans-dataset)
+
+  * `horses_logistic.py` - simple example using logistic regression.
