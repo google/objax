@@ -375,7 +375,12 @@ def convert_conv_or_linear_layer(keras_layer, objax_layer):
     """Converts variables of convolution/linear layer from Keras to Objax."""
     objax_layer.w = objax.TrainVar(jn.array(keras_layer.__dict__['kernel'].numpy()))
     if keras_layer.__dict__.get('bias') is not None:
-        bias_shape = objax_layer.b.value.shape
+        if jn.ndim(objax_layer.w) == 4:
+            # conv layer
+            bias_shape = (objax_layer.w.value.shape[-1], 1, 1)
+        else:
+            # linear layer
+            bias_shape = (objax_layer.w.value.shape[-1])
         objax_layer.b = objax.TrainVar(jn.array(keras_layer.__dict__['bias'].numpy()).reshape(bias_shape))
     else:
         objax_layer.b = None
