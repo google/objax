@@ -18,8 +18,12 @@ import unittest
 
 from parameterized import parameterized
 
+import numpy as np
+import tensorflow as tf
+
 import objax
 from objax.zoo.resnet_v2 import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152, ResNet200
+from objax.zoo.resnet_v2 import load_pretrained_weights_from_keras
 
 
 class TestResNetV2(unittest.TestCase):
@@ -41,6 +45,59 @@ class TestResNetV2(unittest.TestCase):
         # run in train mode
         y_eval = model(x, training=True)
         self.assertEqual(y_eval.shape, (4, 10))
+
+
+class TestResNetV2Pretrained(unittest.TestCase):
+
+    def check_compatibility(self, model_keras, model_objax):
+        data = np.random.uniform(size=(2, 3, 224, 224))
+        # training=False
+        output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=False).numpy()
+        if output_keras.ndim == 4:
+            output_keras = output_keras.transpose((0, 3, 1, 2))
+        output_objax = model_objax(data, training=False)
+        sq_diff = (output_objax - output_keras) ** 2
+        self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-06)
+        # training=True
+        output_keras = model_keras(data.transpose((0, 2, 3, 1)), training=True).numpy()
+        if output_keras.ndim == 4:
+            output_keras = output_keras.transpose((0, 3, 1, 2))
+        output_objax = model_objax(data, training=True)
+        sq_diff = (output_objax - output_keras) ** 2
+        self.assertAlmostEqual(sq_diff.mean(), 0, delta=1.001e-06)
+
+    def check_output_shape(self, model, num_classes):
+        data = np.random.uniform(size=(2, 3, 224, 224))
+        output = model(data, training=False)
+        self.assertEqual(output.shape, (2, num_classes))
+
+    @parameterized.expand([
+        ("ResNet50V2", "ResNet50"),
+        ("ResNet101V2", "ResNet101"),
+        ("ResNet152V2", "ResNet152"),
+    ])
+    def test_resnet_include_top(self, keras_name, objax_name):
+        model_keras = tf.keras.applications.__dict__[keras_name](include_top=True,
+                                                                 weights='imagenet',
+                                                                 classes=1000,
+                                                                 classifier_activation='linear')
+        model_objax = load_pretrained_weights_from_keras(objax_name, include_top=True, num_classes=1000)
+        self.check_compatibility(model_keras, model_objax)
+        self.check_output_shape(model_objax, 1000)
+
+    @parameterized.expand([
+        ("ResNet50V2", "ResNet50"),
+        ("ResNet101V2", "ResNet101"),
+        ("ResNet152V2", "ResNet152"),
+    ])
+    def test_resnet_without_top(self, keras_name, objax_name):
+        for arch in ['ResNet50', 'ResNet101', 'ResNet152']:
+            model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
+                                                                     weights='imagenet',
+                                                                     pooling=None)
+            model_objax = load_pretrained_weights_from_keras(objax_name, include_top=False, num_classes=10)
+            self.check_compatibility(model_keras, model_objax[:-2])
+            self.check_output_shape(model_objax, 10)
 
 
 if __name__ == '__main__':
