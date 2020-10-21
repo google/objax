@@ -85,8 +85,8 @@ class BaseVar(abc.ABC):
                         jax.interpreters.partial_eval.DynamicJaxprTracer)
 
         shorter_length = min(len(tensor.shape), len(self.value.shape))
-        is_special_ok = (isinstance(tensor, tracer_types) or isinstance(self.value, tracer_types)) and \
-                        self.value.shape[-shorter_length:] == tensor.shape[-shorter_length:]
+        is_special_ok = (isinstance(tensor, tracer_types) or isinstance(self.value, tracer_types))
+        is_special_ok = is_special_ok and self.value.shape[-shorter_length:] == tensor.shape[-shorter_length:]
 
         shape_mismatch_error = f"Assign can not change shape of variable. The current variable shape is {self_shape}," \
                                f" but the requested new shape is {tensor_shape}."
