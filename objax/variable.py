@@ -63,7 +63,7 @@ class BaseVar(abc.ABC):
         """Method called by Parallel and Vectorize to reduce a multiple-device (or batched in case of vectoriaation)
         value to a single device."""
         if self._reduce:
-            self.assign(self._reduce(tensors))
+            self.assign(self._reduce(tensors), check=False)
 
     def assert_assigned_type_and_shape_match(self, tensor):
         assert isinstance(tensor, JaxArray.__args__), \
