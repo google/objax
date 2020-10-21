@@ -15,26 +15,26 @@
 __all__ = ['celu', 'elu', 'leaky_relu', 'log_sigmoid', 'log_softmax', 'logsumexp', 'relu',
            'selu', 'sigmoid', 'softmax', 'softplus', 'tanh']
 
-import jax.nn.functions as jnnf
+import jax.nn
 import jax.scipy.special
 from jax import lax
 
 from objax.typing import JaxArray
 
-celu = jnnf.celu
-elu = jnnf.elu
-leaky_relu = jnnf.leaky_relu
-log_sigmoid = jnnf.log_sigmoid
-log_softmax = jnnf.log_softmax
+celu = jax.nn.celu
+elu = jax.nn.elu
+leaky_relu = jax.nn.leaky_relu
+log_sigmoid = jax.nn.log_sigmoid
+log_softmax = jax.nn.log_softmax
 logsumexp = jax.scipy.special.logsumexp
-selu = jnnf.selu
-sigmoid = jnnf.sigmoid
-softmax = jnnf.softmax
-softplus = jnnf.softplus
+selu = jax.nn.selu
+sigmoid = jax.nn.sigmoid
+softmax = jax.nn.softmax
+softplus = jax.nn.softplus
 tanh = lax.tanh
 
 
-# Have to redefine relu since jnnf.relu isn't pickable.
+# Have to redefine relu since jax.nn.relu isn't pickable.
 def relu(x: JaxArray) -> JaxArray:
     """Rectified linear unit activation function.
 
@@ -44,4 +44,4 @@ def relu(x: JaxArray) -> JaxArray:
     Returns:
         tensor with the element-wise output relu(x) = max(x, 0).
     """
-    return jnnf.relu(x)
+    return jax.nn.relu(x)
