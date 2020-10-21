@@ -63,7 +63,7 @@ def load_var_collection(file: Union[str, IO[BinaryIO]],
                 try:
                     v.assign(jn.array(data[index]))
                 except AssertionError as e:
-                    raise AssertionError(f"Error when restoring variable {name}: " + str(e)) from None
+                    raise AssertionError(f'Error when restoring variable {name}: {str(e)}') from None
                 break
         else:
             misses += names
