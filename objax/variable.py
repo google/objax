@@ -42,7 +42,6 @@ class BaseVar(abc.ABC):
                     combine the multiple states produced in an objax.Vectorize or an objax.Parallel call.
         """
         self._reduce = reduce
-        self._name = None # Only for debugging: allows printing the name of the variable in some cases
 
     @property
     @abc.abstractmethod
@@ -68,10 +67,21 @@ class BaseVar(abc.ABC):
     def assert_assigned_type_and_shape_match(self, tensor):
         assert isinstance(tensor, JaxArray.__args__), \
             f'Assignments to variable must be an instance of JaxArray,  but received f{type(tensor)}.'
-        name_if_has = " " + self._name if self._name is not None else ""
-        shape_mismatch_error = f"Assign can not change shape of variable{name_if_has}. The current variable shape is {self.value.shape}, " \
-                               f"but the requested new shape is {tensor.shape}."
-        assert self.value.shape == tensor.shape, shape_mismatch_error
+
+        def shape_and_device(array):
+            if isinstance(array, jax.interpreters.pxla.ShardedDeviceArray):
+                return array.shape[0], array.shape[1:]
+            else:
+                return None, array.shape
+        tensor_device, tensor_shape = shape_and_device(tensor)
+        self_device, self_shape = shape_and_device(self.value)
+
+        device_mismatch_error = f"Can not replicate a variable that is currently on {self_device} devices to {tensor_device} devices."
+        assert (tensor_device is None) or (self_device is None) or (self_device == tensor_device) , device_mismatch_error
+
+        shape_mismatch_error = f"Assign can not change shape of variable. The current variable shape is {self_shape}, " \
+                               f"but the requested new shape is {tensor_shape}."
+        assert tensor_shape == self_shape, shape_mismatch_error
 
 
 class TrainVar(BaseVar):
