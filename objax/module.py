@@ -23,7 +23,7 @@ from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
 from objax.util import override_args_kwargs, positional_args_names
-from objax.variable import BaseState, BaseVar, RandomState, VarCollection
+from objax.variable import BaseVar, RandomState, VarCollection
 
 
 class Module:
@@ -204,7 +204,7 @@ class Jit(Module):
             original_values = self.vc.tensors()
             try:
                 self.vc.assign(tensor_list)
-                return f(*args, **kwargs), self.vc.tensors(BaseState)
+                return f(*args, **kwargs), self.vc.tensors()
             finally:
                 self.vc.assign(original_values)
 
@@ -215,7 +215,7 @@ class Jit(Module):
     def __call__(self, *args, **kwargs):
         """Call the compiled version of the function or module."""
         output, changes = self._call(self.vc.tensors(), kwargs, *args)
-        self.vc.subset(BaseState).assign(changes)
+        self.vc.assign(changes)
         return output
 
 
@@ -248,7 +248,7 @@ class Parallel(Module):
             try:
                 self.vc.assign(tensor_list)
                 self.vc.subset(RandomState).assign(random_list)
-                return f(*args), self.vc.tensors(BaseState)
+                return f(*args), self.vc.tensors()
             finally:
                 self.vc.assign(original_values)
 
@@ -272,7 +272,7 @@ class Parallel(Module):
         """
         args = [x if i in self.static_argnums else self.device_reshape(x) for i, x in enumerate(args)]
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
-        self.vc.subset(BaseState).assign(changes)
+        self.vc.assign(changes)
         return jax.tree_map(self.reduce, output)
 
 
@@ -301,7 +301,7 @@ class Vectorize(Module):
             try:
                 self.vc.assign(tensor_list)
                 self.vc.subset(RandomState).assign(random_list)
-                return f(*args), self.vc.tensors(BaseState)
+                return f(*args), self.vc.tensors()
             finally:
                 self.vc.assign(original_values)
 
@@ -320,6 +320,6 @@ class Vectorize(Module):
                                                   f'batched {len(self.batch_axis)}'
         nsplits = args[self.batch_axis_argnums[0][0]].shape[self.batch_axis_argnums[0][1]]
         output, changes = self._call(self.vc.tensors(), [v.split(nsplits) for v in self.vc.subset(RandomState)], *args)
-        for v, u in zip(self.vc.subset(BaseState), changes):
+        for v, u in zip(self.vc, changes):
             v.reduce(u)
         return output
