@@ -76,11 +76,12 @@ class BaseVar(abc.ABC):
         tensor_device, tensor_shape = shape_and_device(tensor)
         self_device, self_shape = shape_and_device(self.value)
 
-        device_mismatch_error = f"Can not replicate a variable that is currently on {self_device} devices to {tensor_device} devices."
-        assert (tensor_device is None) or (self_device is None) or (self_device == tensor_device) , device_mismatch_error
+        device_mismatch_error = f"Can not replicate a variable that is currently on " \
+                                f"{self_device} devices to {tensor_device} devices."
+        assert (tensor_device is None) or (self_device is None) or (self_device == tensor_device), device_mismatch_error
 
-        shape_mismatch_error = f"Assign can not change shape of variable. The current variable shape is {self_shape}, " \
-                               f"but the requested new shape is {tensor_shape}."
+        shape_mismatch_error = f"Assign can not change shape of variable. The current variable shape is {self_shape}," \
+                               f" but the requested new shape is {tensor_shape}."
         assert tensor_shape == self_shape, shape_mismatch_error
 
 
