@@ -50,3 +50,8 @@ Run tests:
 
     ./tests/run_tests.sh
 
+Running a single test:
+
+.. code-block:: bash
+
+    CUDA_VISIBLE_DEVICES= python3 -m unittest tests/jit.py

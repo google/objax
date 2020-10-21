@@ -54,19 +54,24 @@ def load_var_collection(file: Union[str, IO[BinaryIO]],
             v = v.ref
         name_vars[v].append(k)
     misses = []
+    used_vars = set()
     for v, names in name_vars.items():
         for name in names:
             index = name_index.get(name)
             if index is not None:
                 try:
                     v.assign(jn.array(data[index]))
+                    used_vars.add(name)
+                    break
                 except AssertionError as e:
                     raise AssertionError( f"Error when restoring variable {name}: " + str(e)) from None
-                break
         else:
             misses += names
     if misses:
-        raise ValueError(f'Missing value for variables {misses}')
+        not_used = set(name_index.keys()) - used_vars
+        raise ValueError(f'Missing value for variables currently in the model: {misses}. '
+                         f'The following variables on disk were not used, '
+                         f'maybe the missing variable was renamed from one of these: {not_used}.')
     if do_close:
         file.close()
 
