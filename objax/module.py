@@ -271,7 +271,8 @@ class Parallel(Module):
         Important: Make sure you call this function within the scope of VarCollection.replicate() statement.
         """
         unreplicated = [k for k, v in self.vc.items() if not isinstance(v.value, (ShardedDeviceArray,
-                                                                                  jax.interpreters.partial_eval.JaxprTracer))]
+                                                                                  jax.interpreters.partial_eval.JaxprTracer,
+                                                                                  jax.interpreters.partial_eval.DynamicJaxprTracer))]
         assert not unreplicated, \
             f'Some variables were not replicated: {unreplicated}.' \
             'did you forget to call VarCollection.replicate on them?'
