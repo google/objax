@@ -9,8 +9,9 @@ Examples from classic machine learning:
 * [Text Generation](text_generation/README.md)
 
 Examples from recent research:
-* [Model-Agnostic Meta-Learning](optimization/README.md)
+* [Model-Agnostic Meta-Learning](maml/README.md)
 * [FixMatch](fixmatch/README.md)
+* [GPT-2](gpt-2/README.md)
 
 Other examples:
 * [Tutorials](tutorials/README.md)

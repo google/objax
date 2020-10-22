@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from examples.classify.semi_supervised.img.libml.zoo.convnet import ConvNet
-from examples.classify.semi_supervised.img.libml.zoo.resnet import ResNet
+from examples.fixmatch.libml.zoo.convnet import ConvNet
+from examples.fixmatch.libml.zoo.resnet import ResNet
 
 ARCHS = 'convnet resnet'.split()
 

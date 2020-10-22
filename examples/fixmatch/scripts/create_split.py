@@ -26,7 +26,7 @@ import tensorflow as tf
 from absl import app, flags
 from tqdm import trange, tqdm
 
-from examples.classify.semi_supervised.img.libml.data import core
+from examples.fixmatch.libml.data import core
 
 flags.DEFINE_integer('seed', 0, 'Random seed to use, 0 for no shuffling.')
 flags.DEFINE_integer('size', 0, 'Size of labelled set.')
