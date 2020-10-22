@@ -18,11 +18,13 @@ import jax
 
 from objax.typing import JaxArray
 
+
 def split_shape_and_device(array):
     if isinstance(array, jax.interpreters.pxla.ShardedDeviceArray):
         return array.shape[0], array.shape[1:]
     else:
         return None, array.shape
+
 
 def assert_assigned_type_and_shape_match(existing_tensor, new_tensor):
     assert isinstance(new_tensor, JaxArray.__args__), \
@@ -35,7 +37,7 @@ def assert_assigned_type_and_shape_match(existing_tensor, new_tensor):
                             f'{self_device} devices to {new_tensor_device} devices.'
     assert (new_tensor_device is None) or (self_device is None) or (self_device == new_tensor_device), \
         device_mismatch_error
-    
+
     tracer_types = (jax.interpreters.partial_eval.JaxprTracer,
                     jax.interpreters.partial_eval.DynamicJaxprTracer)
 

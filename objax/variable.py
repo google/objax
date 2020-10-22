@@ -25,7 +25,7 @@ import numpy as np
 
 from objax.typing import JaxArray
 from objax.util import map_to_device, Renamer
-from objax.util.check import  assert_assigned_type_and_shape_match
+from objax.util.check import assert_assigned_type_and_shape_match
 
 
 def reduce_mean(x: JaxArray) -> JaxArray:
