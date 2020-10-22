@@ -239,8 +239,8 @@ class ConvTranspose2D(Conv2D):
 
 class DotAttention(Module):
     """"""
-    def __init__(self, qin: int, kin: int, vin: int, dout: int, q_init: Callable = xavier_normal, 
-            k_init: Callable = xavier_normal, v_init: Callable = xavier_normal):
+    def __init__(self, qin: int, kin: int, vin: int, dout: int, q_init: Callable = xavier_normal,
+                    k_init: Callable = xavier_normal, v_init: Callable = xavier_normal):
         """Creates a dot-product attention module instance.
 
         Args:
@@ -255,15 +255,14 @@ class DotAttention(Module):
         self.w_k = TrainVar(k_init((kin, dout)))
         self.w_v = TrainVar(v_init((vin, dout)))
 
-
     def __call__(self, x_q: JaxArray, x_k: JaxArray, x_v: JaxArray) -> JaxArray:
         """Returns the results of applying the linear transformation to input x."""
         q = jn.dot(x_q, self.w_q.value)
         k = jn.dot(x_k, self.w_k.value)
         v = jn.dot(x_v, self.w_v.value)
-        #[batch, sequence lenght, embedding dimension]
-        scores = jn.einsum('btd,bTd->btT', q, k)/jn.sqrt(k.shape[-1])
-        weights = functional.softmax(scores) 
+        # [batch, sequence lenght, embedding dimension]
+        scores = jn.einsum('btd,bTd->btT', q, k) / jn.sqrt(k.shape[-1])
+        weights = functional.softmax(scores)
         return jn.einsum('btT,bTd->btd', weights, v)
 
 
