@@ -3,7 +3,10 @@
 We'd love to accept your patches and contributions to this project. There are
 just a few small guidelines you need to follow.
 
-Below are some basic requirements. In addition to them take a look at a
+Below are some basic requirements, for a more detailed discussion see the
+[setup guide](https://objax.readthedocs.io/en/latest/dev/setup.html).
+
+In addition to them take a look at a
 [guide on adding new modules](https://objax.readthedocs.io/en/latest/dev/adding_module.html).
 
 ## Contributor License Agreement
@@ -38,6 +41,11 @@ and then run
 ./tests/run_tests.sh
 ```
 to confirm that the tests all pass.
+
+A single test can be run with
+```bash
+CUDA_VISIBLE_DEVICES= python3 -m unittest tests/jit.py
+```
 
 ## Community Guidelines
 
