@@ -121,6 +121,25 @@ class TestVariable(unittest.TestCase):
         self.assertIsInstance(x, objax.StateVar)
         self.assertNotIsInstance(x, objax.TrainVar)
 
+    def test_assign_invalid_shape_and_type(self):
+        """Test assigning invalid shape and type"""
+        t = objax.TrainVar(jn.zeros(2))
+        t.assign(jn.ones(2))
+        with self.assertRaises(AssertionError):
+            t.assign(jn.zeros(3))
+        with self.assertRaises(AssertionError):
+            t.assign([0, 1])
+        t.assign(jn.ones(3), check=False)
+
+    def test_replicate_shape_assert(self):
+        """Test assigning invalid shape and type"""
+
+        vc = objax.VarCollection({'var': objax.TrainVar(jn.zeros(5))})
+        
+        with vc.replicate():
+            self.assertEqual(len(vc['var'].value.shape), 2)
+            self.assertEqual(vc['var'].value.shape[-1], 5)
+
 
 if __name__ == '__main__':
     unittest.main()

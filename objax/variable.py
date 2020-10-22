@@ -25,6 +25,7 @@ import numpy as np
 
 from objax.typing import JaxArray
 from objax.util import map_to_device, Renamer
+from objax.util.check import  assert_assigned_type_and_shape_match
 
 
 def reduce_mean(x: JaxArray) -> JaxArray:
@@ -56,7 +57,7 @@ class BaseVar(abc.ABC):
     def assign(self, tensor: JaxArray, check=True):
         """Sets the value of the variable."""
         if check:
-            self.assert_assigned_type_and_shape_match(tensor)
+            assert_assigned_type_and_shape_match(self.value, tensor)
         self.value = tensor
 
     def reduce(self, tensors: JaxArray):
@@ -64,33 +65,6 @@ class BaseVar(abc.ABC):
         value to a single device."""
         if self._reduce:
             self.assign(self._reduce(tensors), check=False)
-
-    def assert_assigned_type_and_shape_match(self, tensor):
-        assert isinstance(tensor, JaxArray.__args__), \
-            f'Assignments to variable must be an instance of JaxArray,  but received f{type(tensor)}.'
-
-        def shape_and_device(array):
-            if isinstance(array, jax.interpreters.pxla.ShardedDeviceArray):
-                return array.shape[0], array.shape[1:]
-            else:
-                return None, array.shape
-        tensor_device, tensor_shape = shape_and_device(tensor)
-        self_device, self_shape = shape_and_device(self.value)
-
-        device_mismatch_error = f"Can not replicate a variable that is currently on " \
-                                f"{self_device} devices to {tensor_device} devices."
-        assert (tensor_device is None) or (self_device is None) or (self_device == tensor_device), device_mismatch_error
-
-        tracer_types = (jax.interpreters.partial_eval.JaxprTracer,
-                        jax.interpreters.partial_eval.DynamicJaxprTracer)
-
-        shorter_length = min(len(tensor.shape), len(self.value.shape))
-        is_special_ok = (isinstance(tensor, tracer_types) or isinstance(self.value, tracer_types))
-        is_special_ok = is_special_ok and self.value.shape[-shorter_length:] == tensor.shape[-shorter_length:]
-
-        shape_mismatch_error = f"Assign can not change shape of variable. The current variable shape is {self_shape}," \
-                               f" but the requested new shape is {tensor_shape}."
-        assert is_special_ok or tensor_shape == self_shape or tensor.shape == self.value.shape, shape_mismatch_error
 
 
 class TrainVar(BaseVar):
@@ -119,7 +93,7 @@ class TrainVar(BaseVar):
 
     def assign(self, tensor: JaxArray, check=True):
         if check:
-            self.assert_assigned_type_and_shape_match(tensor)
+            assert_assigned_type_and_shape_match(self.value, tensor)
         self._value = tensor
 
 
