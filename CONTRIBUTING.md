@@ -25,6 +25,20 @@ use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
+## Running Tests
+
+Before submitting a PR, it can help to run the unit tests and linter. Install the linter
+```bash
+pip install flake8
+```
+
+and then run
+```bash
+./tests/run_linter.sh
+./tests/run_tests.sh
+```
+to confirm that the tests all pass.
+
 ## Community Guidelines
 
 This project follows [Google's Open Source Community
