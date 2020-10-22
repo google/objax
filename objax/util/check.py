@@ -35,9 +35,9 @@ def assert_assigned_type_and_shape_match(existing_tensor, new_tensor):
                             f'{self_device} devices to {new_tensor_device} devices.'
     assert (new_tensor_device is None) or (self_device is None) or (self_device == new_tensor_device), \
         device_mismatch_error
-
-    tracer_types = (jax.interpreters.partial_eval.JaxprTracer)
-                    #jax.interpreters.partial_eval.DynamicJaxprTracer)
+    
+    tracer_types = (jax.interpreters.partial_eval.JaxprTracer,
+                    jax.interpreters.partial_eval.DynamicJaxprTracer)
 
     shorter_length = min(len(new_tensor.shape), len(existing_tensor.shape))
     is_special_ok = (isinstance(new_tensor, tracer_types) or isinstance(existing_tensor, tracer_types))
