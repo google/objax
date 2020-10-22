@@ -52,10 +52,10 @@ class TestRandom(unittest.TestCase):
         self.assertAlmostEqual(value.mean(), 0, delta=0.01)
         self.assertAlmostEqual(value.std(), 1, delta=0.01)
         value = np.array(objax.random.normal((1000, 100), mean=0, stddev=2))
-        self.assertAlmostEqual(value.mean(), 0, delta=0.01)
+        self.assertAlmostEqual(value.mean(), 0, delta=0.02)
         self.assertAlmostEqual(value.std(), 2, delta=0.01)
         value = np.array(objax.random.normal((1000, 100), mean=1, stddev=1.5))
-        self.assertAlmostEqual(value.mean(), 1, delta=0.01)
+        self.assertAlmostEqual(value.mean(), 1, delta=0.015)
         self.assertAlmostEqual(value.std(), 1.5, delta=0.01)
 
     def helper_test_truncated_normal(self, shape, stddev, bound):
