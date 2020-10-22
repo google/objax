@@ -13,4 +13,5 @@
 # limitations under the License.
 
 from . import image
+from . import check
 from .util import *
