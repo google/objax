@@ -57,8 +57,8 @@ def upscale_nn(x: JaxArray, scale: int = 2) -> JaxArray:
     return x.reshape(s[:2] + (scale * s[2], scale * s[3]))
 
 
-def upsample_2d(x: JaxArray, scale: tuple=(2,2), method: str = 'bilinear') -> JaxArray:
-    """Function to upscale 2D images .
+def upsample_2d(x: JaxArray, scale: tuple = (2, 2), method: str = 'bilinear') -> JaxArray:
+    """Function to upscale 2D images.
             Args:
                 x: input tensor.
                 scale: tuple which contains the scaling factor
