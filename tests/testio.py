@@ -104,13 +104,13 @@ class TestIO(unittest.TestCase):
 class TestCheckpoint(unittest.TestCase):
     def test_save_load_checkpoint(self):
         class MyModel(objax.Module):
-            def __init__(self):
-                self.model = wide_resnet.WideResNet(3, 10, depth=28, width=2)
+            def __init__(self, depth=16, width=2):
+                self.model = wide_resnet.WideResNet(3, 10, depth=depth, width=width)
                 self.opt = objax.optimizer.Momentum(self.model.vars())
                 self.ema = objax.optimizer.ExponentialMovingAverage(self.model.vars(), momentum=0.999)
 
-        m1 = MyModel()
-        m2 = MyModel()
+        m1 = MyModel(depth=28, width=2)
+        m2 = MyModel(depth=28, width=2)
 
         # make sure that variables are different right after initialization
         var_abs_diff = 0
@@ -130,6 +130,24 @@ class TestCheckpoint(unittest.TestCase):
         v2 = m2.vars()
         for k, v in m1.vars().items():
             self.assertEqual(v.value.tolist(), v2[k].value.tolist(), msg=f'Variable {k} value is differing.')
+
+        m3 = MyModel(depth=28, width=1)
+            
+        with tempfile.TemporaryDirectory() as logdir:
+            ckpt = objax.io.checkpoint.Checkpoint(logdir, keep_ckpts=2)
+            ckpt.save(m1.vars(), 1)
+            with self.assertRaises(AssertionError):
+                ckpt.restore(m3.vars())
+            
+        m3 = MyModel(depth=16, width=2)
+            
+        with tempfile.TemporaryDirectory() as logdir:
+            ckpt = objax.io.checkpoint.Checkpoint(logdir, keep_ckpts=2)
+            ckpt.save(m1.vars(), 1)
+            with self.assertRaises(AssertionError):
+                ckpt.restore(m3.vars())
+            
+                
 
 
 if __name__ == '__main__':

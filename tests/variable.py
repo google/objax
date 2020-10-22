@@ -132,7 +132,7 @@ class TestVariable(unittest.TestCase):
         t.assign(jn.ones(3), check=False)
 
     def test_replicate_shape_assert(self):
-        """Test assigning invalid shape and type"""
+        """Test replicating variable shapes does not assert"""
 
         vc = objax.VarCollection({'var': objax.TrainVar(jn.zeros(5))})
         
