@@ -15,13 +15,13 @@
 __all__ = ['dynamic_slice', 'pad', 'rsqrt', 'stop_gradient', 'top_k',
            'flatten', 'one_hot', 'upscale_nn']
 
-import jax.nn.functions as jnnf
+import jax.nn
 from jax import numpy as jn, lax
 
 from objax.typing import JaxArray
 
 dynamic_slice = lax.dynamic_slice
-one_hot = jnnf.one_hot
+one_hot = jax.nn.one_hot
 pad = jn.pad
 stop_gradient = lax.stop_gradient
 top_k = lax.top_k  # Current code doesn't work with gradient.
