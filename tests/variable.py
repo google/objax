@@ -133,9 +133,7 @@ class TestVariable(unittest.TestCase):
 
     def test_replicate_shape_assert(self):
         """Test replicating variable shapes does not assert"""
-
         vc = objax.VarCollection({'var': objax.TrainVar(jn.zeros(5))})
-        
         with vc.replicate():
             self.assertEqual(len(vc['var'].value.shape), 2)
             self.assertEqual(vc['var'].value.shape[-1], 5)

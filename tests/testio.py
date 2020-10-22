@@ -132,22 +132,20 @@ class TestCheckpoint(unittest.TestCase):
             self.assertEqual(v.value.tolist(), v2[k].value.tolist(), msg=f'Variable {k} value is differing.')
 
         m3 = MyModel(depth=28, width=1)
-            
+
         with tempfile.TemporaryDirectory() as logdir:
             ckpt = objax.io.checkpoint.Checkpoint(logdir, keep_ckpts=2)
             ckpt.save(m1.vars(), 1)
             with self.assertRaises(AssertionError):
                 ckpt.restore(m3.vars())
-            
+
         m3 = MyModel(depth=16, width=2)
-            
+
         with tempfile.TemporaryDirectory() as logdir:
             ckpt = objax.io.checkpoint.Checkpoint(logdir, keep_ckpts=2)
             ckpt.save(m1.vars(), 1)
             with self.assertRaises(AssertionError):
                 ckpt.restore(m3.vars())
-            
-                
 
 
 if __name__ == '__main__':
