@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __all__ = ['dynamic_slice', 'pad', 'rsqrt', 'stop_gradient', 'top_k',
-           'flatten', 'one_hot', 'upscale_nn']
+           'flatten', 'one_hot', 'upscale_nn', 'upsample_2d']
 
 import jax.nn
 from jax import numpy as jn, lax
@@ -55,3 +55,22 @@ def upscale_nn(x: JaxArray, scale: int = 2) -> JaxArray:
     x = x.reshape(s[:2] + (s[2], 1, s[3], 1))
     x = jn.tile(x, (1, 1, 1, scale, 1, scale))
     return x.reshape(s[:2] + (scale * s[2], scale * s[3]))
+
+
+def upsample_2d(x: JaxArray, scale: tuple=(2,2), method: str = 'bilinear') -> JaxArray:
+    """Function to upscale 2D images .
+            Args:
+                x: input tensor.
+                scale: tuple which contains the scaling factor
+                method: either of the two interpolation methods ['bilinear', 'nearest'].
+            returns:
+                upscaled 2d image tensor
+            """
+    if method not in {'nearest', 'bilinear'}:
+        raise ValueError('`method` argument should be one of `"nearest"` '
+                         'or `"bilinear"`.')
+    s = x.shape
+    y = jax.image.resize(x.transpose([0, 2, 3, 1]),
+                         shape=(s[0], s[2] * scale[0], s[3] * scale[1], s[1]),
+                         method=method)
+    return y.transpose([0, 3, 1, 2])
