@@ -19,7 +19,7 @@ import jax
 from objax.typing import JaxArray
 
 
-tracer_types = (jax.interpreters.partial_eval.JaxprTracer,
+TRACER_TYPES = (jax.interpreters.partial_eval.JaxprTracer,
                 jax.interpreters.partial_eval.DynamicJaxprTracer)
 
 
@@ -43,7 +43,7 @@ def assert_assigned_type_and_shape_match(existing_tensor, new_tensor):
         device_mismatch_error
 
     shorter_length = min(len(new_tensor.shape), len(existing_tensor.shape))
-    is_special_ok = (isinstance(new_tensor, tracer_types) or isinstance(existing_tensor, tracer_types))
+    is_special_ok = (isinstance(new_tensor, TRACER_TYPES) or isinstance(existing_tensor, TRACER_TYPES))
     is_special_ok = is_special_ok and existing_tensor.shape[-shorter_length:] == new_tensor.shape[-shorter_length:]
 
     shape_mismatch_error = f'Assign can not change shape of variable. The current variable shape is {self_shape},' \
