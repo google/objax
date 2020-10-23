@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['ConvPadding']
+__all__ = ['ConvPadding', 'UpSample']
 
 import enum
 
@@ -21,3 +21,9 @@ class ConvPadding(enum.Enum):
     """An Enum holding the possible padding values for convolution modules."""
     SAME = 'SAME'
     VALID = 'VALID'
+
+
+class UpSample(enum.Enum):
+    """An Enum holding the possible interpolation values for upsampling."""
+    BILINEAR = 'bilinear'
+    NEAREST = 'nearest'

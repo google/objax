@@ -13,7 +13,8 @@
 # limitations under the License.
 
 __all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer', 'to_padding', 'to_tuple']
+           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer', 'to_padding', 'to_tuple',
+           'to_upsample']
 
 import contextlib
 import functools
@@ -28,7 +29,7 @@ import jax.numpy as jn
 import numpy as np
 from jax.interpreters.pxla import ShardedDeviceArray
 
-from objax.constants import ConvPadding
+from objax.constants import ConvPadding, UpSample
 from objax.typing import ConvPaddingInt
 
 
@@ -164,3 +165,13 @@ def to_tuple(v: Union[Tuple[Number, ...], Number, Iterable], n: int):
         return (v,) * n
     else:
         return tuple(v)
+
+
+def to_upsample(upsample: Union[UpSample, str]) \
+        -> Union[str]:
+    """Expand to a string or a ndim-dimensional tuple of pairs usable for padding."""
+    if isinstance(upsample, UpSample):
+        return upsample.value
+    if isinstance(upsample, str):
+        return UpSample[upsample.upper()].value
+
