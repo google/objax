@@ -18,7 +18,7 @@ __all__ = ['dynamic_slice', 'pad', 'rsqrt', 'stop_gradient', 'top_k',
 import jax.nn
 from jax import numpy as jn, lax
 
-from typing import Union,Tuple
+from typing import Union, Tuple
 from objax import util
 from objax.constants import UpSample
 from objax.typing import JaxArray
@@ -52,13 +52,13 @@ def upsample_2d(x: JaxArray,
     Args:
         x: input tensor.
         scale: tuple which contains the scaling factor
-        method: either of the two interpolation methods ['bilinear', 'nearest'].
+        method: str or UpSample interpolation methods e.g. ['bilinear', 'nearest'].
 
     returns:
         upscaled 2d image tensor
     """
     s = x.shape
-    scale=util.to_tuple(scale, 2)
+    scale = util.to_tuple(scale, 2)
     y = jax.image.resize(x.transpose([0, 2, 3, 1]),
                          shape=(s[0], s[2] * scale[0], s[3] * scale[1], s[1]),
                          method=util.to_upsample(method))

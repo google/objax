@@ -169,8 +169,10 @@ def to_tuple(v: Union[Tuple[Number, ...], Number, Iterable], n: int):
 
 def to_upsample(upsample: Union[UpSample, str]) \
         -> Union[str]:
-    """Expand to a string or a ndim-dimensional tuple of pairs usable for padding."""
+    """Expand to a string method for interpolation"""
     if isinstance(upsample, UpSample):
         return upsample.value
     if isinstance(upsample, str):
         return UpSample[upsample.upper()].value
+
+    assert isinstance(upsample, (str, UpSample)), "Argument must be a string or UpSample"

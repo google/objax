@@ -25,5 +25,13 @@ class ConvPadding(enum.Enum):
 
 class UpSample(enum.Enum):
     """An Enum holding the possible interpolation values for upsampling."""
-    BILINEAR = 'bilinear'
     NEAREST = 'nearest'
+    LINEAR = 'linear'
+    BILINEAR = 'bilinear'
+    TRILINEAR = 'trilinear'
+    TRIANGLE = 'triangle'
+    CUBIC = 'cubic'
+    BICUBIC = 'bicubic'
+    TRICUBIC = 'tricubic'
+    LANCZOS3 = 'lanczos3'
+    LANCZOS5 = 'lanczos5'
