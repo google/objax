@@ -174,4 +174,3 @@ def to_upsample(upsample: Union[UpSample, str]) \
         return upsample.value
     if isinstance(upsample, str):
         return UpSample[upsample.upper()].value
-
