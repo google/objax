@@ -17,13 +17,14 @@
 import unittest
 
 from parameterized import parameterized
+import functools
 
 import numpy as np
 import tensorflow as tf
 
 import objax
 from objax.zoo.resnet_v2 import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152, ResNet200
-from objax.zoo.resnet_v2 import load_pretrained_weights_from_keras
+from objax.zoo.resnet_v2 import convert_keras_model, load_pretrained_weights_from_keras
 
 
 class TestResNetV2(unittest.TestCase):
@@ -48,6 +49,9 @@ class TestResNetV2(unittest.TestCase):
 
 
 class TestResNetV2Pretrained(unittest.TestCase):
+    model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
+                      'ResNet101': {'num_blocks': [3, 4, 23, 3]},
+                      'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
 
     def check_compatibility(self, model_keras, model_objax):
         data = np.random.uniform(size=(2, 3, 224, 224))
@@ -73,15 +77,41 @@ class TestResNetV2Pretrained(unittest.TestCase):
 
     @parameterized.expand([
         ("ResNet50V2", "ResNet50"),
-        ("ResNet101V2", "ResNet101"),
-        ("ResNet152V2", "ResNet152"),
     ])
-    def test_resnet_include_top(self, keras_name, objax_name):
+    def test_pretrained_keras_weight(self, keras_name, objax_name):
+        # Include top
         model_keras = tf.keras.applications.__dict__[keras_name](include_top=True,
                                                                  weights='imagenet',
                                                                  classes=1000,
                                                                  classifier_activation='linear')
         model_objax = load_pretrained_weights_from_keras(objax_name, include_top=True, num_classes=1000)
+        self.check_compatibility(model_keras, model_objax)
+        self.check_output_shape(model_objax, 1000)
+        del model_keras, model_objax
+        # Exclude top
+        model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
+                                                                 weights='imagenet',
+                                                                 pooling=None)
+        model_objax = load_pretrained_weights_from_keras(objax_name, include_top=False, num_classes=10)
+        self.check_compatibility(model_keras, model_objax[:-2])
+        self.check_output_shape(model_objax, 10)
+
+    @parameterized.expand([
+        ("ResNet50V2", "ResNet50"),
+        ("ResNet101V2", "ResNet101"),
+        ("ResNet152V2", "ResNet152"),
+    ])
+    def test_weight_transfer_include_top(self, keras_name, objax_name):
+        model_keras = tf.keras.applications.__dict__[keras_name](include_top=True,
+                                                                 weights=None,
+                                                                 classes=1000,
+                                                                 classifier_activation='linear')
+        model_objax = objax.zoo.resnet_v2.__dict__[objax_name](in_channels=3,
+                                                               num_classes=1000,
+                                                               normalization_fn=partial(objax.nn.BatchNorm2D,
+                                                                                        momentum=0.99,
+                                                                                        eps=1.001e-05))
+        convert_keras_model(model_keras, model_objax, model_registry[objax_name]['num_blocks'], True)
         self.check_compatibility(model_keras, model_objax)
         self.check_output_shape(model_objax, 1000)
 
@@ -90,14 +120,19 @@ class TestResNetV2Pretrained(unittest.TestCase):
         ("ResNet101V2", "ResNet101"),
         ("ResNet152V2", "ResNet152"),
     ])
-    def test_resnet_without_top(self, keras_name, objax_name):
-        for arch in ['ResNet50', 'ResNet101', 'ResNet152']:
-            model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
-                                                                     weights='imagenet',
-                                                                     pooling=None)
-            model_objax = load_pretrained_weights_from_keras(objax_name, include_top=False, num_classes=10)
-            self.check_compatibility(model_keras, model_objax[:-2])
-            self.check_output_shape(model_objax, 10)
+    def test_weight_transfer_without_top(self, keras_name, objax_name):
+        model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
+                                                                 weights=None,
+                                                                 classes=1000,
+                                                                 classifier_activation='linear')
+        model_objax = objax.zoo.resnet_v2.__dict__[objax_name](in_channels=3,
+                                                               num_classes=10,
+                                                               normalization_fn=partial(objax.nn.BatchNorm2D,
+                                                                                        momentum=0.99,
+                                                                                        eps=1.001e-05))
+        convert_keras_model(model_keras, model_objax, model_registry[objax_name]['num_blocks'], False)
+        self.check_compatibility(model_keras, model_objax[:-2])
+        self.check_output_shape(model_objax, 10)
 
 
 if __name__ == '__main__':
