@@ -17,7 +17,7 @@
 import unittest
 
 from parameterized import parameterized
-import functools
+from functools import partial
 
 import numpy as np
 import tensorflow as tf
@@ -26,6 +26,10 @@ import objax
 from objax.zoo.resnet_v2 import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152, ResNet200
 from objax.zoo.resnet_v2 import convert_keras_model, load_pretrained_weights_from_keras
 
+
+model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
+                  'ResNet101': {'num_blocks': [3, 4, 23, 3]},
+                  'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
 
 class TestResNetV2(unittest.TestCase):
 
@@ -49,9 +53,6 @@ class TestResNetV2(unittest.TestCase):
 
 
 class TestResNetV2Pretrained(unittest.TestCase):
-    model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
-                      'ResNet101': {'num_blocks': [3, 4, 23, 3]},
-                      'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
 
     def check_compatibility(self, model_keras, model_objax):
         data = np.random.uniform(size=(2, 3, 224, 224))
