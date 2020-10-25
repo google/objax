@@ -31,6 +31,7 @@ model_registry = {'ResNet50': {'num_blocks': [3, 4, 6, 3]},
                   'ResNet101': {'num_blocks': [3, 4, 23, 3]},
                   'ResNet152': {'num_blocks': [3, 8, 36, 3]}}
 
+
 class TestResNetV2(unittest.TestCase):
 
     @parameterized.expand([
