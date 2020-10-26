@@ -14,7 +14,7 @@
 
 __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
            'Conv2D', 'ConvTranspose2D', 'Dropout', 'Linear',
-           'MovingAverage', 'ExponentialMovingAverage', 'RNN', 'Sequential',
+           'MovingAverage', 'ExponentialMovingAverage', 'SimpleRNN', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
 from typing import Callable, Iterable, Tuple, Optional, Union, List
@@ -331,8 +331,8 @@ class ExponentialMovingAverage(Module):
         self.avg.value += (self.avg.value - x) * (self.momentum - 1)
         return self.avg.value
 
-class RNN(Module):
-    """ Recurrent Neural Network (RNN) block."""
+class SimpleRNN(Module):
+    """Simple Recurrent Neural Network (RNN) block."""
 
     def __init__(self,
                  nstate: int,
@@ -361,19 +361,28 @@ class RNN(Module):
 
         self.output_layer = Linear(self.nstate, self.num_outputs)
 
-    def __call__(self, inputs: JaxArray, only_return_final=False) -> JaxArray:
+    def __call__(self, inputs: JaxArray,
+                 initial_state: JaxArray = None,
+                 only_return_final = False) -> Tuple[JaxArray, JaxArray]:
         """Forward pass through RNN.
 
         Args:
-            inputs: ``JaxArray`` with dimensions ``num_steps, batch_size, vocabulary_size``.
+            inputs: ``JaxArray`` with dimensions ``num_steps, batch_size, nout``.
             only_return_final: return only the last output if ``True``, or all output otherwise.`
 
         Returns:
-            Output tensor with dimensions ``N * batch_size, vocabulary_size``.
+            Tuple with two elements:
+            First, output tensor with dimensions ``N * batch_size, nout``.
             N = 1 if ``only_return_final`` is ``True`` and ``num_steps`` otherwise.
+            Second, state with dimensions ``batch_size, nstate``.
         """
         outputs = []
-        state = jn.zeros((inputs.shape[1], self.nstate))
+
+        if initial_state == None:
+            state = jn.zeros((inputs.shape[1], self.nstate))
+        else:
+            state = initial_state
+
         for x in inputs:
             state = self.activation(
                 jn.dot(x, self.w_xh.value)
@@ -385,9 +394,9 @@ class RNN(Module):
                 outputs.append(y)
 
         if only_return_final:
-            return y
+            return y, state
         else:
-            return jn.concatenate(outputs, axis=0)
+            return jn.concatenate(outputs, axis=0), state
 
 class Sequential(ModuleList):
     """Executes modules in the order they were passed to the constructor."""

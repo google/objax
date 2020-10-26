@@ -22,7 +22,7 @@ import tensorflow_datasets as tfds
 
 import objax
 from objax.functional import one_hot
-from objax.nn import RNN
+from objax.nn import SimpleRNN
 
 
 def tokenize(lines, token_type='word'):
@@ -141,13 +141,13 @@ theta = 1
 train_iter, vocab = load_shakespeare(batch_size, num_steps, 'char')
 vocab_size = len(vocab)
 
-model = RNN(num_hiddens, vocab_size, vocab_size)
+model = SimpleRNN(num_hiddens, vocab_size, vocab_size)
 model_vars = model.vars()
 
 # Sample call for forward pass
 X = jn.arange(batch_size * num_steps).reshape(batch_size, num_steps).T
 X_one_hot = one_hot(X, vocab_size)
-Z = model(X_one_hot)
+Z, _ = model(X_one_hot)
 
 
 def predict_char(prefix, num_predicts, model, vocab):
@@ -157,7 +157,7 @@ def predict_char(prefix, num_predicts, model, vocab):
         model(get_input())
         outputs.append(vocab[y])
     for _ in range(num_predicts):  # Predict num_predicts steps
-        Y = model(get_input())
+        Y, _ = model(get_input())
         outc = int(Y.argmax(axis=1).reshape(1))
         outputs.append(outc)
     return ''.join([vocab.idx_to_token[i] for i in outputs])
@@ -170,7 +170,7 @@ ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999)
 
 
 def loss(x, label):  # sum(label * log(softmax(logit)))
-    logits = model(x)
+    logits, _ = model(x)
     return objax.functional.loss.cross_entropy_logits(logits, label).mean()
 
 
