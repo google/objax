@@ -152,6 +152,34 @@ class TestVectorize(unittest.TestCase):
         self.assertEqual(y.tolist(), np.arange(1, 11)[:, None].tolist())
         self.assertEqual(m[0].value.tolist(), [1., 1.])
 
+    def test_trainvar_and_ref_assign(self):
+        m = objax.ModuleList([objax.TrainVar(jn.zeros(2))])
+        m.append(objax.TrainRef(m[0]))
+
+        def increase(x):
+            m[0].assign(m[0].value + 1)
+            m[1].assign(m[1].value + 1)
+            return x + 1
+
+        x = np.arange(10)[:, None]
+        vec_increase = objax.Vectorize(increase, m.vars())
+        y = vec_increase(x)
+        self.assertEqual(y.tolist(), np.arange(1, 11)[:, None].tolist())
+        self.assertEqual(m[0].value.tolist(), [2., 2.])
+
+    def test_trainvar_assign_multivalue(self):
+        m = objax.ModuleList([objax.TrainVar(jn.array((1., 2.)))])
+
+        def increase(x):
+            m[0].assign(m[0].value + x)
+            return x * 2
+
+        x = np.arange(10)[:, None]
+        vec_increase = objax.Vectorize(increase, m.vars())
+        y = vec_increase(x)
+        self.assertEqual(y.tolist(), (2 * np.arange(10))[:, None].tolist())
+        self.assertEqual(m[0].value.tolist(), [5.5, 6.5])
+
 
 if __name__ == '__main__':
     unittest.main()

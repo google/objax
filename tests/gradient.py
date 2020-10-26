@@ -249,6 +249,54 @@ class TestGrad(unittest.TestCase):
         self.assertEqual(w.value.tolist(), [-2., -2.])
         self.assertEqual(b.value.tolist(), [2.])
 
+    def test_trainvar_jit_assign(self):
+        # Set data
+        ndim = 2
+        data = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [-10.0, 9.0]])
+        labels = np.array([1.0, 2.0, 3.0, 4.0])
+
+        # Set model parameters for linear regression.
+        w = objax.TrainVar(jn.zeros(ndim))
+        b = objax.TrainVar(jn.zeros(1))
+
+        def loss(x, y):
+            pred = jn.dot(x, w.value) + b.value
+            b.assign(b.value + 1)
+            w.assign(w.value - 1)
+            return 0.5 * ((y - pred) ** 2).mean()
+
+        grad = objax.Grad(loss, objax.VarCollection({'w': w, 'b': b}))
+
+        def jloss(wb, x, y):
+            w, b = wb
+            pred = jn.dot(x, w) + b
+            return 0.5 * ((y - pred) ** 2).mean()
+
+        def jit_op(x, y):
+            g = grad(x, y)
+            b.assign(b.value * 2)
+            w.assign(w.value * 3)
+            return g
+
+        jit_op = objax.Jit(jit_op, objax.VarCollection(dict(b=b, w=w)))
+        jgrad = jax.grad(jloss)
+
+        jg = jgrad([w.value, b.value], data, labels)
+        g = jit_op(data, labels)
+        self.assertEqual(g[0].shape, tuple([ndim]))
+        self.assertEqual(g[1].shape, tuple([1]))
+        np.testing.assert_allclose(g[0], jg[0])
+        np.testing.assert_allclose(g[1], jg[1])
+        self.assertEqual(w.value.tolist(), [-3., -3.])
+        self.assertEqual(b.value.tolist(), [2.])
+
+        jg = jgrad([w.value, b.value], data, labels)
+        g = jit_op(data, labels)
+        np.testing.assert_allclose(g[0], jg[0])
+        np.testing.assert_allclose(g[1], jg[1])
+        self.assertEqual(w.value.tolist(), [-12., -12.])
+        self.assertEqual(b.value.tolist(), [6.])
+
 
 class TestGradValues(unittest.TestCase):
     def test_gradvalues_linear(self):
