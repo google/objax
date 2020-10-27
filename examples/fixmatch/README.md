@@ -1,12 +1,6 @@
-[home](../../../../README.md) > [examples](../../../../README.md) > [classify](../../../README.md) > [semi_supervised](../../README.md) > img
+[home](../../README.md) > [examples](../README.md) > fixmatch
 
-# Semi-Supervised Image Classification 
-
-This directory contains several semi-supervised learning techniques:
-
-* [FixMatch](https://arxiv.org/abs/2001.07685)
-* More to come
-
+# Semi-Supervised Image Classification with [FixMatch](https://arxiv.org/abs/2001.07685)
 
 ## Setup
 
@@ -16,7 +10,7 @@ This directory contains several semi-supervised learning techniques:
 export PYTHONPATH=$PYTHONPATH:.
 export ML_DATA="path to where you want the datasets saved"
 export PROJECT="ObjaxSSL"
-export SSL_PATH=examples/classify/semi_supervised/img
+export SSL_PATH=examples/fixmatch
 ```
 
 ## Data preparation

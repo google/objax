@@ -23,7 +23,7 @@ import numpy as np
 from absl import app, flags, logging
 
 import objax
-from examples.classify.img.imagenet import imagenet_data
+from examples.image_classification import imagenet_resnet50_data as imagenet_data
 from objax.zoo.resnet_v2 import ResNet50
 
 flags.DEFINE_string('model_dir', '', 'Model directory.')
