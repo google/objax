@@ -151,6 +151,12 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(objax.util.to_tuple(1.5, 3), (1.5, 1.5, 1.5))
         self.assertEqual(objax.util.to_tuple([1, 2], 3), (1, 2))
 
+    def test_to_upsample(self):
+        """Test to_upsample"""
+        for x in ['nearest', 'linear', 'bilinear', 'trilinear', 'triangle', 'cubic',
+                  'bicubic', 'tricubic', 'lanczos3', 'lanczos5']:
+            self.assertEqual(objax.util.to_upsample(x), x)
+
 
 if __name__ == '__main__':
     unittest.main()

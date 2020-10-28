@@ -167,8 +167,7 @@ def to_tuple(v: Union[Tuple[Number, ...], Number, Iterable], n: int):
         return tuple(v)
 
 
-def to_upsample(upsample: Union[UpSample, str]) \
-        -> Union[str]:
+def to_upsample(upsample: Union[UpSample, str]) -> Union[str]:
     """Expand to a string method for interpolation"""
     if isinstance(upsample, UpSample):
         return upsample.value

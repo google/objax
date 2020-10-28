@@ -88,6 +88,7 @@ Misc
     stop_gradient
     top_k
     rsqrt
+    upsample_2d
     upscale_nn
 
 .. autofunction:: dynamic_slice
@@ -97,6 +98,7 @@ Misc
 .. autofunction:: stop_gradient
 .. autofunction:: top_k
 .. autofunction:: rsqrt
+.. autofunction:: upsample_2d
 .. autofunction:: upscale_nn
 
 objax.functional.divergence
