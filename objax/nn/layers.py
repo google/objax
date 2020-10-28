@@ -349,6 +349,9 @@ class SimpleRNN(Module):
             activation: actication function for hidden layer.
             w_init: weight initializer for RNN model weights.
         """
+        assert nin > 0, 'nin should be larger than zero'
+        assert nout > 0, 'nout should be larger than zero'
+        assert nstate > 0, 'nstate should be larger than zero'
         self.num_inputs = nin
         self.num_outputs = nout
         self.nstate = nstate
@@ -359,7 +362,7 @@ class SimpleRNN(Module):
         self.w_hh = TrainVar(w_init((self.nstate, self.nstate)))
         self.b_h = TrainVar(jn.zeros(self.nstate))
 
-        self.output_layer = Linear(self.nstate, self.num_outputs)
+        self.output_layer = Linear(self.nstate, self.num_outputs, w_init = w_init)
 
     def __call__(self, inputs: JaxArray,
                  initial_state: JaxArray = None,
@@ -379,7 +382,7 @@ class SimpleRNN(Module):
         outputs = []
 
         if initial_state == None:
-            state = jn.zeros((inputs.shape[1], self.nstate))
+            state = jn.zeros((inputs.shape[0], self.nstate))
         else:
             state = initial_state
 
