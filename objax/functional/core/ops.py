@@ -51,7 +51,7 @@ def upsample_2d(x: JaxArray,
 
     Args:
         x: input tensor.
-        scale: tuple which contains the scaling factor
+        scale: imt or tuple scaling factor
         method: str or UpSample interpolation methods e.g. ['bilinear', 'nearest'].
 
     Returns:
