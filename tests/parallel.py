@@ -271,6 +271,44 @@ class TestParallel(unittest.TestCase):
         self.assertAlmostEqual(jn.square(np.mean(y.split(8), 0) - zmean).sum(), 0, places=8)
         self.assertAlmostEqual(jn.square(np.sum(y.split(8), 0) - zsum).sum(), 0, places=8)
 
+    def test_trainvar_assign(self):
+        m = objax.ModuleList([objax.TrainVar(jn.zeros(2))])
+
+        def increase():
+            m[0].assign(m[0].value + 1)
+            return m[0].value
+
+        para_increase = objax.Parallel(increase, m.vars())
+        with m.vars().replicate():
+            para_increase()
+        self.assertEqual(m[0].value.tolist(), [1., 1.])
+
+    def test_trainvar_and_ref_assign(self):
+        m = objax.ModuleList([objax.TrainVar(jn.zeros(2))])
+        m.append(objax.TrainRef(m[0]))
+
+        def increase():
+            m[0].assign(m[0].value + 1)
+            m[1].assign(m[1].value + 1)
+            return m[0].value
+
+        para_increase = objax.Parallel(increase, m.vars())
+        with m.vars().replicate():
+            para_increase()
+        self.assertEqual(m[0].value.tolist(), [2., 2.])
+
+    def test_trainvar_assign_multivalue(self):
+        m = objax.ModuleList([objax.TrainVar(jn.array((1., 2.)))])
+
+        def increase(x):
+            m[0].assign(m[0].value + x)
+            return m[0].value
+
+        para_increase = objax.Parallel(increase, m.vars())
+        with m.vars().replicate():
+            para_increase(jn.arange(8))
+        self.assertEqual(m[0].value.tolist(), [4.5, 5.5])
+
 
 if __name__ == '__main__':
     unittest.main()

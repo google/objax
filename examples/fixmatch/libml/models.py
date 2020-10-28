@@ -11,3 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from examples.fixmatch.libml.zoo.convnet import ConvNet
+from examples.fixmatch.libml.zoo.resnet import ResNet
+
+ARCHS = 'convnet resnet'.split()
+
+
+def network(arch: str):
+    if arch == 'convnet':
+        return ConvNet
+    elif arch == 'resnet':
+        return ResNet
+    raise ValueError('Architecture not recognized', arch)

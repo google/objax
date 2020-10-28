@@ -56,7 +56,7 @@ class GradValues(Module):
                 outputs = f(*list_args, **kwargs)
                 if not isinstance(outputs, (list, tuple)):
                     outputs = [outputs]
-                return outputs[0], (outputs, variables.tensors(BaseState))
+                return outputs[0], (outputs, variables.tensors())
             finally:
                 self.vc.assign(original_vc)
 
@@ -77,7 +77,7 @@ class GradValues(Module):
         g, (outputs, changes) = self._call(inputs + self.vc.subset(TrainVar).tensors(),
                                            self.vc.subset(BaseState).tensors(),
                                            list(args), kwargs)
-        self.vc.subset(BaseState).assign(changes)
+        self.vc.assign(changes)
         return g, outputs
 
     def vars(self, scope: str = '') -> VarCollection:

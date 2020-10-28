@@ -80,6 +80,31 @@ class TestJit(unittest.TestCase):
         with self.assertRaises(ConcretizationTypeError):
             kj(x, training=True)
 
+    def test_trainvar_assign(self):
+        m = objax.ModuleList([objax.TrainVar(jn.zeros(2))])
+
+        def increase():
+            m[0].assign(m[0].value + 1)
+            return m[0].value
+
+        jit_increase = objax.Jit(increase, m.vars())
+        jit_increase()
+        self.assertEqual(m[0].value.tolist(), [1., 1.])
+
+    def test_trainvar_and_ref_assign(self):
+        m = objax.ModuleList([objax.TrainVar(jn.zeros(2))])
+        m.append(objax.TrainRef(m[0]))
+
+        def increase():
+            m[0].assign(m[0].value + 1)
+            m[1].assign(m[1].value + 1)
+            return m[0].value
+
+        jit_increase = objax.Jit(increase, m.vars())
+        v = jit_increase()
+        self.assertEqual(v.tolist(), [2., 2.])
+        self.assertEqual(m[0].value.tolist(), [2., 2.])
+
 
 if __name__ == '__main__':
     unittest.main()
