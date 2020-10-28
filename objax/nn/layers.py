@@ -365,8 +365,7 @@ class SimpleRNN(Module):
 
         self.output_layer = Linear(self.nstate, self.num_outputs, w_init=w_init)
 
-    def __call__(self, inputs: JaxArray,
-                 initial_state: JaxArray = None,
+    def __call__(self, inputs: JaxArray, initial_state: JaxArray = None,
                  only_return_final: bool = False) -> Tuple[JaxArray, JaxArray]:
         """Forward pass through RNN.
 
