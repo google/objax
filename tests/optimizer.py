@@ -28,11 +28,13 @@ class TestOptimizers(unittest.TestCase):
     def __init__(self, methodname):
         """Initialize the test class."""
         super().__init__(methodname)
-        self.num_steps = 100
+        self.num_steps = 200
         self.lrs = {'square_adam': 0.15,
                     'rastrigin_adam': 0.7,
                     'square_adam_override': 0.15,
                     'rastrigin_adam_override': 0.7,
+                    'logistic_lars': 0.9,
+                    'square_lars': 0.95,
                     'logistic_momentum': 1.0,
                     'square_momentum': 0.01,
                     'logistic_momentum_override': 5.0,
@@ -44,6 +46,8 @@ class TestOptimizers(unittest.TestCase):
                            'rastrigin_adam': 1e-3,
                            'square_adam_override': 1e-3,
                            'rastrigin_adam_override': 1e-1,
+                           'logistic_lars': 1e-3,
+                           'square_lars': 1e-1,
                            'logistic_momentum': 1e-10,
                            'square_momentum': 1e-3,
                            'logistic_momentum_override': 1e-3,
@@ -54,14 +58,16 @@ class TestOptimizers(unittest.TestCase):
         self.override_options = {'logistic_momentum_override': 0.75,
                                  'square_momentum_override': 0.05,
                                  'square_adam_override': (0.85, 0.55),
-                                 'rastrigin_adam_override': (0.95, 0.755),
+                                 'rastrigin_adam_override': (0.95, 0.95),
                                  }
 
     def _get_optimizer(self, model_vars: VarCollection, optimizer: str):
-        if optimizer == 'momentum':
-            opt = objax.Jit(objax.optimizer.Momentum(model_vars, momentum=0.9))
-        elif optimizer == 'adam':
+        if optimizer == 'adam':
             opt = objax.Jit(objax.optimizer.Adam(model_vars))
+        elif optimizer == 'lars':
+            opt = objax.Jit(objax.optimizer.LARS(model_vars))
+        elif optimizer == 'momentum':
+            opt = objax.Jit(objax.optimizer.Momentum(model_vars, momentum=0.9))
         elif optimizer == 'sgd':
             opt = objax.Jit(objax.optimizer.SGD(model_vars))
         else:
@@ -138,6 +144,14 @@ class TestOptimizers(unittest.TestCase):
     def test_rastrigin_adam_override(self):
         """Test rastrigin loss for Adam optimizer."""
         model_vars, loss = self._test_loss_opt('rastrigin', 'adam', True)
+
+    def test_logistic_lars(self):
+        """Test logistic loss for LARS optimizer."""
+        model_vars, loss = self._test_loss_opt('logistic', 'lars')
+
+    def test_square_lars(self):
+        """Test square loss for LARS optimizer."""
+        model_vars, loss = self._test_loss_opt('square', 'lars')
 
     def test_logistic_momentum(self):
         """Test logistic loss for momentum optimizer."""
