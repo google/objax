@@ -271,7 +271,7 @@ class MultiHeadDotAttention(Module):
 
         # t: query sequence length, T: key-value sequence length
         # h: heads, d: embedding dimension
-        scores = jn.einsum('thd,Thd->htT', q, k) * objax.functional.rsqrt(head_dim)
+        scores = jn.einsum('thd,Thd->htT', q, k) * functional.rsqrt(head_dim)
         if mask is not None:
             scores = scores * mask - 1e10 * (1 - mask)
         weights = functional.softmax(scores)
