@@ -17,7 +17,7 @@ from typing import Optional
 
 import tensorflow as tf
 
-from examples.classify.semi_supervised.img.libml.augment.randaugment import augment_ops
+from examples.fixmatch.libml.augment.randaugment import augment_ops
 
 IMAGENET_AUG_OPS = [
     'AutoContrast', 'Equalize', 'Invert', 'Rotate', 'Posterize', 'Solarize',

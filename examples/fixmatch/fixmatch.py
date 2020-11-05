@@ -24,12 +24,12 @@ import jax.numpy as jn
 from absl import app, flags
 
 import objax
-from examples.classify.semi_supervised.img.libml.augment.augment import get_augment
-from examples.classify.semi_supervised.img.libml.data.fsl import DATASETS_LABELED
-from examples.classify.semi_supervised.img.libml.data.ssl import DATASETS_UNLABELED
-from examples.classify.semi_supervised.img.libml.models import ARCHS, network
-from examples.classify.semi_supervised.img.libml.train import TrainLoopSSL
-from examples.classify.semi_supervised.img.libml.util import setup_tf
+from examples.fixmatch.libml.augment.augment import get_augment
+from examples.fixmatch.libml.data.fsl import DATASETS_LABELED
+from examples.fixmatch.libml.data.ssl import DATASETS_UNLABELED
+from examples.fixmatch.libml.models import ARCHS, network
+from examples.fixmatch.libml.train import TrainLoopSSL
+from examples.fixmatch.libml.util import setup_tf
 
 FLAGS = flags.FLAGS
 
