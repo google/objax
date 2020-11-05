@@ -262,21 +262,21 @@ class MultiHeadDotAttention(Module):
     def __call__(self, x_q: JaxArray, x_k: JaxArray, x_v: JaxArray,
                  mask: JaxArray = None) -> JaxArray:
         """Returns the results of applying the linear transformation to input x."""
-        batch_size, sequence_length = x_k.shape[:2]
+        sequence_length = x_k.shape[0]
         head_dim = self.nout // self.num_heads
-        head_shape = (batch_size, sequence_length, self.num_heads, head_dim)
+        head_shape = (sequence_length, self.num_heads, head_dim)
         q = jn.reshape(x_q.dot(self.w_q.value), head_shape)
         k = jn.reshape(x_k.dot(self.w_k.value), head_shape)
         v = jn.reshape(x_v.dot(self.w_v.value), head_shape)
 
-        # b: batch, t: query sequence length, T: key-value sequence length
+        # t: query sequence length, T: key-value sequence length
         # h: heads, d: embedding dimension
-        scores = jn.einsum('thd,Thd->htT', q, k) / jn.sqrt(head_dim)
+        scores = jn.einsum('thd,Thd->htT', q, k) * objax.functional.rsqrt(head_dim)
         if mask is not None:
             scores = scores * mask - 1e10 * (1 - mask)
         weights = functional.softmax(scores)
         attention = jn.einsum('htT,Thd->thd', weights, v)
-        attention = jn.reshape(attention, [batch_size, sequence_length, self.nout])
+        attention = jn.reshape(attention, [sequence_length, self.nout])
         return attention.dot(self.w_o.value)
 
 
