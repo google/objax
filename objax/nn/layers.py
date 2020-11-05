@@ -237,9 +237,9 @@ class ConvTranspose2D(Conv2D):
         return y
 
 
-class MultiHeadAttention(Module):
+class MultiHeadDotAttention(Module):
     """"""
-    def __init__(self, qin: int, kin: int, vin: int, dout: int, num_heads: int = 1,
+    def __init__(self, qin: int, kin: int, vin: int, nout: int, num_heads: int = 1,
                  q_init: Callable = xavier_normal, k_init: Callable = xavier_normal,
                  v_init: Callable = xavier_normal, o_init: Callable = xavier_normal):
         """Creates a dot-product attention module instance.
@@ -248,36 +248,36 @@ class MultiHeadAttention(Module):
             qin: number of channels of the queries tensor.
             kin: number of channels of the keys tensor.
             vin: number of channels of the values tensor.
-            dout: dimension of the output tensor.
+            nout: dimension of the output tensor.
             w_init: weight initializer for embeddings.
         """
         super().__init__()
-        self.dout = dout
+        self.nout = nout
         self.num_heads = num_heads
-        self.w_q = TrainVar(q_init((qin, dout)))
-        self.w_k = TrainVar(k_init((kin, dout)))
-        self.w_v = TrainVar(v_init((vin, dout)))
-        self.w_o = TrainVar(o_init((vin, dout)))
+        self.w_q = TrainVar(q_init((qin, nout)))
+        self.w_k = TrainVar(k_init((kin, nout)))
+        self.w_v = TrainVar(v_init((vin, nout)))
+        self.w_o = TrainVar(o_init((vin, nout)))
 
     def __call__(self, x_q: JaxArray, x_k: JaxArray, x_v: JaxArray,
                  mask: JaxArray = None) -> JaxArray:
         """Returns the results of applying the linear transformation to input x."""
         batch_size, sequence_length = x_k.shape[:2]
-        head_dim = self.dout // self.num_heads
+        head_dim = self.nout // self.num_heads
         head_shape = (batch_size, sequence_length, self.num_heads, head_dim)
-        q = jn.reshape(jn.dot(x_q, self.w_q.value), head_shape)
-        k = jn.reshape(jn.dot(x_k, self.w_k.value), head_shape)
-        v = jn.reshape(jn.dot(x_v, self.w_v.value), head_shape)
+        q = jn.reshape(x_q.dot(self.w_q.value), head_shape)
+        k = jn.reshape(x_k.dot(self.w_k.value), head_shape)
+        v = jn.reshape(x_v.dot(self.w_v.value), head_shape)
 
-        # b: batch, t: query sequence lenght, T: key-value sequence length
+        # b: batch, t: query sequence length, T: key-value sequence length
         # h: heads, d: embedding dimension
-        scores = jn.einsum('bthd,bThd->bhtT', q, k) / jn.sqrt(head_dim)
+        scores = jn.einsum('thd,Thd->htT', q, k) / jn.sqrt(head_dim)
         if mask is not None:
             scores = scores * mask - 1e10 * (1 - mask)
         weights = functional.softmax(scores)
-        attention = jn.einsum('bhtT,bThd->bthd', weights, v)
-        attention = jn.reshape(attention, [batch_size, sequence_length, self.dout])
-        return jn.dot(attention, self.w_o.value)
+        attention = jn.einsum('htT,Thd->thd', weights, v)
+        attention = jn.reshape(attention, [batch_size, sequence_length, self.nout])
+        return attention.dot(self.w_o.value)
 
 
 class Dropout(Module):
