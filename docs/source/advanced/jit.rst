@@ -278,8 +278,8 @@ We can also show the parallel version of :ref:`jitted-train-label`, highlighted 
 
     def train(x, labels, lr):
         g, v = gradient_loss(x, labels)                     # Compute gradients and loss
-        opt(lr, objax.funcational.parallel.pmean(g))        # Apply averaged gradients
-        return objax.funcational.parallel.pmean(v)          # Return averaged loss value
+        opt(lr, objax.functional.parallel.pmean(g))        # Apply averaged gradients
+        return objax.functional.parallel.pmean(v)          # Return averaged loss value
 
     # It's better to parallelize the top level call to allow internal optimizations.
     train_para = objax.Parallel(train, gradient_loss.vars() + opt.vars(), reduce=lambda x:x[0])
