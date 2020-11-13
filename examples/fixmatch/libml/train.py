@@ -23,7 +23,7 @@ from absl import flags
 from tqdm import tqdm, trange
 
 import objax
-from examples.classify.semi_supervised.img.libml.data.core import DataSet
+from examples.fixmatch.libml.data.core import DataSet
 from objax.util import EasyDict
 
 FLAGS = flags.FLAGS
