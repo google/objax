@@ -28,13 +28,13 @@ class TestOptimizers(unittest.TestCase):
     def __init__(self, methodname):
         """Initialize the test class."""
         super().__init__(methodname)
-        self.num_steps = 200
+        self.num_steps = 100
         self.lrs = {'square_adam': 0.15,
                     'rastrigin_adam': 0.7,
                     'square_adam_override': 0.15,
                     'rastrigin_adam_override': 0.7,
                     'logistic_lars': 0.9,
-                    'square_lars': 0.95,
+                    'square_lars': 3.0,
                     'logistic_momentum': 1.0,
                     'square_momentum': 0.01,
                     'logistic_momentum_override': 5.0,
@@ -58,7 +58,7 @@ class TestOptimizers(unittest.TestCase):
         self.override_options = {'logistic_momentum_override': 0.75,
                                  'square_momentum_override': 0.05,
                                  'square_adam_override': (0.85, 0.55),
-                                 'rastrigin_adam_override': (0.95, 0.95),
+                                 'rastrigin_adam_override': (0.95, 0.755),
                                  }
 
     def _get_optimizer(self, model_vars: VarCollection, optimizer: str):

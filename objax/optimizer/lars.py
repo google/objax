@@ -29,12 +29,19 @@ class LARS(Module):
     See https://arxiv.org/abs/1708.03888
     """
 
-    def __init__(self, vc: VarCollection, beta: float = 0.9, wd: float = 0.0001,
-                 tc: float = 0.001, eps: float = 0.00001):
+    def __init__(self, vc: VarCollection,
+                 beta: float = 0.9,
+                 wd: float = 1e-4,
+                 tc: float = 1e-3,
+                 eps: float = 1e-5):
         """Constructor for LARS optimizer.
 
         Args:
             vc: collection of variables to optimize.
+            beta: coefficient used for the moving average of the gradient.
+            wd: weight decay coefficient.
+            tc: trust coefficient for trust ratio computation.
+            eps: epsilon used for trust ratio computation.
         """
         self.beta = beta
         self.wd = wd
@@ -61,7 +68,5 @@ class LARS(Module):
         for g, p, m in zip(grads, self.train_vars, self.m):
             if self.wd != 0:
                 g += self.wd * p.value
-            scaled_grad = scaled_lr * g
-            new_momentum = self.beta * m.value + scaled_grad
-            p.value -= new_momentum
-            m.value = new_momentum
+            m.value = self.beta * m.value + scaled_lr * g
+            p.value -= m.value

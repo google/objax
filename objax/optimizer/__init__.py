@@ -15,5 +15,5 @@
 from .adam import *
 from .ema import *
 from .momentum import *
-from .sgd import *
 from .lars import *
+from .sgd import *
