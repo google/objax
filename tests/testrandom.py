@@ -23,6 +23,9 @@ import objax
 
 
 class TestRandom(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestRandom, self).__init__(*args, **kwargs)
+        objax.random.DEFAULT_GENERATOR.seed(123)
 
     def helper_test_randint(self, shape, low, high):
         """Helper function to test objax.random.randint."""
