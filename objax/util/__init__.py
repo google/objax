@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import image
 from . import check
+from . import convert
+from . import image
 from .util import *
