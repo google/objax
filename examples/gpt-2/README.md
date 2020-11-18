@@ -13,7 +13,7 @@ git clone https://github.com/openai/gpt-2.git
 
 # Download model weights
 cd gpt-2
-python3 gpt-2/download_model.py 124M
+python3 download_model.py 124M
 cd ..
 ```
 

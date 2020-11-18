@@ -37,7 +37,7 @@ installed. Here are the extra steps:
 ```bash
 # Update accordingly to your installed CUDA version
 CUDA_VERSION=11.0
-pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
+pip install -f https://storage.googleapis.com/jax-releases/jax_releases.html jaxlib==`python3 -c 'import jaxlib; print(jaxlib.__version__)'`+cuda`echo $CUDA_VERSION | sed s:\\\.::g`
 ```
 
 ### Useful environment configurations
@@ -81,61 +81,8 @@ git clone https://github.com/google/objax.git
 cd objax/examples
 ```
 
-## Developer installation guide
+## Developer documentation
 
-We recommend using `virtualenv` if you want to develop in Objax. The setup for
-Ubuntu or a similar Linux distribution is as follows:
-
-```bash
-# Install virtualenv if you haven't done so already
-sudo apt install python3-dev python3-virtualenv python3-tk imagemagick virtualenv pandoc
-# Create a virtual environment (for example ~/jax3, you can use your name here)
-virtualenv -p python3 --system-site-packages ~/jax3
-# Start the virtual environment
-. ~/jax3/bin/activate
-
-# Clone objax git repository, if you haven't.
-git clone https://github.com/google/objax.git
-cd objax
-
-# Install python dependencies.
-pip install --upgrade -r requirements.txt
-pip install --upgrade -r docs/requirements.txt
-pip install --upgrade -r examples/requirements.txt
-
-# If you have CUDA installed, specify your installed CUDA version.
-CUDA_VERSION=11.0
-pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
-```
-
-The current folder must be in `PYTHONPATH`. You can do this with the following command:
-
-```bash
-export PYTHONPATH=$PYTHONPATH:.
-```
-
-### Running linter and tests
-
-Install additional packages for testing and linting:
-
-```bash
-# Installation of pytest is optional.
-# Tests will run without it, however pytest provides nicer output and
-# GitHub tests are run using pytest.
-pip install pytest
-
-# Flake8 is required to run linter.
-pip install flake8
-```
-
-Run linter:
-
-```bash
-./tests/run_linter.sh
-```
-
-Run tests:
-
-```bash
-./tests/run_tests.sh
-```
+Here is information about
+[development setup](https://objax.readthedocs.io/en/latest/dev/setup.html)
+and a [guide on adding new code](https://objax.readthedocs.io/en/latest/dev/adding_module.html).

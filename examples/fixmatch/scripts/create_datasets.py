@@ -30,7 +30,7 @@ import tensorflow as tf
 from absl import app
 from tqdm import trange
 
-from examples.classify.semi_supervised.img.libml.data import core
+from examples.fixmatch.libml.data import core
 from objax.util import EasyDict
 from objax.util.image import to_png
 

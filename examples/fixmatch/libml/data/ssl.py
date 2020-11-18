@@ -17,7 +17,7 @@ from typing import Callable, List
 
 from absl import flags
 
-from examples.classify.semi_supervised.img.libml.data import core
+from examples.fixmatch.libml.data import core
 
 FLAGS = flags.FLAGS
 
