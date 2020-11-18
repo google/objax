@@ -23,7 +23,6 @@ import objax
 
 
 class TestRandom(unittest.TestCase):
-
     def helper_test_randint(self, shape, low, high):
         """Helper function to test objax.random.randint."""
         value = objax.random.randint(shape, low, high)
@@ -33,6 +32,7 @@ class TestRandom(unittest.TestCase):
 
     def test_randint(self):
         """Test for objax.random.randint."""
+        objax.random.DEFAULT_GENERATOR.seed(123)
         self.helper_test_randint(shape=(3, 4), low=1, high=10)
         self.helper_test_randint(shape=(5,), low=0, high=5)
         self.helper_test_randint(shape=(), low=-5, high=5)
@@ -44,6 +44,7 @@ class TestRandom(unittest.TestCase):
 
     def test_normal(self):
         """Test for objax.random.normal."""
+        objax.random.DEFAULT_GENERATOR.seed(123)
         self.helper_test_normal(shape=(4, 2, 3), stddev=1.0)
         self.helper_test_normal(shape=(2, 3), stddev=2.0)
         self.helper_test_normal(shape=(5,), stddev=2.0)
@@ -67,6 +68,7 @@ class TestRandom(unittest.TestCase):
 
     def test_truncated_normal(self):
         """Test for objax.random.truncated_normal."""
+        objax.random.DEFAULT_GENERATOR.seed(123)
         self.helper_test_truncated_normal(shape=(5, 7), stddev=1.0, bound=2.0)
         self.helper_test_truncated_normal(shape=(4,), stddev=2.0, bound=4.0)
         self.helper_test_truncated_normal(shape=(), stddev=1.0, bound=4.0)
@@ -98,6 +100,7 @@ class TestRandom(unittest.TestCase):
 
     def test_uniform(self):
         """Test for objax.random.uniform."""
+        objax.random.DEFAULT_GENERATOR.seed(123)
         self.helper_test_uniform(shape=(4, 3))
         self.helper_test_uniform(shape=(5,))
         self.helper_test_uniform(shape=())
