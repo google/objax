@@ -6,17 +6,17 @@ from typing import Dict, Callable
 import jax.numpy as jn
 import numpy as np
 
-import objax
+from objax.variable import BaseVar, VarCollection
 
 
-def assign(x: objax.BaseVar, v: np.ndarray):
+def assign(x: BaseVar, v: np.ndarray):
     x.assign(jn.array(v.reshape(x.value.shape)))
 
 
-def import_weights(target_vc: objax.VarCollection,
+def import_weights(target_vc: VarCollection,
                    source_numpy: Dict[str, np.ndarray],
                    source_names: Dict[str, str],
-                   numpy_convert: Dict[str, Callable[[objax.BaseVar, np.ndarray], None]]):
+                   numpy_convert: Dict[str, Callable[[BaseVar, np.ndarray], None]]):
     module_var = re.compile(r'.*(\([^)]*\)\.[^(]*)$')
     for k, v in target_vc.items():
         s = source_names[k]

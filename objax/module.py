@@ -22,7 +22,7 @@ import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
-from objax.util import override_args_kwargs, positional_args_names
+from objax.util.util import override_args_kwargs, positional_args_names
 from objax.variable import BaseVar, RandomState, VarCollection
 
 

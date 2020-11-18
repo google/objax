@@ -14,7 +14,7 @@
 
 """This module contains type declarations for Objax."""
 
-__all__ = ['FileOrStr', 'JaxArray', 'JaxDType']
+__all__ = ['ConvPaddingInt', 'FileOrStr', 'JaxArray', 'JaxDType']
 
 from typing import Union, IO, BinaryIO, Sequence, Tuple
 

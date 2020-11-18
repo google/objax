@@ -2,7 +2,7 @@ __all__ = ['ARRAY_CONVERT', 'rename']
 
 import re
 
-from objax.util.convert import assign
+from .convert import assign
 
 ARRAY_CONVERT = {
     '(BatchNorm2D).beta': assign,

@@ -21,7 +21,7 @@ from typing import IO, BinaryIO, Union, Optional
 import jax.numpy as jn
 import numpy as np
 
-from objax.util import Renamer
+from objax.util.util import Renamer
 from objax.variable import TrainRef, VarCollection
 
 
