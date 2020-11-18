@@ -60,12 +60,9 @@ class GradValues(Module):
             finally:
                 self.vc.assign(original_vc)
 
-        if input_argnums is None:
-            self.input_argnums = tuple()
-        else:
-            assert isinstance(input_argnums, tuple), \
-                f"Must pass a tuple of indices to input_argnums; received {input_argnums}."
-            self.input_argnums = input_argnums
+        assert isinstance(input_argnums, tuple) or input_argnums is None, \
+                f'Must pass a tuple of indices to input_argnums; received {input_argnums}.'
+        self.input_argnums = input_argnums or tuple()
 
         signature = inspect.signature(f)
         self.__wrapped__ = f
