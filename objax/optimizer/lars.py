@@ -31,26 +31,22 @@ class LARS(Module):
 
     def __init__(self, vc: VarCollection,
                  momentum: float = 0.9,
-                 beta: float = 1e-4,
+                 weight_decay: float = 1e-4,
                  tc: float = 1e-3,
-                 eps: float = 1e-5,
-                 max_epochs: int = 100):
+                 eps: float = 1e-5):
         """Constructor for LARS optimizer.
 
         Args:
             vc: collection of variables to optimize.
             momentum: coefficient used for the moving average of the gradient.
-            beta: weight decay coefficient.
+            weight_decay: weight decay coefficient.
             tc: trust coefficient eta ( < 1) for trust ratio computation.
             eps: epsilon used for trust ratio computation.
-            max_epochs: total number of steps that the optimizer will take.
         """
         self.momentum = momentum
-        self.beta = beta
+        self.weight_decay = weight_decay
         self.tc = tc
         self.eps = eps
-        self.epoch = 0
-        self.max_epochs = max_epochs
         self.train_vars = ModuleList(TrainRef(x) for x in vc.subset(TrainVar))
         self.m = ModuleList(StateVar(jn.zeros_like(x.value)) for x in self.train_vars)
 
@@ -58,21 +54,19 @@ class LARS(Module):
         """Updates variables based on LARS algorithm.
 
         Args:
-            lr: base learning rate.
+            lr: learning rate. The LARS paper suggests using lr = lr_0 * (1 -t/T)**2,
+            where t is the current epoch number and T the maximum number of epochs.
             grads: the gradients to apply.
         """
         assert len(grads) == len(self.train_vars), 'Expecting as many gradients as trainable variables'
-        self.epoch += 1
 
         for g, p, m in zip(grads, self.train_vars, self.m):
             train_vars_norm = jn.linalg.norm(p.value)
             grad_norm = jn.linalg.norm(g)
-            trust_ratio = self.tc * train_vars_norm / (grad_norm + self.beta * train_vars_norm + self.eps)
+            trust_ratio = self.tc * train_vars_norm / (grad_norm + self.weight_decay * train_vars_norm + self.eps)
             clipped_trust_ratio = jn.where(jn.logical_or(grad_norm == 0., train_vars_norm == 0.), 1., trust_ratio)
-            lr *= (1 - self.epoch / self.max_epochs) ** 2
             scaled_lr = lr * clipped_trust_ratio
 
-            if self.beta != 0:
-                g += self.beta * p.value
+            g += self.weight_decay * p.value
             m.value = self.momentum * m.value + scaled_lr * g
             p.value -= m.value
