@@ -1,6 +1,8 @@
 Installation and Setup
 ======================
 
+For developing or contributing to Objax, see :ref:`Development setup`.
+
 User installation
 -----------------
 
@@ -16,7 +18,7 @@ For GPU support, we assume you have already some version of CUDA installed. Here
 
     # Specify your installed CUDA version.
     CUDA_VERSION=11.0
-    pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
+    pip install -f https://storage.googleapis.com/jax-releases/jax_releases.html jaxlib==`python3 -c 'import jaxlib; print(jaxlib.__version__)'`+cuda`echo $CUDA_VERSION | sed s:\\\.::g`
 
 Useful shell configurations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -58,41 +60,3 @@ Clone the code repository:
 
     git clone https://github.com/google/objax.git
     cd objax/examples
-
-
-Developer installation
-----------------------
-
-For developing purpose we recommend using :code:`virtualenv`.
-The setup in Ubuntu or similar Linux distributions is as follows:
-
-.. code-block:: bash
-
-    # Install virtualenv if you haven't done so already
-    sudo apt install python3-dev python3-virtualenv python3-tk imagemagick virtualenv
-    # Create a virtual environment (for example ~/jax3, you can use your name here)
-    virtualenv -p python3 --system-site-packages ~/jax3
-    # Start the virtual environment
-    . ~/jax3/bin/activate
-
-    # Clone objax git repository.
-    git clone https://github.com/google/objax.git
-    cd objax
-
-    # Install python dependencies.
-    pip install --upgrade -r requirements.txt
-    pip install --upgrade -r docs/requirements.txt
-    pip install --upgrade -r examples/requirements.txt
-
-    # If you have CUDA installed, specify your installed CUDA version.
-    CUDA_VERSION=11.0
-    pip install --upgrade https://storage.googleapis.com/jax-releases/cuda`echo $CUDA_VERSION | sed s:\\\.::g`/jaxlib-`python3 -c 'import jaxlib; print(jaxlib.__version__)'`-`python3 -V | sed -En "s/Python ([0-9]*)\.([0-9]*).*/cp\1\2/p"`-none-manylinux2010_x86_64.whl
-
-The current folder must be in :code:`PYTHONPATH`.
-This can be done with the following command:
-
-.. code-block:: bash
-
-    export PYTHONPATH=$PYTHONPATH:.
-
-.. seealso:: :ref:`Useful shell configurations`

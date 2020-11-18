@@ -25,6 +25,7 @@ import numpy as np
 
 from objax.typing import JaxArray
 from objax.util import map_to_device, Renamer
+from objax.util.check import assert_assigned_type_and_shape_match
 
 
 def reduce_mean(x: JaxArray) -> JaxArray:
@@ -53,15 +54,17 @@ class BaseVar(abc.ABC):
     def value(self, tensor: JaxArray):
         raise NotImplementedError('Pure method')
 
-    def assign(self, tensor: JaxArray):
+    def assign(self, tensor: JaxArray, check=True):
         """Sets the value of the variable."""
+        if check:
+            assert_assigned_type_and_shape_match(self.value, tensor)
         self.value = tensor
 
     def reduce(self, tensors: JaxArray):
         """Method called by Parallel and Vectorize to reduce a multiple-device (or batched in case of vectoriaation)
         value to a single device."""
         if self._reduce:
-            self.assign(self._reduce(tensors))
+            self.assign(self._reduce(tensors), check=False)
 
 
 class TrainVar(BaseVar):
@@ -88,7 +91,9 @@ class TrainVar(BaseVar):
     def value(self, tensor: JaxArray):
         raise ValueError('Direct assignment not allowed, use TrainRef to update a TrainVar.')
 
-    def assign(self, tensor: JaxArray):
+    def assign(self, tensor: JaxArray, check=True):
+        if check:
+            assert_assigned_type_and_shape_match(self.value, tensor)
         self._value = tensor
 
 
@@ -97,7 +102,7 @@ class BaseState(BaseVar):
 
     def reduce(self, tensors: JaxArray):
         if self._reduce:
-            self.assign(self._reduce(tensors))
+            self.assign(self._reduce(tensors), check=False)
 
 
 class TrainRef(BaseState):

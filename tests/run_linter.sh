@@ -22,6 +22,6 @@ cd "$( dirname "${BASH_SOURCE[0]}" )/.."
 #   https://www.flake8rules.com/rules/W503.html
 # - Set max line length to 120 characters
 # - Separately lint __init__.py and other files, otherwise flake8 complains about unused imports in __init__.py
-flake8 --exclude=__init__.py --max-line-length=120 --ignore=E731,W503 objax/
-flake8 --filename=__init__.py --max-line-length=120 --ignore=E731,W503 objax/
-flake8 --max-line-length=120 --ignore=E731,W503 tests/
+flake8 --exclude=__init__.py --max-line-length=120 --ignore=E731,W503 objax/ || exit 1
+flake8 --filename=__init__.py --max-line-length=120 --ignore=E731,W503 objax/ || exit 1
+flake8 --max-line-length=120 --ignore=E731,W503 tests/ || exit 1
