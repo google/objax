@@ -64,9 +64,6 @@ class LARS(Module):
             p_norm = jn.linalg.norm(p.value)
             g_norm = jn.linalg.norm(g)
             trust_ratio = self.tc * p_norm / (g_norm + self.weight_decay * p_norm + self.eps)
-            rectified_trust_ratio = jn.maximum(jn.logical_or(p_norm == 0, g_norm == 0), trust_ratio)
-            scaled_lr = lr * rectified_trust_ratio
-
-            g += self.weight_decay * p.value
-            m.value = self.momentum * m.value + scaled_lr * g
+            local_lr = lr * jn.maximum(jn.logical_or(p_norm == 0, g_norm == 0), trust_ratio)
+            m.value = self.momentum * m.value + local_lr * (g + self.weight_decay * p.value)
             p.value -= m.value
