@@ -7,6 +7,7 @@ objax.optimizer package
 
     Adam
     ExponentialMovingAverage
+    LARS
     Momentum
     SGD
 
@@ -61,6 +62,27 @@ objax.optimizer package
 
     Where :math:`\epsilon` is a small constant to avoid a divide-by-0.
 
+.. autoclass:: LARS
+    :members:
+
+    The Layer-Wise Rate Scaling (LARS) optimizer implements the scheme originally proposed in
+    `Large Batch Training of Convolutional Networks <https://arxiv.org/abs/1708.03888>`_. The
+    optimizer takes as input the base learning rate :math:`\gamma_0`, momentum :math:`m`,
+    weight decay :math:`\beta`, and trust coefficient :math:`\eta` and updates the model weights
+    :math:`w` as follows:
+
+    .. math::
+      \begin{eqnarray}
+      g_{t}^{l} &\leftarrow& \nabla L(w_{t}^{l}) \nonumber \\
+      \gamma_t &\leftarrow& \gamma_0 \ast (1 - \frac{t}{T})^{2} \nonumber \\
+      \lambda^{l} &\leftarrow& \frac{\| w_{t}^{l} \| }{ \| g_t^{l} \| + \beta \| w_{t}^{l} \|} \nonumber \\
+      v_{t+1}^{l} &\leftarrow& m v_{t}^{l} + \gamma_{t+1} \ast \lambda^{l} \ast (g_{t}^{l} + \beta w_{t}^{l}) \nonumber \\
+      w_{t+1}^{l} &\leftarrow& w_{t}^{l} - v_{t+1}^{l} \nonumber \\
+      \end{eqnarray}
+
+    where :math:`T` is the total number of steps (epochs) that the optimizer will take, :math:`t` is the
+    current step number, and :math:`w_{t}^{l}` are the weights for during step :math:`t` for layer :math:`l`.
+	
 .. autoclass:: Momentum
     :members:
 
