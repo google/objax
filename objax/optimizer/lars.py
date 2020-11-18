@@ -61,11 +61,11 @@ class LARS(Module):
         assert len(grads) == len(self.train_vars), 'Expecting as many gradients as trainable variables'
 
         for g, p, m in zip(grads, self.train_vars, self.m):
-            train_vars_norm = jn.linalg.norm(p.value)
-            grad_norm = jn.linalg.norm(g)
-            trust_ratio = self.tc * train_vars_norm / (grad_norm + self.weight_decay * train_vars_norm + self.eps)
-            clipped_trust_ratio = jn.where(jn.logical_or(grad_norm == 0., train_vars_norm == 0.), 1., trust_ratio)
-            scaled_lr = lr * clipped_trust_ratio
+            p_norm = jn.linalg.norm(p.value)
+            g_norm = jn.linalg.norm(g)
+            trust_ratio = self.tc * p_norm / (g_norm + self.weight_decay * p_norm + self.eps)
+            rectified_trust_ratio = jn.maximum(jn.logical_or(p_norm == 0, g_norm == 0), trust_ratio)
+            scaled_lr = lr * rectified_trust_ratio
 
             g += self.weight_decay * p.value
             m.value = self.momentum * m.value + scaled_lr * g
