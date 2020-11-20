@@ -26,6 +26,8 @@ class TestScan(unittest.TestCase):
         def cell(carry, x):
             return jn.array([2]) * carry * x, jn.array([2]) * carry * x
 
-        a, b = objax.functional.scan(cell, jn.zeros((2,)), jn.zeros((3,)))
-        self.assertEqual(a.shape, (2,))
-        self.assertEqual(b.shape, (3, 2))
+        carry = jn.array([8., 8.])
+        output = jn.array([[2., 2.], [4., 4.], [8., 8.]])
+        test_carry, test_output = objax.functional.scan(cell, jn.ones((2,)), jn.ones((3,)))
+        self.assertTrue(jn.array_equal(carry, test_carry))
+        self.assertTrue(jn.array_equal(output, test_output))
