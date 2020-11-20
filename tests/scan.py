@@ -24,10 +24,10 @@ import objax
 class TestScan(unittest.TestCase):
     def test_scan(self):
         def cell(carry, x):
-            return jn.array([2]) * carry * x, jn.array([2]) * carry * x
+            return jn.array([2]) * carry * x, jn.array([3]) * carry * x
 
         carry = jn.array([8., 8.])
-        output = jn.array([[2., 2.], [4., 4.], [8., 8.]])
+        output = jn.array([[3., 3.], [6., 6.], [12., 12.]])
         test_carry, test_output = objax.functional.scan(cell, jn.ones((2,)), jn.ones((3,)))
         self.assertTrue(jn.array_equal(carry, test_carry))
         self.assertTrue(jn.array_equal(output, test_output))
