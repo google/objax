@@ -89,6 +89,7 @@ class Checkpoint:
             idx: index of the restored checkpoint.
             ckpt: full path to the restored checkpoint.
         """
+        assert isinstance(vc, VarCollection), f'Must pass a VarCollection to restore; received type {type(vc)}.'
         if idx is None:
             all_ckpts = glob.glob(os.path.join(self.logdir, self.DIR_NAME, self.FILE_MATCH))
             if not all_ckpts:
@@ -109,6 +110,7 @@ class Checkpoint:
             vc: variables collection to save.
             idx: index of the new checkpoint where variables should be saved.
         """
+        assert isinstance(vc, VarCollection), f'Must pass a VarCollection to save; received type {type(vc)}.'
         self.SAVE_FN(os.path.join(self.logdir, self.DIR_NAME, self.FILE_FORMAT % idx), vc)
         for ckpt in sorted(glob.glob(os.path.join(self.logdir, self.DIR_NAME, self.FILE_MATCH)))[:-self.keep_ckpts]:
             os.remove(ckpt)
