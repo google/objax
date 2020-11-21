@@ -60,7 +60,10 @@ class GradValues(Module):
             finally:
                 self.vc.assign(original_vc)
 
+        assert isinstance(input_argnums, tuple) or input_argnums is None, \
+                f'Must pass a tuple of indices to input_argnums; received {input_argnums}.'
         self.input_argnums = input_argnums or tuple()
+
         signature = inspect.signature(f)
         self.__wrapped__ = f
         self.__signature__ = signature.replace(return_annotation=Tuple[List[JaxArray],
