@@ -112,7 +112,7 @@ class Checkpoint:
             idx: index of the new checkpoint where variables should be saved.
         """
         assert isinstance(vc, VarCollection), \
-            f"Must pass a VarCollection to save; received type {type(vc)}."
+            f'Must pass a VarCollection to save; received type {type(vc)}.'
         self.SAVE_FN(os.path.join(self.logdir, self.DIR_NAME, self.FILE_FORMAT % idx), vc)
         for ckpt in sorted(glob.glob(os.path.join(self.logdir, self.DIR_NAME, self.FILE_MATCH)))[:-self.keep_ckpts]:
             os.remove(ckpt)
