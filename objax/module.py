@@ -278,7 +278,8 @@ class Parallel(Module):
             f'Some variables were not replicated: {unreplicated}.' \
             'did you forget to call VarCollection.replicate on them?'
 
-        args = [x if i in self.static_argnums else jax.tree_map(self.device_reshape, [x])[0] for i, x in enumerate(args)]
+        args = [x if i in self.static_argnums
+                else jax.tree_map(self.device_reshape, [x])[0] for i, x in enumerate(args)]
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
         self.vc.assign(changes)
         return jax.tree_map(self.reduce, output)
