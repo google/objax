@@ -54,7 +54,7 @@ class VGG19(objax.nn.Sequential):
         """
         if not os.path.exists(_VGG19_NPY):
             raise FileNotFoundError(
-                'You must download vgg19.npy from %s and save it to %s' % (_VGG19_URL, _VGG19_NPY))
+                'Follow the directions from %s to download vgg19.npy and save it to %s' % (_VGG19_URL, _VGG19_NPY))
         if not os.path.exists(_SYNSET_PATH):
             request.urlretrieve(_SYNSET_URL, _SYNSET_PATH)
         self.data_dict = np.load(_VGG19_NPY, encoding='latin1', allow_pickle=True).item()
