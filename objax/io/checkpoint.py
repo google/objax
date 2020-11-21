@@ -90,7 +90,7 @@ class Checkpoint:
             ckpt: full path to the restored checkpoint.
         """
         assert isinstance(vc, VarCollection), \
-            f"Must pass a VarCollection to save; received type {type(vc)}."
+            f'Must pass a VarCollection to restore; received type {type(vc)}.'
         if idx is None:
             all_ckpts = glob.glob(os.path.join(self.logdir, self.DIR_NAME, self.FILE_MATCH))
             if not all_ckpts:
