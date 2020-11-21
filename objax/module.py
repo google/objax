@@ -227,8 +227,7 @@ class Parallel(Module):
                  vc: Optional[VarCollection] = None,
                  reduce: Callable[[JaxArray], JaxArray] = jn.concatenate,
                  axis_name: str = 'device',
-                 static_argnums: Optional[Tuple[int, ...]] = None,
-                 split_args: bool = True):
+                 static_argnums: Optional[Tuple[int, ...]] = None):
         """Parallel constructor.
 
         Args:
@@ -238,8 +237,6 @@ class Parallel(Module):
             axis_name: what name to give to the device dimension, used in conjunction with objax.functional.parallel.
             static_argnums: tuple of indexes of f's input arguments to treat as static (constants)).
                 A new graph is compiled for each different combination of values for such inputs.
-            split_args: if True, split non-static arguments along the batch dimension across devices;
-                otherwise, the first dimension of non-static arguments should equal the number of devices.
         """
         if not isinstance(f, Module):
             if vc is None:
@@ -262,7 +259,6 @@ class Parallel(Module):
         self.vc = vc or f.vars()
         self._call = jax.pmap(pmap, axis_name=axis_name, static_broadcasted_argnums=[x + 2 for x in static_argnums])
         self.__wrapped__ = f
-        self.split_args = split_args
 
     def device_reshape(self, x: JaxArray) -> JaxArray:
         """Utility to reshape an input array in order to broadcast to multiple devices."""
@@ -282,8 +278,7 @@ class Parallel(Module):
             f'Some variables were not replicated: {unreplicated}.' \
             'did you forget to call VarCollection.replicate on them?'
 
-        if self.split_args:
-            args = [x if i in self.static_argnums else self.device_reshape(x) for i, x in enumerate(args)]
+        args = [x if i in self.static_argnums else jax.tree_map(self.device_reshape, [x])[0] for i, x in enumerate(args)]
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
         self.vc.assign(changes)
         return jax.tree_map(self.reduce, output)
