@@ -240,7 +240,7 @@ here's an example::
 
 
 Gradients of a subset of variables
----------------------------------
+----------------------------------
 
 When doing more complex optimizations, one might want to temporarily treat a part of a network as constant.
 This is achieved by simply passing only the variables you want the gradient of to :py:class:`objax.GradValues`.
