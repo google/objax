@@ -15,11 +15,11 @@ def assign(x: BaseVar, v: np.ndarray):
 
 def import_weights(target_vc: VarCollection,
                    source_numpy: Dict[str, np.ndarray],
-                   source_names: Dict[str, str],
+                   target_to_source_names: Dict[str, str],
                    numpy_convert: Dict[str, Callable[[BaseVar, np.ndarray], None]]):
     module_var = re.compile(r'.*(\([^)]*\)\.[^(]*)$')
     for k, v in target_vc.items():
-        s = source_names[k]
+        s = target_to_source_names[k]
         t = module_var.match(k).group(1)
         if s not in source_numpy:
             print(f'Skipping {k} ({s})')

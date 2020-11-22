@@ -4,12 +4,7 @@ import torchvision
 
 from objax.zoo import vgg
 
-
-def delta(x, y):  # pytoch, jax
-    return jn.abs(x.detach().numpy() - y).max()
-
-
-mo = vgg.vgg16(use_bn=False)
+mo = vgg.VGG16()
 vgg.load_pretrained_weights_from_pytorch(mo)
 print(mo.vars())
 
