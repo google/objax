@@ -49,6 +49,18 @@ class TestParallel(unittest.TestCase):
         self.assertTrue(jn.array_equal(z1, y))
         self.assertTrue(jn.array_equal(z2, -y))
 
+    def test_parallel_list(self):
+        """Parallel inference (concat reduction) without batch splitting."""
+        f = objax.nn.Linear(3, 4)
+        g = lambda x: f(x[0]) + x[1][:, jn.newaxis]
+        x1 = objax.random.normal((96, 3))
+        x2 = objax.random.normal((96,))
+        y = g([x1, x2])
+        fp = objax.Parallel(g, vc=f.vars())
+        with fp.vars().replicate():
+            z = fp([x1, x2])
+        self.assertTrue(jn.array_equal(y, z))
+
     def test_parallel_bneval_concat(self):
         """Parallel inference (concat reduction) with batch norm in eval mode."""
         f = objax.nn.Sequential([objax.nn.Conv2D(3, 4, k=1), objax.nn.BatchNorm2D(4), objax.nn.Conv2D(4, 2, k=1)])
