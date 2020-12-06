@@ -174,4 +174,4 @@ def to_upsample(upsample: Union[UpSample, str]) -> Union[str]:
     if isinstance(upsample, str):
         return UpSample[upsample.upper()].value
 
-    assert isinstance(upsample, (str, UpSample)), "Argument must be a string or UpSample"
+    assert isinstance(upsample, (str, UpSample)), f'Argument "{upsample}" must be a string or UpSample'

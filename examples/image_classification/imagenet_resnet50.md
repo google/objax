@@ -1,4 +1,4 @@
-# Example of training and evaluation on Imagenet dataset
+# Example of training and evaluation of ResNet50 on Imagenet
 
 This example trains a ResNet50 model on the ImageNet2012 dataset.
 
@@ -7,7 +7,7 @@ This example trains a ResNet50 model on the ImageNet2012 dataset.
 You have to obtain the Imagenet dataset to train the model.
 
 Internally this code uses [TFDS](https://github.com/tensorflow/datasets) which will show download instructions on the first run.
-Run `python examples/imagenet/imagenet_train.py` and you will see download instructions, similar to the following:
+Run `python examples/image_classification/imagenet_resnet50_train.py` and you will see download instructions, similar to the following:
 
 ```
 AssertionError: Manual directory /home/${USER}/tensorflow_datasets/downloads/manual does not exist or is empty. Create it and download/extract dataset artifacts in there. Additional instructions: manual_dir should contain two files: ILSVRC2012_img_train.tar and
@@ -16,7 +16,7 @@ ILSVRC2012_img_val.tar.
 
 You have to download data from http://www.image-net.org/download-images and then put it into
 the directory mentioned in the message.
-On the next run run `imagenet_train.py` which will process the data and rearrange it inside the data directory which might take a while.
+On the next run, run `imagenet_resnet50_train.py` which will process the data and rearrange it inside the data directory which might take a while.
 Subsequent runs will re-use the already downloaded data.
 
 You can override TFDS data directory by providing the `--tfds_data_dir` flag. This might be useful if you don't have enough disk space in the default location or already have a copy of Imagenet data somewhere else.
