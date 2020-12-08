@@ -38,6 +38,16 @@ class TestParallel(unittest.TestCase):
             z = fp(x)
         self.assertTrue(jn.array_equal(y, z))
 
+    def test_parallel_concat_broadcast(self):
+        """Parallel inference with broadcasted scalar input."""
+        f = lambda x, y: x + y
+        x = objax.random.normal((96, 3))
+        d = jn.float32(0.5)
+        y = f(x, d)
+        fp = objax.Parallel(f, objax.VarCollection())
+        z = fp(x, d)
+        self.assertTrue(jn.array_equal(y, z))
+
     def test_parallel_concat_multi_output(self):
         """Parallel inference (concat reduction) for multiple outputs."""
         f = objax.nn.Linear(3, 4)
