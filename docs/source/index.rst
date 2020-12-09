@@ -91,6 +91,7 @@ Read more about this in :doc:`advanced/jit`.
    notebooks/Custom_Networks
    examples
    tutorials
+   faq
 
 .. toctree::
    :maxdepth: 2
