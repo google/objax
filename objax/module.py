@@ -262,6 +262,10 @@ class Parallel(Module):
 
     def device_reshape(self, x: JaxArray) -> JaxArray:
         """Utility to reshape an input array in order to broadcast to multiple devices."""
+        assert hasattr(x, 'ndim'), f'Expected JaxArray, got {type(x)}. If you are trying to pass a scalar to ' \
+                                   f'parallel, first convert it to a JaxArray, for example np.float(0.5)'
+        if x.ndim == 0:
+            return jn.broadcast_to(x, [self.ndevices])
         assert x.shape[0] % self.ndevices == 0, f'Must be able to equally divide batch {x.shape} among ' \
                                                 f'{self.ndevices} devices, but does not go equally.'
         return x.reshape((self.ndevices, x.shape[0] // self.ndevices) + x.shape[1:])
