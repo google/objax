@@ -72,5 +72,5 @@ Thus readers may observe similarities between Objax API and API of PyTorch
 (or some other frameworks).
 
 Nevertheless, **Objax is not intended to be a re-implementation of the API
-of any other framework and each Objax design decision is weighted on it's own merit**.
+of any other framework and each Objax design decision is weighted on its own merit**.
 So there will always be differences between Objax API and APIs of other frameworks.
