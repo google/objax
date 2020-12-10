@@ -22,7 +22,7 @@ import jax.numpy as jn
 import numpy as np
 from jax.interpreters.pxla import ShardedDeviceArray
 
-from objax.util import Renamer
+from objax.util.util import Renamer
 from objax.variable import TrainRef, VarCollection
 
 

@@ -22,7 +22,7 @@ from jax import numpy as jn, lax
 
 from objax.constants import ConvPadding
 from objax.typing import JaxArray, ConvPaddingInt
-from objax.util import to_padding, to_tuple
+from objax.util.util import to_padding, to_tuple
 
 
 def average_pool_2d(x: JaxArray,
