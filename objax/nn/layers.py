@@ -247,7 +247,8 @@ class ConvTranspose2D(Conv2D):
             w_init: initializer for convolution kernel (a function that takes in a HWIO shape and returns a 4D matrix).
         """
         super().__init__(nin=nout, nout=nin, k=k, strides=strides, dilations=dilations, padding=padding,
-                         use_bias=use_bias, w_init=w_init)
+                         use_bias=False, w_init=w_init)
+        self.b = TrainVar(jn.zeros((nout, 1, 1))) if use_bias else None
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the transposed convolution to input x."""
