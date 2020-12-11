@@ -26,6 +26,7 @@ from objax.constants import ConvPadding
 from objax.module import ModuleList, Module
 from objax.nn.init import kaiming_normal, xavier_normal
 from objax.typing import JaxArray, ConvPaddingInt
+from objax.util import class_name
 from objax.variable import TrainVar, StateVar
 
 
@@ -77,6 +78,11 @@ class BatchNorm(Module):
         y = self.gamma.value * (x - m) * functional.rsqrt(v + self.eps) + self.beta.value
         return y
 
+    def __repr__(self):
+        args = dict(dims=self.beta.value.shape, redux=self.redux, momentum=self.momentum, eps=self.eps)
+        args = ', '.join(f'{x}={y}' for x, y in args.items())
+        return f'{class_name(self)}({args})'
+
 
 class BatchNorm0D(BatchNorm):
     """Applies a 0D batch normalization on a 2D-input batch of shape (N,C).
@@ -95,6 +101,9 @@ class BatchNorm0D(BatchNorm):
             eps: small value which is used for numerical stability.
         """
         super().__init__((1, nin), (0,), momentum, eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.beta.value.shape[1]}, momentum={self.momentum}, eps={self.eps})'
 
 
 class BatchNorm1D(BatchNorm):
@@ -115,6 +124,9 @@ class BatchNorm1D(BatchNorm):
         """
         super().__init__((1, nin, 1), (0, 2), momentum, eps)
 
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.beta.value.shape[1]}, momentum={self.momentum}, eps={self.eps})'
+
 
 class BatchNorm2D(BatchNorm):
     """Applies a 2D batch normalization on a 4D-input batch of shape (N,C,H,W).
@@ -133,6 +145,9 @@ class BatchNorm2D(BatchNorm):
             eps: small value which is used for numerical stability.
         """
         super().__init__((1, nin, 1, 1), (0, 2, 3), momentum, eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.beta.value.shape[1]}, momentum={self.momentum}, eps={self.eps})'
 
 
 class Conv2D(Module):
@@ -173,6 +188,7 @@ class Conv2D(Module):
         self.strides = util.to_tuple(strides, 2)
         self.dilations = util.to_tuple(dilations, 2)
         self.groups = groups
+        self.w_init = w_init
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the convolution to input x."""
@@ -186,6 +202,13 @@ class Conv2D(Module):
         if self.b:
             y += self.b.value
         return y
+
+    def __repr__(self):
+        args = dict(nin=self.w.value.shape[2] * self.groups, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
+                    strides=self.strides, dilations=self.dilations, groups=self.groups, padding=self.padding,
+                    use_bias=self.b is not None)
+        args = ', '.join(f'{k}={repr(v)}' for k, v in args.items())
+        return f'{class_name(self)}({args}, w_init={util.repr_function(self.w_init)})'
 
 
 class ConvTranspose2D(Conv2D):
@@ -223,9 +246,8 @@ class ConvTranspose2D(Conv2D):
             use_bias: if True then convolution will have bias term.
             w_init: initializer for convolution kernel (a function that takes in a HWIO shape and returns a 4D matrix).
         """
-        super().__init__(nin=nout, nout=nin, k=k, strides=strides, padding=padding, use_bias=False, w_init=w_init)
-        self.b = TrainVar(jn.zeros((nout, 1, 1))) if use_bias else None
-        self.dilations = util.to_tuple(dilations, 2)
+        super().__init__(nin=nout, nout=nin, k=k, strides=strides, dilations=dilations, padding=padding,
+                         use_bias=use_bias, w_init=w_init)
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the transposed convolution to input x."""
@@ -235,6 +257,13 @@ class ConvTranspose2D(Conv2D):
         if self.b:
             y += self.b.value
         return y
+
+    def __repr__(self):
+        args = dict(nin=self.w.value.shape[2] * self.groups, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
+                    strides=self.strides, dilations=self.dilations, padding=self.padding,
+                    use_bias=self.b is not None)
+        args = ', '.join(f'{k}={repr(v)}' for k, v in args.items())
+        return f'{class_name(self)}({args}, w_init={util.repr_function(self.w_init)})'
 
 
 class Dropout(Module):
@@ -268,48 +297,8 @@ class Dropout(Module):
         keep_mask = jr.bernoulli(self.keygen(), keep, x.shape)
         return jn.where(keep_mask, x / keep, 0)
 
-
-class Linear(Module):
-    """Applies a linear transformation on an input batch."""
-
-    def __init__(self, nin: int, nout: int, use_bias: bool = True, w_init: Callable = xavier_normal):
-        """Creates a Linear module instance.
-
-        Args:
-            nin: number of channels of the input tensor.
-            nout: number of channels of the output tensor.
-            use_bias: if True then linear layer will have bias term.
-            w_init: weight initializer for linear layer (a function that takes in a IO shape and returns a 2D matrix).
-        """
-        super().__init__()
-        self.b = TrainVar(jn.zeros(nout)) if use_bias else None
-        self.w = TrainVar(w_init((nin, nout)))
-
-    def __call__(self, x: JaxArray) -> JaxArray:
-        """Returns the results of applying the linear transformation to input x."""
-        y = jn.dot(x, self.w.value)
-        if self.b:
-            y += self.b.value
-        return y
-
-
-class MovingAverage(Module):
-    """Computes moving average of an input batch."""
-
-    def __init__(self, shape: Tuple[int, ...], buffer_size: int, init_value: float = 0):
-        """Creates a MovingAverage module instance.
-
-        Args:
-            shape: shape of the input tensor.
-            buffer_size: buffer size for moving average.
-            init_value: initial value for moving average buffer.
-        """
-        self.buffer = StateVar(jn.zeros((buffer_size,) + shape) + init_value)
-
-    def __call__(self, x: JaxArray) -> JaxArray:
-        """Update the statistics using x and return the moving average."""
-        self.buffer.value = jn.concatenate([self.buffer.value[1:], x[None]])
-        return self.buffer.value.mean(0)
+    def __repr__(self):
+        return f'{class_name(self)}(keep={self.keep})'
 
 
 class ExponentialMovingAverage(Module):
@@ -324,12 +313,71 @@ class ExponentialMovingAverage(Module):
             init_value: initial value for exponential moving average.
         """
         self.momentum = momentum
+        self.init_value = init_value
         self.avg = StateVar(jn.zeros(shape) + init_value)
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Update the statistics using x and return the exponential moving average."""
         self.avg.value += (self.avg.value - x) * (self.momentum - 1)
         return self.avg.value
+
+    def __repr__(self):
+        s = self.avg.value.shape
+        return f'{class_name(self)}(shape={s}, momentum={self.momentum}, init_value={self.init_value})'
+
+
+class Linear(Module):
+    """Applies a linear transformation on an input batch."""
+
+    def __init__(self, nin: int, nout: int, use_bias: bool = True, w_init: Callable = xavier_normal):
+        """Creates a Linear module instance.
+
+        Args:
+            nin: number of channels of the input tensor.
+            nout: number of channels of the output tensor.
+            use_bias: if True then linear layer will have bias term.
+            w_init: weight initializer for linear layer (a function that takes in a IO shape and returns a 2D matrix).
+        """
+        super().__init__()
+        self.w_init = w_init
+        self.b = TrainVar(jn.zeros(nout)) if use_bias else None
+        self.w = TrainVar(w_init((nin, nout)))
+
+    def __call__(self, x: JaxArray) -> JaxArray:
+        """Returns the results of applying the linear transformation to input x."""
+        y = jn.dot(x, self.w.value)
+        if self.b:
+            y += self.b.value
+        return y
+
+    def __repr__(self):
+        s = self.w.value.shape
+        args = f'nin={s[0]}, nout={s[1]}, use_bias={self.b is not None}, w_init={util.repr_function(self.w_init)}'
+        return f'{class_name(self)}({args})'
+
+
+class MovingAverage(Module):
+    """Computes moving average of an input batch."""
+
+    def __init__(self, shape: Tuple[int, ...], buffer_size: int, init_value: float = 0):
+        """Creates a MovingAverage module instance.
+
+        Args:
+            shape: shape of the input tensor.
+            buffer_size: buffer size for moving average.
+            init_value: initial value for moving average buffer.
+        """
+        self.init_value = init_value
+        self.buffer = StateVar(jn.zeros((buffer_size,) + shape) + init_value)
+
+    def __call__(self, x: JaxArray) -> JaxArray:
+        """Update the statistics using x and return the moving average."""
+        self.buffer.value = jn.concatenate([self.buffer.value[1:], x[None]])
+        return self.buffer.value.mean(0)
+
+    def __repr__(self):
+        s = self.buffer.value.shape
+        return f'{class_name(self)}(shape={s[1:]}, buffer_size={s[0]}, init_value={self.init_value})'
 
 
 class Sequential(ModuleList):
@@ -392,6 +440,9 @@ class SyncedBatchNorm0D(SyncedBatchNorm):
         """
         super().__init__((1, nin), (0,), momentum, eps)
 
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.beta.value.shape[1]}, momentum={self.momentum}, eps={self.eps})'
+
 
 class SyncedBatchNorm1D(SyncedBatchNorm):
     """Applies a 1D synchronized batch normalization on a 3D-input batch of shape (N,C,L).
@@ -410,6 +461,9 @@ class SyncedBatchNorm1D(SyncedBatchNorm):
         """
         super().__init__((1, nin, 1), (0, 2), momentum, eps)
 
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.beta.value.shape[1]}, momentum={self.momentum}, eps={self.eps})'
+
 
 class SyncedBatchNorm2D(SyncedBatchNorm):
     """Applies a 2D synchronized batch normalization on a 4D-input batch of shape (N,C,H,W).
@@ -427,3 +481,6 @@ class SyncedBatchNorm2D(SyncedBatchNorm):
             eps: small value which is used for numerical stability.
         """
         super().__init__((1, nin, 1, 1), (0, 2, 3), momentum, eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.beta.value.shape[1]}, momentum={self.momentum}, eps={self.eps})'

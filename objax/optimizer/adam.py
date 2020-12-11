@@ -21,6 +21,7 @@ from jax import numpy as jn
 from objax import functional
 from objax.module import Module, ModuleList
 from objax.typing import JaxArray
+from objax.util import class_name
 from objax.variable import TrainRef, StateVar, TrainVar, VarCollection
 
 
@@ -64,3 +65,6 @@ class Adam(Module):
             m.value += (1 - beta1) * (g - m.value)
             v.value += (1 - beta2) * (g ** 2 - v.value)
             p.value -= lr * m.value * functional.rsqrt(v.value + self.eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(beta1={self.beta1}, beta2={self.beta2}, eps={self.eps})'

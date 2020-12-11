@@ -15,6 +15,7 @@
 __all__ = ['BaseVar', 'BaseState', 'RandomState', 'TrainRef', 'StateVar', 'TrainVar', 'VarCollection']
 
 import abc
+import re
 from contextlib import contextmanager
 from typing import List, Union, Tuple, Optional, Iterable, Dict, Iterator, Callable
 
@@ -24,7 +25,7 @@ import jax.random as jr
 import numpy as np
 
 from objax.typing import JaxArray
-from objax.util import map_to_device, Renamer
+from objax.util import map_to_device, Renamer, repr_function, class_name
 from objax.util.check import assert_assigned_type_and_shape_match
 
 
@@ -65,6 +66,13 @@ class BaseVar(abc.ABC):
         value to a single device."""
         if self._reduce:
             self.assign(self._reduce(tensors), check=False)
+
+    def __repr__(self):
+        rvalue = re.sub('[\n]+', '\n', repr(self._value))
+        t = f'{class_name(self)}({rvalue})'
+        if not self._reduce:
+            return t
+        return f'{t[:-1]}, reduce={repr_function(self._reduce)})'
 
 
 class TrainVar(BaseVar):
@@ -128,6 +136,9 @@ class TrainRef(BaseState):
     @value.setter
     def value(self, tensor: JaxArray):
         self.ref.assign(tensor)
+
+    def __repr__(self):
+        return f'{class_name(self)}(ref={repr(self.ref)})'
 
 
 class StateVar(BaseState):

@@ -22,6 +22,7 @@ from objax import random
 from objax.gradient import GradValues
 from objax.module import Module, Vectorize
 from objax.typing import JaxArray
+from objax.util import repr_function, class_name
 from objax.variable import VarCollection
 
 
@@ -61,6 +62,7 @@ class PrivateGradValues(Module):
             idivisor = 1 / jn.maximum(total_grad_norm / l2_norm_clip, 1.)
             return [g * idivisor for g in grads], values
 
+        self.batch_axis = batch_axis
         self.microbatch = microbatch
         self.l2_norm_clip = l2_norm_clip
         self.noise_multiplier = noise_multiplier
@@ -98,3 +100,9 @@ class PrivateGradValues(Module):
         g, v = ([x.mean(0) for x in gv] for gv in (g, v))
         g = [gx + random.normal(gx.shape, stddev=stddev, generator=self.keygen) for gx in g]
         return g, v
+
+    def __repr__(self):
+        args = dict(f=repr_function(self.__wrapped__.f), noise_multiplier=self.noise_multiplier,
+                    l2_norm_clip=self.l2_norm_clip, microbatch=self.microbatch, batch_axis=self.batch_axis)
+        args = ', '.join(f'{k}={v}' for k, v in args.items())
+        return f'{class_name(self)}({args})'

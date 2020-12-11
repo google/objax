@@ -19,6 +19,7 @@ from typing import List, Optional
 from jax import numpy as jn
 
 from objax.module import Module, ModuleList
+from objax.util import class_name
 from objax.variable import TrainRef, StateVar, TrainVar, VarCollection
 
 
@@ -57,3 +58,6 @@ class Momentum(Module):
             for g, p, m in zip(grads, self.train_vars, self.m):
                 m.value = g + momentum * m.value
                 p.value -= lr * m.value
+
+    def __repr__(self):
+        return f'{class_name(self)}(momentum={self.momentum}, nesterov={self.nesterov})'
