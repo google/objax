@@ -93,6 +93,7 @@ def args_indexes(f: Callable, args: Iterable[str]) -> Iterable[int]:
 
 
 def class_name(x) -> str:
+    """Returns the simplified full name of a class instance."""
     m = x.__class__.__module__
     m = CLASS_MODULES.get(m, m)
     if m.startswith('objax.optimizer'):
@@ -161,13 +162,14 @@ def positional_args_names(f: Callable) -> List[str]:
 
 
 def repr_function(f: Callable) -> str:
+    """Human readable function representation."""
     signature = inspect.signature(f)
     args = [f'{k}={v.default}' for k, v in signature.parameters.items() if v.default is not inspect.Parameter.empty]
     args = ', '.join(args)
     while not hasattr(f, '__name__'):
         if not hasattr(f, 'func'):
             break
-        f = f.func
+        f = f.func  # Handle functools.partial
     if not hasattr(f, '__name__') and hasattr(f, '__class__'):
         return f.__class__.__name__
     if args:

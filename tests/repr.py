@@ -24,7 +24,7 @@ class TestRepr(unittest.TestCase):
                        '  [9] objax.nn.BatchNorm2D(nin=19, momentum=0.999, eps=1e-06)',
                        "  [10] objax.nn.Conv2D(nin=4, nout=5, k=(3, 3), strides=(1, 1), dilations=(1, 1), groups=1,"
                        " padding='SAME', use_bias=True, w_init=kaiming_normal(*, gain=1))",
-                       "  [11] objax.nn.ConvTranspose2D(nin=5, nout=4, k=(3, 3), strides=(1, 1), dilations=(1, 1),"
+                       "  [11] objax.nn.ConvTranspose2D(nin=4, nout=5, k=(3, 3), strides=(1, 1), dilations=(1, 1),"
                        " padding='SAME', use_bias=True, w_init=kaiming_normal(*, gain=1))",
                        '  [12] objax.nn.Dropout(keep=0.7)',
                        '  [13] objax.nn.SyncedBatchNorm(dims=(3, 4, 5), redux=(1, 7), momentum=0.999, eps=1e-06)',

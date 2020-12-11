@@ -204,7 +204,7 @@ class Conv2D(Module):
         return y
 
     def __repr__(self):
-        args = dict(nin=self.w.value.shape[2] * self.groups, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
+        args = dict(nin=self.nin, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
                     strides=self.strides, dilations=self.dilations, groups=self.groups, padding=self.padding,
                     use_bias=self.b is not None)
         args = ', '.join(f'{k}={repr(v)}' for k, v in args.items())
@@ -260,7 +260,7 @@ class ConvTranspose2D(Conv2D):
         return y
 
     def __repr__(self):
-        args = dict(nin=self.w.value.shape[2] * self.groups, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
+        args = dict(nin=self.w.value.shape[3], nout=self.nin, k=self.w.value.shape[:2],
                     strides=self.strides, dilations=self.dilations, padding=self.padding,
                     use_bias=self.b is not None)
         args = ', '.join(f'{k}={repr(v)}' for k, v in args.items())
