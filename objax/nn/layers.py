@@ -181,7 +181,6 @@ class Conv2D(Module):
         super().__init__()
         assert nin % groups == 0, 'nin should be divisible by groups'
         assert nout % groups == 0, 'nout should be divisible by groups'
-        self.nin = nin
         self.b = TrainVar(jn.zeros((nout, 1, 1))) if use_bias else None
         self.w = TrainVar(w_init((*util.to_tuple(k, 2), nin // groups, nout)))  # HWIO
         self.padding = util.to_padding(padding, 2)
@@ -192,9 +191,10 @@ class Conv2D(Module):
 
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the convolution to input x."""
-        assert x.shape[1] == self.nin, (f'Attempting to convolve an input with {x.shape[1]} input channels '
-                                        f'when the convolution expects {self.nin} channels. For reference, '
-                                        f'self.w.value.shape={self.w.value.shape} and x.shape={x.shape}.')
+        nin = self.w.value.shape[3] * self.groups
+        assert x.shape[1] == nin, (f'Attempting to convolve an input with {x.shape[1]} input channels '
+                                   f'when the convolution expects {nin} channels. For reference, '
+                                   f'self.w.value.shape={self.w.value.shape} and x.shape={x.shape}.')
         y = lax.conv_general_dilated(x, self.w.value, self.strides, self.padding,
                                      rhs_dilation=self.dilations,
                                      feature_group_count=self.groups,
@@ -204,7 +204,7 @@ class Conv2D(Module):
         return y
 
     def __repr__(self):
-        args = dict(nin=self.nin, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
+        args = dict(nin=self.w.value.shape[2] * self.groups, nout=self.w.value.shape[3], k=self.w.value.shape[:2],
                     strides=self.strides, dilations=self.dilations, groups=self.groups, padding=self.padding,
                     use_bias=self.b is not None)
         args = ', '.join(f'{k}={repr(v)}' for k, v in args.items())
@@ -260,7 +260,7 @@ class ConvTranspose2D(Conv2D):
         return y
 
     def __repr__(self):
-        args = dict(nin=self.w.value.shape[3], nout=self.nin, k=self.w.value.shape[:2],
+        args = dict(nin=self.w.value.shape[3], nout=self.w.value.shape[2], k=self.w.value.shape[:2],
                     strides=self.strides, dilations=self.dilations, padding=self.padding,
                     use_bias=self.b is not None)
         args = ', '.join(f'{k}={repr(v)}' for k, v in args.items())
