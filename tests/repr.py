@@ -101,7 +101,7 @@ class TestRepr(unittest.TestCase):
         self.assertEqual(repr(objax.random.Generator().key), 'objax.RandomState(DeviceArray([0, 0], dtype=uint32))')
 
     def test_random(self):
-        self.assertEqual(repr(objax.random.DEFAULT_GENERATOR), 'objax.random.Generator(seed=0)')
+        self.assertEqual(repr(objax.random.Generator(seed=123)), 'objax.random.Generator(seed=123)')
 
     def test_opt(self):
         self.assertEqual(repr(objax.optimizer.Adam(objax.VarCollection())),
