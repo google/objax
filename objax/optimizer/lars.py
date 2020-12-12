@@ -20,6 +20,7 @@ import jax.numpy as jn
 
 from objax.module import Module, ModuleList
 from objax.typing import JaxArray
+from objax.util import class_name
 from objax.variable import TrainRef, StateVar, TrainVar, VarCollection
 
 
@@ -67,3 +68,7 @@ class LARS(Module):
             local_lr = lr * jn.maximum(jn.logical_or(p_norm == 0, g_norm == 0), trust_ratio)
             m.value = self.momentum * m.value + local_lr * (g + self.weight_decay * p.value)
             p.value -= m.value
+
+    def __repr__(self):
+        return f'{class_name(self)}(momentum={self.momentum}, weight_decay={self.weight_decay}, ' \
+               f'tc={self.tc}, eps={self.eps})'

@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer', 'to_padding', 'to_tuple']
+__all__ = ['EasyDict', 'args_indexes', 'class_name', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
+           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer',
+           'repr_function', 'to_padding', 'to_tuple']
 
 import contextlib
 import functools
 import inspect
+import itertools
 import re
 from numbers import Number
 from typing import Callable, List, Union, Tuple, Iterable, Dict, Pattern, Optional, Sequence
 
-import itertools
 import jax
 import jax.numpy as jn
 import numpy as np
@@ -30,6 +31,15 @@ from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.constants import ConvPadding
 from objax.typing import ConvPaddingInt
+
+CLASS_MODULES = {
+    'objax.dpsgd.gradient': 'objax.dpsgd',
+    'objax.gradient': 'objax',
+    'objax.module': 'objax',
+    'objax.nn.layers': 'objax.nn',
+    'objax.random.random': 'objax.random',
+    'objax.variable': 'objax',
+}
 
 
 class EasyDict(dict):
@@ -80,6 +90,15 @@ def args_indexes(f: Callable, args: Iterable[str]) -> Iterable[int]:
         if index is None:
             raise ValueError(f'Function {f} does not have argument of name {name}', (f, name))
         yield index
+
+
+def class_name(x) -> str:
+    """Returns the simplified full name of a class instance."""
+    m = x.__class__.__module__
+    m = CLASS_MODULES.get(m, m)
+    if m.startswith('objax.optimizer'):
+        m = 'objax.optimizer'
+    return f'{m}.{x.__class__.__name__}'
 
 
 @contextlib.contextmanager
@@ -140,6 +159,22 @@ def positional_args_names(f: Callable) -> List[str]:
     """Returns the ordered names of the positional arguments of a function."""
     return list(p.name for p in inspect.signature(f).parameters.values()
                 if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
+
+
+def repr_function(f: Callable) -> str:
+    """Human readable function representation."""
+    signature = inspect.signature(f)
+    args = [f'{k}={v.default}' for k, v in signature.parameters.items() if v.default is not inspect.Parameter.empty]
+    args = ', '.join(args)
+    while not hasattr(f, '__name__'):
+        if not hasattr(f, 'func'):
+            break
+        f = f.func  # Handle functools.partial
+    if not hasattr(f, '__name__') and hasattr(f, '__class__'):
+        return f.__class__.__name__
+    if args:
+        return f'{f.__name__}(*, {args})'
+    return f.__name__
 
 
 def to_padding(padding: Union[ConvPadding, str, ConvPaddingInt], ndim: int) \

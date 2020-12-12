@@ -22,7 +22,7 @@ import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
-from objax.util import override_args_kwargs, positional_args_names
+from objax.util import class_name, override_args_kwargs, positional_args_names, repr_function
 from objax.variable import BaseVar, RandomState, VarCollection
 
 
@@ -115,6 +115,10 @@ class ForceArgs(Module):
         args, kwargs = override_args_kwargs(self.__wrapped__, args, kwargs, self.forced_kwargs)
         return self.__wrapped__(*args, **kwargs)
 
+    def __repr__(self):
+        args = ', '.join(f'{k}={repr(v)}' for k, v in self.forced_kwargs.items())
+        return f'{class_name(self)}(module={repr_function(self.__wrapped__)}, {args})'
+
 
 class ModuleList(Module, list):
     """This is a replacement for Python's list that provides a vars() method to return all the variables that it
@@ -142,6 +146,17 @@ class ModuleList(Module, list):
         if isinstance(key, slice):
             return ModuleList(value)
         return value
+
+    def __repr__(self):
+        def f(x):
+            if not isinstance(x, Module) and callable(x):
+                return repr_function(x)
+            x = repr(x).split('\n')
+            x = [x[0]] + ['  ' + y for y in x[1:]]
+            return '\n'.join(x)
+
+        entries = '\n'.join(f'  [{i}] {f(x)}' for i, x in enumerate(self))
+        return f'{class_name(self)}(\n{entries}\n)'
 
 
 class Function(Module):
@@ -179,6 +194,9 @@ class Function(Module):
 
         return from_function
 
+    def __repr__(self):
+        return f'{class_name(self)}(f={repr_function(self.__wrapped__)})'
+
 
 class Jit(Module):
     """JIT (Just-In-Time) module takes a function or a module and compiles it for faster execution."""
@@ -195,6 +213,7 @@ class Jit(Module):
             static_argnums: tuple of indexes of f's input arguments to treat as static (constants)).
                 A new graph is compiled for each different combination of values for such inputs.
         """
+        self.static_argnums = static_argnums
         if not isinstance(f, Module):
             if vc is None:
                 raise ValueError('You must supply the VarCollection used by the function f.')
@@ -217,6 +236,9 @@ class Jit(Module):
         output, changes = self._call(self.vc.tensors(), kwargs, *args)
         self.vc.assign(changes)
         return output
+
+    def __repr__(self):
+        return f'{class_name(self)}(f={self.__wrapped__}, static_argnums={self.static_argnums or None})'
 
 
 class Parallel(Module):
@@ -253,6 +275,7 @@ class Parallel(Module):
                 self.vc.assign(original_values)
 
         static_argnums = sorted(static_argnums or ())
+        self.axis_name = axis_name
         self.ndevices = jax.local_device_count()
         self.reduce = reduce
         self.static_argnums = frozenset(static_argnums)
@@ -287,6 +310,12 @@ class Parallel(Module):
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
         self.vc.assign(changes)
         return jax.tree_map(self.reduce, output)
+
+    def __repr__(self):
+        args = dict(f=self.__wrapped__, reduce=repr_function(self.reduce), axis_name=repr(self.axis_name),
+                    static_argnums=tuple(sorted(self.static_argnums)) or None)
+        args = ', '.join(f'{k}={v}' for k, v in args.items())
+        return f'{class_name(self)}({args})'
 
 
 class Vectorize(Module):
@@ -336,3 +365,6 @@ class Vectorize(Module):
         for v, u in zip(self.vc, changes):
             v.reduce(u)
         return output
+
+    def __repr__(self):
+        return f'{class_name(self)}(f={self.__wrapped__}, batch_axis={self.batch_axis})'

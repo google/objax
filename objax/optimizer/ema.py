@@ -20,6 +20,7 @@ import jax.numpy as jn
 
 from objax.module import Module, ModuleList
 from objax.typing import JaxArray
+from objax.util import class_name
 from objax.variable import RandomState, TrainRef, StateVar, TrainVar, VarCollection
 
 
@@ -89,3 +90,6 @@ class ExponentialMovingAverage(Module):
             return output
 
         return wrap
+
+    def __repr__(self):
+        return f'{class_name(self)}(momentum={self.momentum}, debias={self.debias}, eps={self.eps})'
