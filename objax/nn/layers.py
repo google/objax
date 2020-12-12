@@ -14,7 +14,7 @@
 
 __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
            'Conv2D', 'ConvTranspose2D', 'Dropout', 'Linear',
-           'MovingAverage', 'ExponentialMovingAverage', 'Sequential',
+           'MovingAverage', 'ExponentialMovingAverage', 'SimpleRNN', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
 from typing import Callable, Iterable, Tuple, Optional, Union, List, Dict
@@ -379,6 +379,76 @@ class MovingAverage(Module):
     def __repr__(self):
         s = self.buffer.value.shape
         return f'{class_name(self)}(shape={s[1:]}, buffer_size={s[0]}, init_value={self.init_value})'
+
+
+class SimpleRNN(Module):
+    """Simple Recurrent Neural Network (RNN) block."""
+
+    def __init__(self,
+                 nstate: int,
+                 nin: int,
+                 nout: int,
+                 activation: Callable = jn.tanh,
+                 w_init: Callable = kaiming_normal):
+        """Creates an RNN instance.
+
+        Args:
+            nstate: number of hidden units.
+            nin: number of input units.
+            nout: number of output units.
+            activation: actication function for hidden layer.
+            w_init: weight initializer for RNN model weights.
+        """
+        assert nin > 0, 'nin should be larger than zero'
+        assert nout > 0, 'nout should be larger than zero'
+        assert nstate > 0, 'nstate should be larger than zero'
+        self.num_inputs = nin
+        self.num_outputs = nout
+        self.nstate = nstate
+        self.activation = activation
+
+        # Hidden layer parameters
+        self.w_xh = TrainVar(w_init((self.num_inputs, self.nstate)))
+        self.w_hh = TrainVar(w_init((self.nstate, self.nstate)))
+        self.b_h = TrainVar(jn.zeros(self.nstate))
+
+        self.output_layer = Linear(self.nstate, self.num_outputs, w_init=w_init)
+
+    def __call__(self, inputs: JaxArray, initial_state: JaxArray = None,
+                 only_return_final: bool = False) -> Tuple[JaxArray, JaxArray]:
+        """Forward pass through RNN.
+
+        Args:
+            inputs: ``JaxArray`` with dimensions ``num_steps, batch_size, nout``.
+            only_return_final: return only the last output if ``True``, or all output otherwise.`
+
+        Returns:
+            Tuple with two elements:
+            First, output tensor with dimensions ``N * batch_size, nout``.
+            N = 1 if ``only_return_final`` is ``True`` and ``num_steps`` otherwise.
+            Second, state with dimensions ``batch_size, nstate``.
+        """
+        outputs = []
+
+        if initial_state is None:
+            state = jn.zeros((inputs.shape[0], self.nstate))
+        else:
+            state = initial_state
+
+        for x in inputs:
+            state = self.activation(
+                jn.dot(x, self.w_xh.value)
+                + jn.dot(state, self.w_hh.value)
+                + self.b_h.value
+            )
+            y = self.output_layer(state)
+            if not only_return_final:
+                outputs.append(y)
+
+        if only_return_final:
+            return y, state
+        else:
+            return jn.concatenate(outputs, axis=0), state
 
 
 class Sequential(ModuleList):

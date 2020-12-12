@@ -22,7 +22,11 @@ import tensorflow_datasets as tfds
 
 import objax
 from objax.functional import one_hot
-from objax.zoo.rnn import RNN
+<<<<<<< HEAD:examples/text_generation/shakespeare_rnn.py
+from objax.nn import SimpleRNN
+=======
+from objax.nn import RNN
+>>>>>>> 2c04d4e (Move RNN to layers.py and make it stateless.):examples/rnn/shakespeare.py
 
 
 def tokenize(lines, token_type='word'):
@@ -137,32 +141,27 @@ num_epochs = 500
 num_hiddens = 256
 lr = 0.0001
 theta = 1
-print(jax.local_devices())
 
 train_iter, vocab = load_shakespeare(batch_size, num_steps, 'char')
 vocab_size = len(vocab)
 
-model = RNN(num_hiddens, vocab_size, vocab_size)
+model = SimpleRNN(num_hiddens, vocab_size, vocab_size)
 model_vars = model.vars()
-model.init_state(batch_size)
 
 # Sample call for forward pass
 X = jn.arange(batch_size * num_steps).reshape(batch_size, num_steps).T
 X_one_hot = one_hot(X, vocab_size)
-Z = model(X_one_hot)
-print("X_one_hot.shape:", X_one_hot.shape)
-print("Z.shape:", Z.shape)
+Z, _ = model(X_one_hot)
 
 
 def predict_char(prefix, num_predicts, model, vocab):
-    model.init_state(batch_size=1)
     outputs = [vocab[prefix[0]]]
     get_input = lambda: one_hot(jn.array([outputs[-1]]).reshape(1, 1), len(vocab))
     for y in prefix[1:]:  # Warmup state with prefix
         model(get_input())
         outputs.append(vocab[y])
     for _ in range(num_predicts):  # Predict num_predicts steps
-        Y = model(get_input())
+        Y, _ = model(get_input())
         outc = int(Y.argmax(axis=1).reshape(1))
         outputs.append(outc)
     return ''.join([vocab.idx_to_token[i] for i in outputs])
@@ -172,12 +171,11 @@ print(predict_char('to be or not to be', 10, model, vocab))
 
 opt = objax.optimizer.Adam(model_vars)
 ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999)
-predict = ema.replace_vars(objax.Jit(lambda x: objax.functional.softmax(model(x)), model_vars))
 
 
 def loss(x, label):  # sum(label * log(softmax(logit)))
-    logit = model(x)
-    return objax.functional.loss.cross_entropy_logits(logit, label).mean()
+    logits, _ = model(x)
+    return objax.functional.loss.cross_entropy_logits(logits, label).mean()
 
 
 gv = objax.GradValues(loss, model.vars())
