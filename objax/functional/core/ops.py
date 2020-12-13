@@ -49,6 +49,7 @@ def interpolate(input: JaxArray,
                 scale_factor: Union[int, Tuple[int, ...]] = None,
                 mode: Union[Interpolate, str] = Interpolate.BILINEAR) -> JaxArray:
     """
+    Function to interpolate JaxArrays by size or scaling factor
     Args:
         input: input tensor
         size: int or tuple for output size

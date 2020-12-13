@@ -98,6 +98,7 @@ Misc
 .. autofunction:: stop_gradient
 .. autofunction:: top_k
 .. autofunction:: rsqrt
+.. autofunction:: interpolate
 .. autofunction:: upsample_2d
 .. autofunction:: upscale_nn
 
