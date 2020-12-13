@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['ConvPadding', 'UpSample']
+__all__ = ['ConvPadding', 'Interpolate']
 
 import enum
 
@@ -23,7 +23,7 @@ class ConvPadding(enum.Enum):
     VALID = 'VALID'
 
 
-class UpSample(enum.Enum):
+class Interpolate(enum.Enum):
     """An Enum holding the possible interpolation values for upsampling."""
     NEAREST = 'nearest'
     LINEAR = 'linear'

@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer', 'to_padding', 'to_tuple',
-           'to_upsample']
+__all__ = ['EasyDict', 'args_indexes', 'dummy_context_mgr', 'ilog2', 'local_kwargs',
+           'map_to_device',
+           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer', 'to_interpolate',
+           'to_padding', 'to_tuple', ]
 
 import contextlib
 import functools
@@ -29,7 +30,7 @@ import jax.numpy as jn
 import numpy as np
 from jax.interpreters.pxla import ShardedDeviceArray
 
-from objax.constants import ConvPadding, UpSample
+from objax.constants import ConvPadding, Interpolate
 from objax.typing import ConvPaddingInt
 
 
@@ -143,6 +144,16 @@ def positional_args_names(f: Callable) -> List[str]:
                 if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
 
 
+def to_interpolate(interpolate: Union[Interpolate, str]) -> Union[str]:
+    """Expand to a string method for interpolation"""
+    if isinstance(interpolate, Interpolate):
+        return interpolate.value
+    if isinstance(interpolate, str):
+        return Interpolate[interpolate.upper()].value
+
+    assert isinstance(interpolate, (str, Interpolate)), f'Argument "{interpolate}" must be a string or Interpolate'
+
+
 def to_padding(padding: Union[ConvPadding, str, ConvPaddingInt], ndim: int) \
         -> Union[str, Tuple[Tuple[int, int], ...]]:
     """Expand to a string or a ndim-dimensional tuple of pairs usable for padding."""
@@ -165,13 +176,3 @@ def to_tuple(v: Union[Tuple[Number, ...], Number, Iterable], n: int):
         return (v,) * n
     else:
         return tuple(v)
-
-
-def to_upsample(upsample: Union[UpSample, str]) -> Union[str]:
-    """Expand to a string method for interpolation"""
-    if isinstance(upsample, UpSample):
-        return upsample.value
-    if isinstance(upsample, str):
-        return UpSample[upsample.upper()].value
-
-    assert isinstance(upsample, (str, UpSample)), f'Argument "{upsample}" must be a string or UpSample'
