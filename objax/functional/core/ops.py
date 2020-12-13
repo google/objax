@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['dynamic_slice', 'pad', 'rsqrt', 'stop_gradient', 'top_k',
-           'flatten', 'interpolate', 'one_hot', 'upsample_2d', 'upscale_nn']
+__all__ = ['dynamic_slice', 'flatten', 'interpolate', 'pad', 'rsqrt', 'stop_gradient',
+           'top_k', 'one_hot', 'upsample_2d', 'upscale_nn']
 
 import jax.nn
 from jax import numpy as jn, lax

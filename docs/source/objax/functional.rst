@@ -83,6 +83,7 @@ Misc
 
     dynamic_slice
     flatten
+    interpolate
     one_hot
     pad
     stop_gradient
@@ -93,12 +94,12 @@ Misc
 
 .. autofunction:: dynamic_slice
 .. autofunction:: flatten
+.. autofunction:: interpolate
 .. autofunction:: one_hot
 .. autofunction:: pad
 .. autofunction:: stop_gradient
 .. autofunction:: top_k
 .. autofunction:: rsqrt
-.. autofunction:: interpolate
 .. autofunction:: upsample_2d
 .. autofunction:: upscale_nn
 
