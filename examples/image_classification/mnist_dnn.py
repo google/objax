@@ -53,13 +53,11 @@ logdir = f'experiments/classify/img/mnist/filters{dnn_layer_sizes}'
 
 # Model
 model = DNNet(dnn_layer_sizes, leaky_relu)
-model_vars = model.vars()
-opt = objax.optimizer.Adam(model_vars)
-ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999)
-predict = objax.Jit(ema.replace_vars(lambda x: objax.functional.softmax(model(x, training=False))),
-                    model_vars + ema.vars())
+model_ema = objax.optimizer.ExponentialMovingAverageModule(model, momentum=0.999)
+opt = objax.optimizer.Adam(model.vars())
 
 
+@objax.Function.with_vars(model.vars())
 def loss(x, label):
     logit = model(x)
     return objax.functional.loss.cross_entropy_logits(logit, label).mean()
@@ -68,18 +66,19 @@ def loss(x, label):
 gv = objax.GradValues(loss, model.vars())
 
 
+@objax.Function.with_vars(model.vars() + gv.vars() + opt.vars() + model_ema.vars())
 def train_op(x, xl):
     g, v = gv(x, xl)  # returns gradients, loss
     opt(lr, g)
-    ema()
+    model_ema.update_ema()
     return v
 
 
-# gv.vars() contains the model variables.
-train_op = objax.Jit(train_op, gv.vars() + opt.vars() + ema.vars())
+train_op = objax.Jit(train_op)  # Compile train_op to make it run faster.
+predict = objax.Jit(model_ema)
 
 # Training
-print(model_vars)
+print(model.vars())
 print(f'Visualize results with: tensorboard --logdir "{logdir}"')
 print("Disclaimer: This code demonstrates the DNNet class. For SOTA accuracy use a CNN instead.")
 with SummaryWriter(os.path.join(logdir, 'tb')) as tensorboard:

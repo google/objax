@@ -6,6 +6,7 @@ objax.optimizer package
 .. autosummary::
 
     Adam
+    ExponentialMovingAverageModule
     ExponentialMovingAverage
     LARS
     Momentum
@@ -36,6 +37,27 @@ objax.optimizer package
     as a parameter in the :code:`__call__` method.
     Note that the implementation uses the approximation
     :math:`\sqrt{(\hat{s_{k}} + \epsilon)} \approx \sqrt{\hat{s_{k}}} + \epsilon`.
+
+.. autoclass:: ExponentialMovingAverageModule
+    :members:
+
+    Convenience interface to apply :py:class:`objax.optimizer.ExponentialMovingAverage` to a module.
+
+    Usage example::
+
+        import objax
+
+        m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.nn.BatchNorm0D(3)])
+        m_ema = objax.optimizer.ExponentialMovingAverageModule(m, momentum=0.999, debias=True)
+
+        x = objax.random.uniform((16, 2))
+
+        # When the weights of m change, simply call update_ema() to update moving averages
+        v1 = m(x, training=True)
+        m_ema.update_ema()
+
+        # You call m_ema just like you would call m
+        v2 = m_ema(x, training=False)
 
 .. autoclass:: ExponentialMovingAverage
     :members:

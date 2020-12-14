@@ -92,7 +92,8 @@ class GradValues(Module):
         return VarCollection(self.vc)
 
     def __repr__(self):
-        return f'{class_name(self)}(f={repr_function(self.f)}, input_argnums={self.input_argnums or None})'
+        f = repr(self.f) if isinstance(self.f, Module) else repr_function(self.f)
+        return f'{class_name(self)}(f={f}, input_argnums={self.input_argnums or None})'
 
 
 class Grad(GradValues):

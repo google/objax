@@ -50,6 +50,7 @@ print(model.vars())
 
 
 # Cross Entropy Loss
+@objax.Function.with_vars(model.vars())
 def loss(x, label):
     return objax.functional.loss.sigmoid_cross_entropy_logits(model(x)[:, 0], label).mean()
 
@@ -57,6 +58,7 @@ def loss(x, label):
 gv = objax.GradValues(loss, model.vars())
 
 
+@objax.Function.with_vars(model.vars() + gv.vars() + opt.vars())
 def train_op(x, label):
     g, v = gv(x, label)  # returns gradients, loss
     opt(lr, g)
@@ -64,8 +66,7 @@ def train_op(x, label):
 
 
 # This line is optional: it is compiling the code to make it faster.
-# gv.vars() contains the model variables.
-train_op = objax.Jit(train_op, gv.vars() + opt.vars())
+train_op = objax.Jit(train_op)
 
 # Training
 for epoch in range(epochs):

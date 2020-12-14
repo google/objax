@@ -114,6 +114,8 @@ class TestRepr(unittest.TestCase):
                          'objax.optimizer.SGD()')
         self.assertEqual(repr(objax.optimizer.ExponentialMovingAverage(objax.VarCollection())),
                          'objax.optimizer.ExponentialMovingAverage(momentum=0.999, debias=False, eps=1e-06)')
+        self.assertEqual(repr(objax.optimizer.ExponentialMovingAverageModule(objax.Module())),
+                         'objax.optimizer.ExponentialMovingAverageModule(momentum=0.999, debias=False, eps=1e-06)')
 
     def test_transform(self):
         def myloss(x):

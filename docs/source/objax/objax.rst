@@ -135,13 +135,17 @@ Modules
 
         import objax
 
-        m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
+        m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu, objax.nn.Linear(3, 2)])
 
+        @objax.Function.with_vars(m.vars())
         def f(x, y):
             return ((m(x) - y) ** 2).mean()
 
         # Create module to compute gradients of f for m.vars()
         grad_val_f = objax.GradValues(f, m.vars())
+
+        # Create module to compute gradients of f for only some variables
+        grad_val_f_head = objax.GradValues(f, m[:1].vars())
 
         # Create module to compute gradients of f for input 0 (x) and m.vars()
         grad_val_fx = objax.GradValues(f, m.vars(), input_argnums=(0,))
@@ -158,7 +162,13 @@ Modules
 
         m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
         jit_m = objax.Jit(m)                          # Jit a module
-        jit_f = objax.Jit(lambda x: m(x), m.vars())   # Jit a function: provide vars it uses
+
+        # For jitting functions, use objax.Function.with_vars
+        @objax.Function.with_vars(m.vars())
+        def f(x):
+            return m(x) + 1
+
+        jit_f = objax.Jit(f)
 
     For more information, refer to :ref:`JIT Compilation`.
     Also note that one can pass variables to be used by Jit for a module `m`: the rest will be optimized away as
@@ -173,7 +183,13 @@ Modules
 
         m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
         para_m = objax.Parallel(m)                         # Parallelize a module
-        para_f = objax.Parallel(lambda x: m(x), m.vars())  # Parallelize a function: provide vars it uses
+
+        # For parallelizing functions, use objax.Function.with_vars
+        @objax.Function.with_vars(m.vars())
+        def f(x):
+            return m(x) + 1
+
+        para_f = objax.Parallel(f)
 
     When calling a parallelized module, one must replicate the variables it uses on all devices::
 
@@ -194,7 +210,13 @@ Modules
 
         m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu])
         vec_m = objax.Vectorize(m)                         # Vectorize a module
-        vec_f = objax.Vectorize(lambda x: m(x), m.vars())  # Vectorize a function: provide vars it uses
+
+        # For vectorizing functions, use objax.Function.with_vars
+        @objax.Function.with_vars(m.vars())
+        def f(x):
+            return m(x) + 1
+
+        vec_f = objax.Parallel(f)
 
     For more information and examples, refer to :ref:`Vectorization`.
 
@@ -258,8 +280,11 @@ Variables
         vc.assign([x+1 for x in vc.tensors()])
 
         # It's used by other modules.
-        # For example it's used to tell Jit what variables are used by a function.
-        jit_f = objax.Jit(lambda x: m(x), vc)
+        # For example it's used to tell what variables are used by a function.
+
+        @objax.Function.with_vars(vc)
+        def my_function(x):
+            return objax.functional.softmax(m(x))
 
     For more information and examples, refer to :ref:`VarCollection`.
 
