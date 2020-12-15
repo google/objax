@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-__all__ = ['dynamic_slice', 'flatten', 'interpolate', 'one_hot', 'pad', 'rsqrt', 'stop_gradient',
+__all__ = ['dynamic_slice', 'flatten', 'interpolate', 'one_hot', 'pad', 'rsqrt', 'scan', 'stop_gradient',
            'top_k', 'upsample_2d', 'upscale_nn']
 
 
