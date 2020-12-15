@@ -31,9 +31,13 @@ As a simple starting example, let's jit a module::
     x = objax.random.normal((100, 2))
     print(((net(x) - jit_net(x)) ** 2).sum())  # 0.0
 
-You can also jit a function, in this case you must pass the variables it uses::
+You can also jit a function, in this case you must decorate the function with the variables it uses::
 
-    jit_func = objax.Jit(lambda x: objax.functional.softmax(net(x)), net.vars())
+    @objax.Function.with_vars(net.vars())
+    def my_function(x):
+        return objax.functional.softmax(net(x))
+
+    jit_func = objax.Jit(my_function)
     print(((objax.functional.softmax(net(x)) - jit_func(x)) ** 2).sum())
 
 In terms of performance, on this small example there's a significant gain in speed, numbers vary depending on hardware
@@ -63,11 +67,11 @@ we can verify it::
 
     # We can verify that jit_func also shares the same variables
     print(jit_func.vars())
-    # (Jit)(Sequential)[0](Linear).b        3 (3,)
-    # (Jit)(Sequential)[0](Linear).w        6 (2, 3)
-    # (Jit)(Sequential)[2](Linear).b        4 (4,)
-    # (Jit)(Sequential)[2](Linear).w       12 (3, 4)
-    # +Total(4)                            25
+    # (Jit){my_function}(Sequential)[0](Linear).b        3 (3,)
+    # (Jit){my_function}(Sequential)[0](Linear).w        6 (2, 3)
+    # (Jit){my_function}(Sequential)[2](Linear).b        4 (4,)
+    # (Jit){my_function}(Sequential)[2](Linear).w       12 (3, 4)
+    # +Total(4)                                         25
 
 Note that we only verified that the variables names and sizes were the same (or almost the same since the variables
 in Jit are prefixed with :code:`(Jit)`).
@@ -92,19 +96,21 @@ We are going to define a model, an optimizer, a loss and a gradient::
     m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu, objax.nn.Linear(3, 4)])
     opt = objax.optimizer.Momentum(m.vars())
 
+    @objax.Function.with_vars(m.vars())
     def loss(x, labels):
         logits = m(x)
         return objax.functional.loss.cross_entropy_logits(logits, labels).mean()
 
     gradient_loss = objax.GradValues(loss, m.vars())
 
+    @objax.Function.with_vars(m.vars() + opt.vars())
     def train(x, labels, lr):
         g, v = gradient_loss(x, labels)  # Compute gradients and loss
         opt(lr, g)                       # Apply SGD
         return v                         # Return loss value
 
     # It's better to jit the top level call to allow internal optimizations.
-    train_jit = objax.Jit(train, gradient_loss.vars() + opt.vars())
+    train_jit = objax.Jit(train)
 
 Note that we passed to Jit all the vars that were used in :code:`train`.
 We passed :code:`gradient_loss.vars() + opt.vars()`.
@@ -127,25 +133,29 @@ As a rule of thumb:
 Let's look at an example with BatchNorm which takes a training argument:
 
 .. code-block:: python
-    :emphasize-lines: 5
+    :emphasize-lines: 9
 
     import objax
 
     net = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.nn.BatchNorm0D(3)])
-    jit_net_static = objax.Jit(lambda x, training: net(x, training=training), net.vars(),
-                               static_argnums=(1,))
+
+    @objax.Function.with_vars(net.vars())
+    def f(x, training):
+        return net(x, training=training)
+
+    jit_f_static = objax.Jit(f, static_argnums=(1,))
     # Note the static_argnums=(1,) which indicates that argument 1 (training) is static.
 
     x = objax.random.normal((100, 2))
-    print(((net(x, training=False) - jit_net_static(x, False)) ** 2).sum())  # 0.0
+    print(((net(x, training=False) - jit_f_static(x, False)) ** 2).sum())  # 0.0
 
 What happens if you don't use :code:`static_argnums`?
 
 .. code-block:: python
     :emphasize-lines: 3-9
 
-    jit_net = objax.Jit(lambda x, training: net(x, training=training), net.vars())
-    y = jit_net(x, False)
+    jit_f = objax.Jit(f)
+    y = jit_f(x, False)
     # Traceback (most recent call last):
     #   File <...>
     #   <long stack trace>
@@ -247,7 +257,7 @@ Let's illustrate this with a simple example with the parallelization of a module
 
     net = objax.nn.Sequential([objax.nn.Linear(3, 4), objax.functional.relu])
     para_net = objax.Parallel(net)
-    para_func = objax.Parallel(lambda x: net(x) + 1, net.vars())
+    para_func = objax.Parallel(objax.Function(lambda x: net(x) + 1, net.vars()))
 
     # A batch of mockup data
     x = objax.random.normal((96, 3))
@@ -263,26 +273,28 @@ Let's illustrate this with a simple example with the parallelization of a module
 We can also show the parallel version of :ref:`jitted-train-label`, highlighted are the changes from the jitted version:
 
 .. code-block:: python
-    :emphasize-lines: 14,15,18
+    :emphasize-lines: 16,17,20
 
     import objax
 
     m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu, objax.nn.Linear(3, 4)])
     opt = objax.optimizer.Momentum(m.vars())
 
+    @objax.Function.with_vars(m.vars())
     def loss(x, labels):
         logits = m(x)
         return objax.functional.loss.cross_entropy_logits(logits, labels).mean()
 
     gradient_loss = objax.GradValues(loss, m.vars())
 
+    @objax.Function.with_vars(m.vars() + opt.vars())
     def train(x, labels, lr):
         g, v = gradient_loss(x, labels)                     # Compute gradients and loss
-        opt(lr, objax.funcational.parallel.pmean(g))        # Apply averaged gradients
-        return objax.funcational.parallel.pmean(v)          # Return averaged loss value
+        opt(lr, objax.functional.parallel.pmean(g))        # Apply averaged gradients
+        return objax.functional.parallel.pmean(v)          # Return averaged loss value
 
     # It's better to parallelize the top level call to allow internal optimizations.
-    train_para = objax.Parallel(train, gradient_loss.vars() + opt.vars(), reduce=lambda x:x[0])
+    train_para = objax.Parallel(train, reduce=lambda x:x[0])
 
 Let's study the concepts introduced in this example in more details.
 
@@ -416,6 +428,7 @@ The good news is it is very easy to do, there are a set of predefined primitives
 
 Recalling the code for the parallelized train operation::
 
+    @objax.Function.with_vars(m.vars() + opt.vars())
     def train(x, labels, lr):
         g, v = gradient_loss(x, labels)                     # Compute gradients and loss
         opt(lr, objax.funcational.parallel.pmean(g))        # Apply averaged gradients
@@ -452,8 +465,10 @@ Let's clarify this with a simple example::
 
     class RandomReverse(objax.Module):
         """Randomly reverse a single vector x and add a value y to it."""
+
         def __init__(self, keygen=objax.random.DEFAULT_GENERATOR):
             self.keygen = keygen
+
         def __call__(self, x, y):
             r = objax.random.randint([], 0, 2, generator=self.keygen)
             return x + y + r * (x[::-1] - x), r, y
@@ -508,20 +523,19 @@ This is a more advanced example, conceptually it is similar to what's powering d
 
     m = objax.nn.Linear(3, 4)
 
+    @objax.Function.with_vars(m.vars())
     def loss(x, y):
         return ((m(x) - y) ** 2).mean()
 
-    gv = objax.GradValues(loss, m.vars())
-    single_gradients = objax.Vectorize(lambda x, y: gv(x, y)[0],  # Only interested in gradient
-                                       gv.vars(),                 # f uses variables from gv
-                                       batch_axis=(0, 0))         # Batch is dimension of x and y
+    g = objax.Grad(loss, m.vars())
+    single_gradients = objax.Vectorize(g, batch_axis=(0, 0))  # Batch is dimension of x and y
 
     # Mock some data
     x = objax.random.normal((10, 3))
     y = objax.random.normal((10, 4))
 
     # Compute standard gradients
-    print([v.shape for v in gv(x, y)[0]])              # [(4,), (3, 4)]
+    print([v.shape for v in g(x, y)])              # [(4,), (3, 4)]
 
     # Compute per batch entry gradients
     print([v.shape for v in single_gradients(x, y)])   # [(10, 4), (10, 3, 4)]

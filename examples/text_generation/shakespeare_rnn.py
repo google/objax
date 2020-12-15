@@ -171,10 +171,11 @@ def predict_char(prefix, num_predicts, model, vocab):
 print(predict_char('to be or not to be', 10, model, vocab))
 
 opt = objax.optimizer.Adam(model_vars)
-ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999)
-predict = ema.replace_vars(objax.Jit(lambda x: objax.functional.softmax(model(x)), model_vars))
+model_ema = objax.optimizer.ExponentialMovingAverageModule(model, momentum=0.999)
+predict = objax.Jit(objax.nn.Sequential([model_ema, objax.functional.softmax]))
 
 
+@objax.Function.with_vars(model.vars())
 def loss(x, label):  # sum(label * log(softmax(logit)))
     logit = model(x)
     return objax.functional.loss.cross_entropy_logits(logit, label).mean()
@@ -189,15 +190,16 @@ def clip_gradients(grads, theta):
     return [g * scale_factor for g in grads]
 
 
+@objax.Function.with_vars(model.vars() + opt.vars() + model_ema.vars())
 def train_op(x, xl):
     g, v = gv(x, xl)  # returns gradients, loss
     clipped_g = clip_gradients(g, theta)
     opt(lr, clipped_g)
-    ema()
+    model_ema.update_ema()
     return v
 
 
-train_op = objax.Jit(train_op, gv.vars() + opt.vars() + ema.vars())
+train_op = objax.Jit(train_op)
 
 # Training
 for epoch in range(num_epochs):

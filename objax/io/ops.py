@@ -20,6 +20,7 @@ from typing import IO, BinaryIO, Union, Optional
 
 import jax.numpy as jn
 import numpy as np
+from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.util import Renamer
 from objax.variable import TrainRef, VarCollection
@@ -86,7 +87,7 @@ def save_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
     do_close = isinstance(file, str)
     if do_close:
         filename, file = file, open(file + '.tmp', 'wb')  # Save to a temporary in case the job is killed while saving.
-    data, names, seen = {}, [], set()
+    data, names, seen, replicated = {}, [], set(), []
     for k, v in vc.items():
         if isinstance(v, TrainRef):
             v = v.ref
@@ -94,6 +95,12 @@ def save_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
             names.append(k)
             data[str(len(data))] = v.value
             seen.add(v)
+        if isinstance(v.value, ShardedDeviceArray):
+            replicated.append(k)
+    if replicated:
+        print('Warning: When saving VarCollection, some variables were replicated on multiple devices.')
+        print('         While it is valid, in most use cases it is more disk efficient to save variables outside of ')
+        print('         vars().replicate().')
     np.savez(file, names=np.array(names), **data)
     if do_close:
         file.close()

@@ -33,6 +33,8 @@ class TestOptimizers(unittest.TestCase):
                     'rastrigin_adam': 0.7,
                     'square_adam_override': 0.15,
                     'rastrigin_adam_override': 0.7,
+                    'logistic_lars': 0.9,
+                    'square_lars': 3.0,
                     'logistic_momentum': 1.0,
                     'square_momentum': 0.01,
                     'logistic_momentum_override': 5.0,
@@ -44,6 +46,8 @@ class TestOptimizers(unittest.TestCase):
                            'rastrigin_adam': 1e-3,
                            'square_adam_override': 1e-3,
                            'rastrigin_adam_override': 1e-1,
+                           'logistic_lars': 1e-3,
+                           'square_lars': 1e-1,
                            'logistic_momentum': 1e-10,
                            'square_momentum': 1e-3,
                            'logistic_momentum_override': 1e-3,
@@ -58,10 +62,12 @@ class TestOptimizers(unittest.TestCase):
                                  }
 
     def _get_optimizer(self, model_vars: VarCollection, optimizer: str):
-        if optimizer == 'momentum':
-            opt = objax.Jit(objax.optimizer.Momentum(model_vars, momentum=0.9))
-        elif optimizer == 'adam':
+        if optimizer == 'adam':
             opt = objax.Jit(objax.optimizer.Adam(model_vars))
+        elif optimizer == 'lars':
+            opt = objax.Jit(objax.optimizer.LARS(model_vars))
+        elif optimizer == 'momentum':
+            opt = objax.Jit(objax.optimizer.Momentum(model_vars, momentum=0.9))
         elif optimizer == 'sgd':
             opt = objax.Jit(objax.optimizer.SGD(model_vars))
         else:
@@ -139,6 +145,14 @@ class TestOptimizers(unittest.TestCase):
         """Test rastrigin loss for Adam optimizer."""
         model_vars, loss = self._test_loss_opt('rastrigin', 'adam', True)
 
+    def test_logistic_lars(self):
+        """Test logistic loss for LARS optimizer."""
+        model_vars, loss = self._test_loss_opt('logistic', 'lars')
+
+    def test_square_lars(self):
+        """Test square loss for LARS optimizer."""
+        model_vars, loss = self._test_loss_opt('square', 'lars')
+
     def test_logistic_momentum(self):
         """Test logistic loss for momentum optimizer."""
         model_vars, loss = self._test_loss_opt('logistic', 'momentum')
@@ -204,6 +218,28 @@ class TestEma(unittest.TestCase):
 
             np.testing.assert_allclose(ema_value[0], ema_value_expect, rtol=1e-6)
             np.testing.assert_allclose(orig_value[0], orig_value_expect, rtol=1e-6)
+
+    def test_module_ema(self):
+        module = objax.nn.BatchNorm0D(3)
+        module_ema = [objax.optimizer.ExponentialMovingAverageModule(module, momentum=0.9, eps=1e-3, debias=False),
+                      objax.optimizer.ExponentialMovingAverageModule(module, momentum=0.9, eps=1e-3, debias=True),
+                      objax.optimizer.ExponentialMovingAverageModule(module, momentum=0.999, eps=1e-3, debias=False)]
+        vc_ema = [objax.optimizer.ExponentialMovingAverage(module.vars(), momentum=0.9, eps=1e-3, debias=False),
+                  objax.optimizer.ExponentialMovingAverage(module.vars(), momentum=0.9, eps=1e-3, debias=True),
+                  objax.optimizer.ExponentialMovingAverage(module.vars(), momentum=0.999, eps=1e-3, debias=False)]
+        g = objax.random.Generator()
+        for it in range(2):
+            module.beta.assign(objax.random.uniform(module.beta.value.shape, g))
+            module.running_mean.assign(objax.random.uniform(module.running_mean.value.shape, g))
+            for m, v in zip(module_ema, vc_ema):
+                m.update_ema()
+                v()
+
+        x = objax.random.normal((4, 3), generator=g)
+        for m, v in zip(module_ema, vc_ema):
+            y_m = m(x, training=False)
+            y_v = v.replace_vars(module)(x, training=False)
+            self.assertEqual(y_m.tolist(), y_v.tolist())
 
 
 if __name__ == '__main__':

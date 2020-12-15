@@ -22,7 +22,7 @@ import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
-from objax.util import override_args_kwargs, positional_args_names
+from objax.util import class_name, override_args_kwargs, positional_args_names, repr_function
 from objax.variable import BaseVar, RandomState, VarCollection
 
 
@@ -45,7 +45,10 @@ class Module:
             if isinstance(v, BaseVar):
                 vc[scope + k] = v
             elif isinstance(v, Module):
-                vc.update(v.vars(scope=scope + k))
+                if k == '__wrapped__':
+                    vc.update(v.vars(scope=scope[:-1]))
+                else:
+                    vc.update(v.vars(scope=scope + k))
         return vc
 
     def __call__(self, *args, **kwargs):
@@ -115,6 +118,10 @@ class ForceArgs(Module):
         args, kwargs = override_args_kwargs(self.__wrapped__, args, kwargs, self.forced_kwargs)
         return self.__wrapped__(*args, **kwargs)
 
+    def __repr__(self):
+        args = ', '.join(f'{k}={repr(v)}' for k, v in self.forced_kwargs.items())
+        return f'{class_name(self)}(module={repr_function(self.__wrapped__)}, {args})'
+
 
 class ModuleList(Module, list):
     """This is a replacement for Python's list that provides a vars() method to return all the variables that it
@@ -143,6 +150,17 @@ class ModuleList(Module, list):
             return ModuleList(value)
         return value
 
+    def __repr__(self):
+        def f(x):
+            if not isinstance(x, Module) and callable(x):
+                return repr_function(x)
+            x = repr(x).split('\n')
+            x = [x[0]] + ['  ' + y for y in x[1:]]
+            return '\n'.join(x)
+
+        entries = '\n'.join(f'  [{i}] {f(x)}' for i, x in enumerate(self))
+        return f'{class_name(self)}(\n{entries}\n)'
+
 
 class Function(Module):
     """Turn a function into a Module by keeping the vars it uses."""
@@ -155,7 +173,7 @@ class Function(Module):
             vc: the VarCollection of variables used by the function.
         """
         if hasattr(f, '__name__'):
-            self.vc = VarCollection((f'{{{f.__name__}}}.{k}', v) for k, v in vc.items())
+            self.vc = VarCollection((f'{{{f.__name__}}}{k}', v) for k, v in vc.items())
         else:
             self.vc = VarCollection(vc)
         self.__wrapped__ = f
@@ -179,6 +197,9 @@ class Function(Module):
 
         return from_function
 
+    def __repr__(self):
+        return f'{class_name(self)}(f={repr_function(self.__wrapped__)})'
+
 
 class Jit(Module):
     """JIT (Just-In-Time) module takes a function or a module and compiles it for faster execution."""
@@ -195,6 +216,7 @@ class Jit(Module):
             static_argnums: tuple of indexes of f's input arguments to treat as static (constants)).
                 A new graph is compiled for each different combination of values for such inputs.
         """
+        self.static_argnums = static_argnums
         if not isinstance(f, Module):
             if vc is None:
                 raise ValueError('You must supply the VarCollection used by the function f.')
@@ -208,7 +230,7 @@ class Jit(Module):
             finally:
                 self.vc.assign(original_values)
 
-        self.vc = vc or f.vars()
+        self.vc = f.vars() if vc is None else vc
         self._call = jax.jit(jit, static_argnums=tuple(x + 2 for x in sorted(static_argnums or ())))
         self.__wrapped__ = f
 
@@ -217,6 +239,9 @@ class Jit(Module):
         output, changes = self._call(self.vc.tensors(), kwargs, *args)
         self.vc.assign(changes)
         return output
+
+    def __repr__(self):
+        return f'{class_name(self)}(f={self.__wrapped__}, static_argnums={self.static_argnums or None})'
 
 
 class Parallel(Module):
@@ -253,6 +278,7 @@ class Parallel(Module):
                 self.vc.assign(original_values)
 
         static_argnums = sorted(static_argnums or ())
+        self.axis_name = axis_name
         self.ndevices = jax.local_device_count()
         self.reduce = reduce
         self.static_argnums = frozenset(static_argnums)
@@ -262,6 +288,10 @@ class Parallel(Module):
 
     def device_reshape(self, x: JaxArray) -> JaxArray:
         """Utility to reshape an input array in order to broadcast to multiple devices."""
+        assert hasattr(x, 'ndim'), f'Expected JaxArray, got {type(x)}. If you are trying to pass a scalar to ' \
+                                   f'parallel, first convert it to a JaxArray, for example np.float(0.5)'
+        if x.ndim == 0:
+            return jn.broadcast_to(x, [self.ndevices])
         assert x.shape[0] % self.ndevices == 0, f'Must be able to equally divide batch {x.shape} among ' \
                                                 f'{self.ndevices} devices, but does not go equally.'
         return x.reshape((self.ndevices, x.shape[0] // self.ndevices) + x.shape[1:])
@@ -278,10 +308,17 @@ class Parallel(Module):
             f'Some variables were not replicated: {unreplicated}.' \
             'did you forget to call VarCollection.replicate on them?'
 
-        args = [x if i in self.static_argnums else self.device_reshape(x) for i, x in enumerate(args)]
+        args = [x if i in self.static_argnums
+                else jax.tree_map(self.device_reshape, [x])[0] for i, x in enumerate(args)]
         output, changes = self._call(self.vc.tensors(), self.vc.subset(RandomState).tensors(), *args)
         self.vc.assign(changes)
         return jax.tree_map(self.reduce, output)
+
+    def __repr__(self):
+        args = dict(f=self.__wrapped__, reduce=repr_function(self.reduce), axis_name=repr(self.axis_name),
+                    static_argnums=tuple(sorted(self.static_argnums)) or None)
+        args = ', '.join(f'{k}={v}' for k, v in args.items())
+        return f'{class_name(self)}({args})'
 
 
 class Vectorize(Module):
@@ -331,3 +368,6 @@ class Vectorize(Module):
         for v, u in zip(self.vc, changes):
             v.reduce(u)
         return output
+
+    def __repr__(self):
+        return f'{class_name(self)}(f={self.__wrapped__}, batch_axis={self.batch_axis})'

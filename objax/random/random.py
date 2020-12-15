@@ -19,6 +19,7 @@ from typing import Optional, Tuple
 import jax.random as jr
 
 from objax.module import Module
+from objax.util import class_name
 from objax.variable import RandomState, VarCollection
 
 
@@ -51,6 +52,9 @@ class Generator(Module):
     def vars(self, scope: str = '') -> VarCollection:
         self.key  # Make sure the key is created before collecting the vars.
         return super().vars(scope)
+
+    def __repr__(self):
+        return f'{class_name(self)}(seed={self.initial_seed})'
 
 
 DEFAULT_GENERATOR = Generator(0)

@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['dynamic_slice', 'flatten', 'interpolate', 'pad', 'rsqrt', 'stop_gradient',
-           'top_k', 'one_hot', 'upsample_2d', 'upscale_nn']
+
+__all__ = ['dynamic_slice', 'flatten', 'interpolate', 'one_hot', 'pad', 'rsqrt', 'stop_gradient',
+           'top_k', 'upsample_2d', 'upscale_nn']
+
 
 import jax.nn
 from jax import numpy as jn, lax
@@ -26,6 +28,7 @@ from objax.typing import JaxArray
 dynamic_slice = lax.dynamic_slice
 one_hot = jax.nn.one_hot
 pad = jn.pad
+scan = lax.scan
 stop_gradient = lax.stop_gradient
 top_k = lax.top_k  # Current code doesn't work with gradient.
 rsqrt = lax.rsqrt

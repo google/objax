@@ -86,6 +86,7 @@ Misc
     interpolate
     one_hot
     pad
+    scan
     stop_gradient
     top_k
     rsqrt
@@ -97,6 +98,7 @@ Misc
 .. autofunction:: interpolate
 .. autofunction:: one_hot
 .. autofunction:: pad
+.. autofunction:: scan
 .. autofunction:: stop_gradient
 .. autofunction:: top_k
 .. autofunction:: rsqrt

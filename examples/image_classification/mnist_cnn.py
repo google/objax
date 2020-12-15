@@ -71,11 +71,11 @@ train_size = train.image.shape[0]
 
 # Model
 model = SimpleNet(nclass=10, colors=1, n=16)  # Use higher values of n to get higher accuracy.
+model_ema = objax.optimizer.ExponentialMovingAverageModule(model, momentum=0.999, debias=True)
 opt = objax.optimizer.Adam(model.vars())
-ema = objax.optimizer.ExponentialMovingAverage(model.vars(), momentum=0.999, debias=True)
-predict = objax.Jit(ema.replace_vars(model), model.vars() + ema.vars())
 
 
+@objax.Function.with_vars(model.vars())
 def loss(x, y):
     logits = model(x, training=True)
     loss_xe = objax.functional.loss.cross_entropy_logits_sparse(logits, y).mean()
@@ -86,15 +86,16 @@ def loss(x, y):
 gv = objax.GradValues(loss, model.vars())
 
 
+@objax.Function.with_vars(model.vars() + gv.vars() + opt.vars() + model_ema.vars())
 def train_op(x, y):
     g, v = gv(x, y)
     opt(lr, g)
-    ema()
+    model_ema.update_ema()
     return v
 
 
-# gv.vars() contains the model variables.
-train_op = objax.Jit(train_op, gv.vars() + opt.vars() + ema.vars())
+train_op = objax.Jit(train_op)  # Compile train_op to make it run faster.
+predict = objax.Jit(model_ema)  # Compile predict to make it run faster.
 
 # Training
 print(model.vars())

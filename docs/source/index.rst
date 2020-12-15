@@ -14,6 +14,7 @@ Machine learning's :code:`'Hello world'`: optimizing the weights of classifier `
 
    opt = objax.optimizer.Adam(net.vars())
 
+   @objax.Function.with_vars(net.vars())
    def loss(x, y):
        logits = net(x)  # Output of classifier on x
        xe = cross_entropy_logits(logits, y)
@@ -22,12 +23,13 @@ Machine learning's :code:`'Hello world'`: optimizing the weights of classifier `
    # Perform gradient descent wrt to net weights    
    gv = objax.GradValues(loss, net.vars())
 
+   @objax.Function.with_vars(net.vars() + opt.vars())
    def train_op(x, y):
        g, v = gv(x, y)  # returns gradients g and loss v
        opt(lr, g)  # update weights
        return v
 
-   train_op = objax.Jit(train_op, net.vars() + opt.vars())
+   train_op = objax.Jit(train_op)
 
 Objax philosophy
 ----------------
@@ -91,6 +93,7 @@ Read more about this in :doc:`advanced/jit`.
    notebooks/Custom_Networks
    examples
    tutorials
+   faq
 
 .. toctree::
    :maxdepth: 2
