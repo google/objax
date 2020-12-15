@@ -20,7 +20,7 @@ import jax.numpy as jn
 
 from objax import random
 from objax.gradient import GradValues
-from objax.module import Module, Vectorize
+from objax.module import Function, Module, Vectorize
 from objax.typing import JaxArray
 from objax.util import repr_function, class_name
 from objax.variable import VarCollection
@@ -56,6 +56,7 @@ class PrivateGradValues(Module):
 
         self.__wrapped__ = gv = GradValues(f, vc)
 
+        @Function.with_vars(gv.vars())
         def clipped_grad(*args):
             grads, values = gv(*args)
             total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
@@ -67,7 +68,7 @@ class PrivateGradValues(Module):
         self.l2_norm_clip = l2_norm_clip
         self.noise_multiplier = noise_multiplier
         self.keygen = keygen
-        self.private_grad = Vectorize(clipped_grad, gv.vars(), batch_axis=batch_axis)
+        self.private_grad = Vectorize(clipped_grad, batch_axis=batch_axis)
 
     def reshape_microbatch(self, x: JaxArray) -> JaxArray:
         """Reshapes examples into microbatches.

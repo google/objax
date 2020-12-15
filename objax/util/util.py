@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 __all__ = ['EasyDict', 'args_indexes', 'class_name', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
            'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer',
-           'repr_function', 'to_padding', 'to_tuple']
+           'repr_function', 'to_interpolate', 'to_padding', 'to_tuple']
 
 import contextlib
 import functools
@@ -29,7 +30,7 @@ import jax.numpy as jn
 import numpy as np
 from jax.interpreters.pxla import ShardedDeviceArray
 
-from objax.constants import ConvPadding
+from objax.constants import ConvPadding, Interpolate
 from objax.typing import ConvPaddingInt
 
 CLASS_MODULES = {
@@ -159,6 +160,16 @@ def positional_args_names(f: Callable) -> List[str]:
     """Returns the ordered names of the positional arguments of a function."""
     return list(p.name for p in inspect.signature(f).parameters.values()
                 if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
+
+
+def to_interpolate(interpolate: Union[Interpolate, str]) -> Union[str]:
+    """Expand to a string method for interpolation"""
+    if isinstance(interpolate, Interpolate):
+        return interpolate.value
+    if isinstance(interpolate, str):
+        return Interpolate[interpolate.upper()].value
+
+    assert isinstance(interpolate, (str, Interpolate)), f'Argument "{interpolate}" must be a string or Interpolate'
 
 
 def repr_function(f: Callable) -> str:

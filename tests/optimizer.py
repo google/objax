@@ -219,6 +219,28 @@ class TestEma(unittest.TestCase):
             np.testing.assert_allclose(ema_value[0], ema_value_expect, rtol=1e-6)
             np.testing.assert_allclose(orig_value[0], orig_value_expect, rtol=1e-6)
 
+    def test_module_ema(self):
+        module = objax.nn.BatchNorm0D(3)
+        module_ema = [objax.optimizer.ExponentialMovingAverageModule(module, momentum=0.9, eps=1e-3, debias=False),
+                      objax.optimizer.ExponentialMovingAverageModule(module, momentum=0.9, eps=1e-3, debias=True),
+                      objax.optimizer.ExponentialMovingAverageModule(module, momentum=0.999, eps=1e-3, debias=False)]
+        vc_ema = [objax.optimizer.ExponentialMovingAverage(module.vars(), momentum=0.9, eps=1e-3, debias=False),
+                  objax.optimizer.ExponentialMovingAverage(module.vars(), momentum=0.9, eps=1e-3, debias=True),
+                  objax.optimizer.ExponentialMovingAverage(module.vars(), momentum=0.999, eps=1e-3, debias=False)]
+        g = objax.random.Generator()
+        for it in range(2):
+            module.beta.assign(objax.random.uniform(module.beta.value.shape, g))
+            module.running_mean.assign(objax.random.uniform(module.running_mean.value.shape, g))
+            for m, v in zip(module_ema, vc_ema):
+                m.update_ema()
+                v()
+
+        x = objax.random.normal((4, 3), generator=g)
+        for m, v in zip(module_ema, vc_ema):
+            y_m = m(x, training=False)
+            y_v = v.replace_vars(module)(x, training=False)
+            self.assertEqual(y_m.tolist(), y_v.tolist())
+
 
 if __name__ == '__main__':
     unittest.main()

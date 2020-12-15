@@ -93,31 +93,29 @@ class TrainModule(TrainLoop):
     def __init__(self, model: Callable, nclass: int, **kwargs):
         super().__init__(nclass, **kwargs)
         self.model = model(3, nclass)
-        model_vars = self.model.vars()
-        self.opt = objax.optimizer.Momentum(model_vars)
-        self.ema = objax.optimizer.ExponentialMovingAverage(model_vars, momentum=0.999, debias=True)
-        print(model_vars)
+        self.opt = objax.optimizer.Momentum(self.model.vars())
+        self.model_ema = objax.optimizer.ExponentialMovingAverageModule(self.model, momentum=0.999, debias=True)
 
+        @objax.Function.with_vars(self.model.vars())
         def loss(x, label):
             logit = self.model(x, training=True)
-            loss_wd = 0.5 * sum((v.value ** 2).sum() for k, v in model_vars.items() if k.endswith('.w'))
+            loss_wd = 0.5 * sum((v.value ** 2).sum() for k, v in self.model.vars().items() if k.endswith('.w'))
             loss_xe = objax.functional.loss.cross_entropy_logits(logit, label).mean()
             return loss_xe + loss_wd * self.params.weight_decay, {'losses/xe': loss_xe, 'losses/wd': loss_wd}
 
-        gv = objax.GradValues(loss, model_vars)
+        gv = objax.GradValues(loss, self.model.vars())
 
+        @objax.Function.with_vars(self.vars())
         def train_op(progress, x, y):
             g, v = gv(x, y)
             lr = self.params.lr * jn.cos(progress * (7 * jn.pi) / (2 * 8))
             self.opt(lr, objax.functional.parallel.pmean(g))
-            self.ema()
+            self.model_ema.update_ema()
             return objax.functional.parallel.pmean({'monitors/lr': lr, **v[1]})
 
-        def predict_op(x):
-            return objax.functional.softmax(self.model(x, training=False))
-
-        self.predict = objax.Parallel(self.ema.replace_vars(predict_op), model_vars + self.ema.vars())
-        self.train_op = objax.Parallel(train_op, self.vars(), reduce=lambda x: x[0])
+        self.predict = objax.Parallel(objax.nn.Sequential([objax.ForceArgs(self.model_ema, training=False),
+                                                           objax.functional.softmax]))
+        self.train_op = objax.Parallel(train_op, reduce=lambda x: x[0])
 
 
 def network(arch: str):

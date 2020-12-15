@@ -28,11 +28,10 @@ X_test = X_test.transpose(0, 3, 1, 2) / 255.0
 # Model
 model = WideResNet(nin=3, nclass=10, depth=28, width=2)
 opt = objax.optimizer.Adam(model.vars())
-predict = objax.Jit(lambda x: objax.functional.softmax(model(x, training=False)),
-                    model.vars())
 
 
 # Losses
+@objax.Function.with_vars(model.vars())
 def loss(x, label):
     logit = model(x, training=True)
     return objax.functional.loss.cross_entropy_logits_sparse(logit, label).mean()
@@ -41,14 +40,17 @@ def loss(x, label):
 gv = objax.GradValues(loss, model.vars())
 
 
+@objax.Function.with_vars(model.vars() + gv.vars() + opt.vars())
 def train_op(x, y, lr):
     g, v = gv(x, y)
     opt(lr=lr, grads=g)
     return v
 
 
-# gv.vars() contains the model variables.
-train_op = objax.Jit(train_op, gv.vars() + opt.vars())
+train_op = objax.Jit(train_op)
+predict = objax.Jit(objax.nn.Sequential([
+    objax.ForceArgs(model, training=False), objax.functional.softmax
+]))
 
 
 def augment(x):

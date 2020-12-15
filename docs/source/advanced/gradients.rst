@@ -59,6 +59,7 @@ Let's look at what gradient as a module looks like through a simple example::
 
     m = objax.nn.Linear(2, 3)
 
+    @objax.Function.with_vars(m.vars())
     def loss(x, y):
         return ((m(x) - y) ** 2).mean()
 
@@ -80,9 +81,9 @@ As stated, :code:`gradient_loss` is a module instance and has variables.
 Its variables are simply the ones passed to :py:class:`objax.GradValues`, we can verify it::
 
     print(gradient_loss.vars())
-    # (GradValues)(Linear).b        3 (3,)
-    # (GradValues)(Linear).w        6 (2, 3)
-    # +Total(2)                     9
+    # (Linear).b                  3 (3,)
+    # (Linear).w                  6 (2, 3)
+    # +Total(2)                   9
 
     # These variables are from
     print(m.vars())
@@ -139,12 +140,14 @@ From this we can demonstrate the training of a classifier::
                                          objax.nn.Linear(3, 4)])
     opt = SGD(my_classifier.vars())
 
+    @objax.Function.with_vars(my_classifier.vars())
     def loss(x, labels):
         logits = my_classifier(x)
         return objax.functional.loss.cross_entropy_logits(logits, labels).mean()
 
     gradient_loss = objax.GradValues(loss, my_classifier.vars())
 
+    @objax.Function.with_vars(my_classifier.vars() + opt.vars())
     def train(x, labels, lr):
         g, v = gradient_loss(x, labels)  # Compute gradients and loss
         opt(lr, g)                       # Apply SGD
@@ -152,10 +155,10 @@ From this we can demonstrate the training of a classifier::
 
     # Observe that the gradient contains the variables of the model (weight sharing)
     print(gradient_loss.vars())
-    # (GradValues)(Sequential)[0](Linear).b        3 (3,)
-    # (GradValues)(Sequential)[0](Linear).w        6 (2, 3)
-    # (GradValues)(Sequential)[2](Linear).b        4 (4,)
-    # (GradValues)(Sequential)[2](Linear).w       12 (3, 4)
+    # (Sequential)[0](Linear).b        3 (3,)
+    # (Sequential)[0](Linear).w        6 (2, 3)
+    # (Sequential)[2](Linear).b        4 (4,)
+    # (Sequential)[2](Linear).w       12 (3, 4)
     # +Total(4)                                   25
 
     # At this point you can simply call train on your training data and pass the learning rate.
@@ -179,6 +182,7 @@ The loss function can return any number of values or even structures such as dic
 
 Continuing on our example, lets create a new loss that returns its multiple components::
 
+    @objax.Function.with_vars(my_classifier.vars())
     def losses(x, labels):
         logits = my_classifier(x)
         loss_xe = objax.functional.loss.cross_entropy_logits(logits, labels).mean()
@@ -193,6 +197,7 @@ Continuing on our example, lets create a new loss that returns its multiple comp
 
 Or one might prefer to return a dict to keep things organized::
 
+    @objax.Function.with_vars(my_classifier.vars())
     def loss_dict(x, labels):
         logits = my_classifier(x)
         loss_xe = objax.functional.loss.cross_entropy_logits(logits, labels).mean()
@@ -229,12 +234,12 @@ here's an example::
     # g = [gradient(x), gradient(labels)] + [gradient(v) for v in classifier.vars().subset(TrainVar)]
 
     # You can also compute the gradients from the inputs alone
-    gradient_loss_xy = objax.GradValues(loss, None, constants=my_classifier.vars(), input_argnums=(0, 1))
+    gradient_loss_xy = objax.GradValues(loss, objax.VarCollection(), input_argnums=(0, 1))
     print(gradient_loss_xy(x, labels)[0])
     # g = [gradient(x), gradient(labels)]
 
     # The order of the inputs matters, using input_argnums=(1, 0) instead of (0, 1)
-    gradient_loss_yx = objax.GradValues(loss, None, constants=my_classifier.vars(), input_argnums=(1, 0))
+    gradient_loss_yx = objax.GradValues(loss, objax.VarCollection(), input_argnums=(1, 0))
     print(gradient_loss_yx(x, labels)[0])
     # g = [gradient(labels), gradient(x)]
 
@@ -290,12 +295,14 @@ any other loss since :code:`nested_loss` is independent of the choice of :code:`
 
     train_vars = my_classifier.vars().subset(objax.TrainVar)
 
+    @objax.Function.with_vars(my_classifier.vars())
     def loss(x, labels):
         logits = my_classifier(x)
         return objax.functional.loss.cross_entropy_logits(logits, labels).mean()
 
     gradient_loss = objax.GradValues(loss, train_vars)
 
+    @objax.Function.with_vars(my_classifier.vars())
     def nested_loss(x1, y1, x2, y2, mu):
         # Save original network variable values
         original_values = train_vars.tensors()
@@ -331,6 +338,7 @@ The reason :code:`assign` is generally discouraged is to avoid accidental bugs b
 On a final note, by observing that the weight update is invertible in the code above, the nested loss can be
 simplified to::
 
+    @objax.Function.with_vars(my_classifier.vars())
     def nested_loss(x1, y1, x2, y2, mu):
         # Compute the gradient for loss(x2, y2)
         g_x2y2 = gradient_loss(x2, y2)[0]
@@ -372,10 +380,10 @@ In doing so we will create a module :code:`vec_nested_loss` that computes :code:
 in the batches in :code:`X1, Y1, X2, Y2`::
 
     # Make vec_nested_loss a Module that calls nested_loss on one batch entry at a time
-    vec_nested_loss = objax.Vectorize(nested_loss, gradient_loss.vars(),
-                                      batch_axis=(0, 0, 0, 0, None))
+    vec_nested_loss = objax.Vectorize(nested_loss, batch_axis=(0, 0, 0, 0, None))
 
     # The final loss just calls vec_nested_loss and returns the mean of the losses
+    @objax.Function.with_vars(my_classifier.vars())
     def nested_pairwise_loss(X1, Y1, X2, Y2, mu):
         return vec_nested_loss(X1, Y1, X2, Y2, mu).mean()
 

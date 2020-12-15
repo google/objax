@@ -64,6 +64,7 @@ net = make_net()
 opt = objax.optimizer.Adam(net.vars())
 
 
+@objax.Function.with_vars(net.vars())
 def loss(x, y):
     return ((y - net(x)) ** 2).mean()
 
@@ -71,13 +72,14 @@ def loss(x, y):
 gv = objax.GradValues(loss, net.vars())
 
 
+@objax.Function.with_vars(net.vars() + opt.vars())
 def train_op():
     g, v = gv(source, target)
     opt(0.01, g)
     return v
 
 
-train_op = objax.Jit(train_op, gv.vars() + opt.vars())
+train_op = objax.Jit(train_op)
 
 for i in range(100):
     train_op()
@@ -93,6 +95,7 @@ net = make_net()
 opt = objax.optimizer.Adam(net.vars())
 
 
+@objax.Function.with_vars(net.vars())
 def loss(x, y):
     return ((y - net(x)) ** 2).mean()
 
@@ -100,6 +103,7 @@ def loss(x, y):
 gv = objax.GradValues(loss, net.vars())
 
 
+@objax.Function.with_vars(net.vars())
 def maml_loss(x1, y1, x2, y2, alpha=0.1):
     net_vars = net.vars()
     original_weights = net_vars.tensors()  # Save original weights
@@ -111,9 +115,10 @@ def maml_loss(x1, y1, x2, y2, alpha=0.1):
     return loss_x2y2
 
 
-vec_maml_loss = objax.Vectorize(maml_loss, gv.vars(), batch_axis=(0, 0, 0, 0, None))
+vec_maml_loss = objax.Vectorize(maml_loss, batch_axis=(0, 0, 0, 0, None))
 
 
+@objax.Function.with_vars(vec_maml_loss.vars())
 def batch_maml_loss(x1, y1, x2, y2, alpha=0.1):
     return vec_maml_loss(x1, y1, x2, y2, alpha).mean()
 
@@ -121,13 +126,14 @@ def batch_maml_loss(x1, y1, x2, y2, alpha=0.1):
 maml_gv = objax.GradValues(batch_maml_loss, vec_maml_loss.vars())
 
 
+@objax.Function.with_vars(vec_maml_loss.vars() + opt.vars())
 def train_op(x1, y1, x2, y2):
     g, v = maml_gv(x1, y1, x2, y2)
     opt(0.001, g)
     return v
 
 
-train_op = objax.Jit(train_op, maml_gv.vars() + opt.vars())
+train_op = objax.Jit(train_op)
 
 for i in trange(20000, leave=False):
     x1, y1, x2, y2 = sample_tasks(4, 20)

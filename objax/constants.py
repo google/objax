@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['ConvPadding']
+__all__ = ['ConvPadding', 'Interpolate']
 
 import enum
 
@@ -21,3 +21,17 @@ class ConvPadding(enum.Enum):
     """An Enum holding the possible padding values for convolution modules."""
     SAME = 'SAME'
     VALID = 'VALID'
+
+
+class Interpolate(enum.Enum):
+    """An Enum holding the possible interpolation values for upsampling."""
+    NEAREST = 'nearest'
+    LINEAR = 'linear'
+    BILINEAR = 'bilinear'
+    TRILINEAR = 'trilinear'
+    TRIANGLE = 'triangle'
+    CUBIC = 'cubic'
+    BICUBIC = 'bicubic'
+    TRICUBIC = 'tricubic'
+    LANCZOS3 = 'lanczos3'
+    LANCZOS5 = 'lanczos5'

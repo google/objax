@@ -221,19 +221,25 @@ class VarCollection(Dict[str, BaseVar]):
 
     def __setitem__(self, key: str, value: BaseVar):
         """Overload bracket assignment to catch potential conflicts during assignment."""
-        if key in self:
+        if key in self and self[key] != value:
             raise ValueError('Name conflicts when appending to VarCollection', key)
         dict.__setitem__(self, key, value)
 
     def update(self, other: Union['VarCollection', Iterable[Tuple[str, BaseVar]]]):
         """Overload dict.update method to catch potential conflicts during assignment."""
-        keys = set(self.keys())
         if not isinstance(other, self.__class__):
             other = list(other)
-        dict.update(self, other)
-        if len(self) != len(keys) + len(other):
-            conflicts = sorted(keys & set(other.keys()))
-            raise ValueError('Name conflicts when combining VarCollection', conflicts)
+        else:
+            other = other.items()
+        conflicts = set()
+        for k, v in other:
+            if k in self:
+                if self[k] != v:
+                    conflicts.add(k)
+            else:
+                self[k] = v
+        if conflicts:
+            raise ValueError(f'Name conflicts when combining VarCollection {sorted(conflicts)}')
 
     def assign(self, tensors: List[JaxArray]):
         """Assign tensors to the variables in the VarCollection. Each variable is assigned only once and in the order
