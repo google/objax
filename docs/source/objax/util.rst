@@ -9,6 +9,7 @@ objax.util
 .. autosummary::
 
     EasyDict
+    Objax2Tf
     Renamer
     args_indexes
     dummy_context_mgr
@@ -19,6 +20,9 @@ objax.util
 .. autoclass:: EasyDict
     :members:
     :inherited-members:
+
+.. autoclass:: Objax2Tf
+    :members:
 
 .. autoclass:: Renamer
     :members:

@@ -15,3 +15,4 @@
 from . import image
 from . import check
 from .util import *
+from .objax2tf import Objax2Tf
