@@ -64,10 +64,10 @@ class Objax2Tf(tf.Module):
                 module_vars.assign(original_values)
 
         tf_function = jax2tf.convert(wrapped_op)
-        self._all_vars = [tf.Variable(v) for v in module_vars.tensors()]
-        self._call = tf_function
+        self._tf_vars = [tf.Variable(v) for v in module_vars.tensors()]
+        self._tf_call = tf_function
 
     @tf.function(autograph=False)
     def __call__(self, *args, **kwargs):
         """Calls Tensorflow function which was generated from Objax module."""
-        return self._call(self._all_vars, kwargs, *args)
+        return self._tf_call(self._tf_vars, kwargs, *args)

@@ -43,15 +43,14 @@ class TestObjax2Tf(unittest.TestCase):
     def test_convert_wrn(self):
         # Make a model
         model = WideResNet(NCHANNELS, NCLASSES, depth=4, width=1)
-        model_vars = model.vars()
         # Prediction op without JIT
-        predict_op = lambda x: objax.functional.softmax(model(x, training=False))
-        predict_tf = objax.util.Objax2Tf(objax.Function(predict_op, model_vars))
+        predict_op = objax.nn.Sequential([objax.ForceArgs(model, training=False), objax.functional.softmax])
+        predict_tf = objax.util.Objax2Tf(predict_op)
         # Compare results
         self.verify_converted_predict_op(predict_op, predict_tf,
                                          shape=(BATCH_SIZE, NCHANNELS, IMAGE_SIZE, IMAGE_SIZE))
         # Predict op with JIT
-        predict_op_jit = objax.Jit(predict_op, model_vars)
+        predict_op_jit = objax.Jit(predict_op)
         predict_tf_jit = objax.util.Objax2Tf(predict_op_jit)
         # Compare results
         self.verify_converted_predict_op(predict_op_jit, predict_tf_jit,
@@ -61,8 +60,7 @@ class TestObjax2Tf(unittest.TestCase):
         model_dir = tempfile.mkdtemp()
         # Make a model and convert it to TF
         model = WideResNet(NCHANNELS, NCLASSES, depth=4, width=1)
-        model_vars = model.vars()
-        predict_op = objax.Jit(lambda x: objax.functional.softmax(model(x, training=False)), model_vars)
+        predict_op = objax.Jit(objax.nn.Sequential([objax.ForceArgs(model, training=False), objax.functional.softmax]))
         predict_tf = objax.util.Objax2Tf(predict_op)
         # Save model
         input_shape = (BATCH_SIZE, NCHANNELS, IMAGE_SIZE, IMAGE_SIZE)
