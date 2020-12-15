@@ -105,6 +105,17 @@ class TestJit(unittest.TestCase):
         self.assertEqual(v.tolist(), [2., 2.])
         self.assertEqual(m[0].value.tolist(), [2., 2.])
 
+    def test_constant_optimization(self):
+        m = objax.nn.Linear(3, 4)
+        jit_constant = objax.Jit(m, objax.VarCollection())
+
+        x = objax.random.normal((10, 3))
+        self.assertEqual(((m(x) - jit_constant(x)) ** 2).sum(), 0)
+
+        # Modify m (which was supposed to be constant!)
+        m.b.assign(m.b.value + 1)
+        self.assertEqual(((m(x) - jit_constant(x)) ** 2).sum(), 40)
+
 
 if __name__ == '__main__':
     unittest.main()

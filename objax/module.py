@@ -45,7 +45,10 @@ class Module:
             if isinstance(v, BaseVar):
                 vc[scope + k] = v
             elif isinstance(v, Module):
-                vc.update(v.vars(scope=scope + k))
+                if k == '__wrapped__':
+                    vc.update(v.vars(scope=scope[:-1]))
+                else:
+                    vc.update(v.vars(scope=scope + k))
         return vc
 
     def __call__(self, *args, **kwargs):
@@ -170,7 +173,7 @@ class Function(Module):
             vc: the VarCollection of variables used by the function.
         """
         if hasattr(f, '__name__'):
-            self.vc = VarCollection((f'{{{f.__name__}}}.{k}', v) for k, v in vc.items())
+            self.vc = VarCollection((f'{{{f.__name__}}}{k}', v) for k, v in vc.items())
         else:
             self.vc = VarCollection(vc)
         self.__wrapped__ = f
@@ -227,7 +230,7 @@ class Jit(Module):
             finally:
                 self.vc.assign(original_values)
 
-        self.vc = vc or f.vars()
+        self.vc = f.vars() if vc is None else vc
         self._call = jax.jit(jit, static_argnums=tuple(x + 2 for x in sorted(static_argnums or ())))
         self.__wrapped__ = f
 

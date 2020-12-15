@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['ExponentialMovingAverage']
+__all__ = ['ExponentialMovingAverage', 'ExponentialMovingAverageModule']
 
 from typing import Callable, Tuple, List
 
@@ -85,11 +85,39 @@ class ExponentialMovingAverage(Module):
             refs, new_values = self.refs_and_values()
             original_values = refs.tensors()
             refs.assign(new_values)
-            output = f(*args, **kwargs)
-            refs.assign(original_values)
-            return output
+            try:
+                return f(*args, **kwargs)
+            finally:
+                refs.assign(original_values)
 
         return wrap
 
     def __repr__(self):
         return f'{class_name(self)}(momentum={self.momentum}, debias={self.debias}, eps={self.eps})'
+
+
+class ExponentialMovingAverageModule(Module):
+    """Creates a module that uses the moving average weights of another module."""
+
+    def __init__(self, module: Module, momentum: float = 0.999, debias: bool = False, eps: float = 1e-6):
+        """Creates ExponentialMovingAverageModule instance with given hyperparameters.
+
+        Args:
+            module: a module for which to compute the moving average.
+            momentum: the decay factor for the moving average.
+            debias: bool indicating whether to use initialization bias correction.
+            eps: small adjustment to prevent division by zero.
+        """
+        self.__wrapped__ = module
+        self.ema = ExponentialMovingAverage(module.vars(), momentum=momentum, debias=debias, eps=eps)
+
+    def __call__(self, *args, **kwargs):
+        """Calls the original module with moving average weights."""
+        return self.ema.replace_vars(self.__wrapped__)(*args, **kwargs)
+
+    def update_ema(self):
+        """Updates the moving average."""
+        self.ema()
+
+    def __repr__(self):
+        return f'{class_name(self)}(momentum={self.ema.momentum}, debias={self.ema.debias}, eps={self.ema.eps})'

@@ -25,9 +25,10 @@ import inspect
 import unittest
 from typing import Tuple
 
-from jax import numpy as jn
-import objax
 import numpy as np
+from jax import numpy as jn
+
+import objax
 from objax.typing import JaxArray
 
 
@@ -112,7 +113,7 @@ class TestModule(unittest.TestCase):
             return m(x, training=True) - named, m(y, training=False) + named
 
         module_func = objax.Function(my_func, m.vars())
-        self.assertEqual(module_func.vars(), m.vars('{my_func}.'))
+        self.assertEqual(module_func.vars(), m.vars('{my_func}'))
         self.assertEqual(inspect.signature(module_func), inspect.signature(my_func))
         x = jn.arange(6).reshape((3, 2))
         self.assertEqual([v.tolist() for v in module_func(x, x + 1)],
@@ -131,7 +132,7 @@ class TestModule(unittest.TestCase):
         def my_func(x: JaxArray, y: JaxArray, *, named: int = 1) -> Tuple[JaxArray, JaxArray]:
             return m(x, training=True) - named, m(y, training=False) + named
 
-        self.assertEqual(my_func.vars(), m.vars('{my_func}.'))
+        self.assertEqual(my_func.vars(), m.vars('{my_func}'))
         self.assertEqual(inspect.signature(my_func),
                          inspect.Signature([inspect.Parameter('x', inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                                               annotation=JaxArray),
