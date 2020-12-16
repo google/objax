@@ -70,7 +70,7 @@ class BatchNorm(Module):
         """
         if training:
             m = x.mean(self.redux, keepdims=True)
-            v = (x ** 2).mean(self.redux, keepdims=True) - m ** 2
+            v = ((x - m) ** 2).mean(self.redux, keepdims=True)  # Note: x^2 - m^2 is not numerically stable.
             self.running_mean.value += (1 - self.momentum) * (m - self.running_mean.value)
             self.running_var.value += (1 - self.momentum) * (v - self.running_var.value)
         else:
@@ -414,7 +414,7 @@ class SyncedBatchNorm(BatchNorm):
     def __call__(self, x: JaxArray, training: bool, batch_norm_update: bool = True) -> JaxArray:
         if training:
             m = functional.parallel.pmean(x.mean(self.redux, keepdims=True))
-            v = functional.parallel.pmean((x ** 2).mean(self.redux, keepdims=True) - m ** 2)
+            v = functional.parallel.pmean(((x - m) ** 2).mean(self.redux, keepdims=True))
             if batch_norm_update:
                 self.running_mean.value += (1 - self.momentum) * (m - self.running_mean.value)
                 self.running_var.value += (1 - self.momentum) * (v - self.running_var.value)
