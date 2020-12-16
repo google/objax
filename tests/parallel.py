@@ -106,7 +106,7 @@ class TestParallel(unittest.TestCase):
                 z = fp8(x8).reshape((-1,) + values[it].shape)
             self.assertAlmostEqual(((f[1].running_var.value - states[2 * it]) ** 2).sum(), 0, delta=1e-12)
             self.assertAlmostEqual(((f[1].running_mean.value - states[2 * it + 1]) ** 2).sum(), 0, delta=1e-12)
-            self.assertLess(((z - values[it][None]) ** 2).sum(), 1e-7)
+            self.assertLess(((z - values[it][None]) ** 2).sum(), 5e-7)
         fp8.vars().assign(tensors)
 
     def test_parallel_syncbntrain_concat(self):
