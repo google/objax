@@ -466,11 +466,12 @@ class TestPrivateGradValues(unittest.TestCase):
         self.model = DNNet(layer_sizes=[self.ndim, self.nclass], activation=objax.functional.softmax)
         self.model_vars = self.model.vars()
 
-        def loss(x, y):
+        def loss_function(x, y):
             logit = self.model(x)
-            return ((y - logit) ** 2).mean(1).mean(0)
+            loss = ((y - logit) ** 2).mean(1).mean(0)
+            return loss, {'loss': loss}
 
-        self.loss = loss
+        self.loss = loss_function
 
     def test_private_gradvalues_compare_nonpriv(self):
         """Test if PrivateGradValues without clipping / noise is the same as non-private GradValues."""
@@ -492,7 +493,7 @@ class TestPrivateGradValues(unittest.TestCase):
             # Check if the private gradient is similar to the non-private gradient.
             np.testing.assert_allclose(g[0], g_priv[0], atol=1e-7)
             np.testing.assert_allclose(g[1], g_priv[1], atol=1e-7)
-            np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels), atol=1e-7)
+            np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels)[0], atol=1e-7)
 
     def test_private_gradvalues_clipping(self):
         """Test if the gradient norm is within l2_norm_clip."""
@@ -507,7 +508,7 @@ class TestPrivateGradValues(unittest.TestCase):
                 # Get the actual squared norm of the gradient.
                 g_normsquared = sum([np.sum(g ** 2) for g in g_priv])
                 self.assertLessEqual(g_normsquared, l2_norm_clip ** 2 + acceptable_float_error)
-                np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels), atol=1e-7)
+                np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels)[0], atol=1e-7)
 
     def test_private_gradvalues_noise(self):
         """Test if the noise std is around expected."""
@@ -527,7 +528,7 @@ class TestPrivateGradValues(unittest.TestCase):
                     for i in range(runs):
                         g_priv, v_priv = gv_priv(self.data, self.labels)
                         g_privs.append(np.concatenate([g_n.reshape(-1) for g_n in g_priv]))
-                        np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels), atol=1e-7)
+                        np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels)[0], atol=1e-7)
                     g_privs = np.array(g_privs)
 
                     # Compute empirical std and expected std.

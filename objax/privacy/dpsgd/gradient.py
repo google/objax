@@ -14,8 +14,10 @@
 
 __all__ = ['PrivateGradValues']
 
+import functools
 from typing import Optional, Callable, Tuple
 
+import jax
 import jax.numpy as jn
 
 from objax import random
@@ -98,7 +100,7 @@ class PrivateGradValues(Module):
         num_microbatches = batch // self.microbatch
         stddev = self.l2_norm_clip * self.noise_multiplier / num_microbatches
         g, v = self.private_grad(*[self.reshape_microbatch(x) for x in args])
-        g, v = ([x.mean(0) for x in gv] for gv in (g, v))
+        g, v = jax.tree_map(functools.partial(jn.mean, axis=0), (g, v))
         g = [gx + random.normal(gx.shape, stddev=stddev, generator=self.keygen) for gx in g]
         return g, v
 

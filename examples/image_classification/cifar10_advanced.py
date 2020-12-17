@@ -155,17 +155,24 @@ def main(argv):
     del data, info
 
     # Define the network and train_it
-    loop = TrainModule(network(FLAGS.arch), nclass=nclass,
-                       arch=FLAGS.arch,
-                       lr=FLAGS.lr,
-                       batch=FLAGS.batch,
-                       epochs=FLAGS.epochs,
-                       weight_decay=FLAGS.weight_decay)
-    logdir = '%s/%s' % (loop.__class__.__name__, '_'.join(sorted('%s_%s' % k for k in loop.params.items())))
+    tm = TrainModule(network(FLAGS.arch), nclass=nclass,
+                     arch=FLAGS.arch,
+                     lr=FLAGS.lr,
+                     batch=FLAGS.batch,
+                     epochs=FLAGS.epochs,
+                     weight_decay=FLAGS.weight_decay)
+    logdir = '%s/%s' % (tm.__class__.__name__, '_'.join(sorted('%s_%s' % k for k in tm.params.items())))
     logdir = os.path.join(FLAGS.logdir, logdir)
+    print(f'{" Model ":-^79}')
+    print(tm.model)
+    print(f'{" Weights ":-^79}')
+    print(tm.model.vars())
+    print(f'{" Config ":-^79}')
+    for k, v in sorted(tm.params.items()):
+        print(f'{k:32} {v}')
     print(f'Saving to {logdir}')
     print(f'Visualize results with:\n    tensorboard --logdir {FLAGS.logdir}')
-    loop.train(FLAGS.epochs, train_size, train, test, logdir)
+    tm.train(FLAGS.epochs, train_size, train, test, logdir)
 
 
 if __name__ == '__main__':

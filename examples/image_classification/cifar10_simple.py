@@ -58,7 +58,7 @@ def augment(x):
         x = x[:, :, :, ::-1]  # Flip the batch images about the horizontal axis
     # Pixel-shift all images in the batch by up to 4 pixels in any direction.
     x_pad = np.pad(x, [[0, 0], [0, 0], [4, 4], [4, 4]], 'reflect')
-    rx, ry = np.random.randint(0, 4), np.random.randint(0, 4)
+    rx, ry = np.random.randint(0, 8), np.random.randint(0, 8)
     x = x_pad[:, :, rx:rx + 32, ry:ry + 32]
     return x
 
@@ -77,4 +77,4 @@ for epoch in range(30):
     # Eval
     test_predictions = [predict(x_batch).argmax(1) for x_batch in X_test.reshape((50, -1) + X_test.shape[1:])]
     accuracy = np.array(test_predictions).flatten() == Y_test.flatten()
-    print('Epoch %04d  Loss %.2f  Accuracy %.2f' % (epoch + 1, np.mean(loss), 100 * np.mean(accuracy)))
+    print(f'Epoch {epoch + 1:4d}  Loss {np.mean(loss):.2f}  Accuracy {100 * np.mean(accuracy):.2f}')
