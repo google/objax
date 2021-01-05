@@ -163,6 +163,10 @@ class StateVar(BaseState):
 
     @value.setter
     def value(self, tensor: JaxArray):
+        if isinstance(tensor, jax.core.Tracer):
+            # don't assign JAX tracer to statevars
+            # This is a wrong fix for https://github.com/google/objax/issues/158
+            return
         self._value = tensor
 
 
