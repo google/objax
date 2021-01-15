@@ -31,7 +31,7 @@ def _pad(array: JaxArray,
          constant_values: Optional[Union[Sequence[Tuple[int, int]], int]] = 0,
          end_values: Optional[Union[Sequence[Tuple[int, int]], int]] = None,
          reflect_type: Optional[str] = None):
-    # This is just to have a proper signature for jax.numpy.pad since the API, likes in numpy, makes uses of kwargs
+    # This is just to have a proper signature for jax.numpy.pad since the API, likes in numpy, makes use of kwargs
     # and doesn't expose its arguments properly.
     pass
 
