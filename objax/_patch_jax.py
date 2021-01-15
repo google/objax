@@ -20,7 +20,7 @@ from typing import Union, Sequence, Tuple, Callable, Optional
 import jax.numpy as jn
 
 from .typing import JaxArray
-from .util import resign
+from .util import re_sign
 
 
 def _pad(array: JaxArray,
@@ -36,4 +36,4 @@ def _pad(array: JaxArray,
     pass
 
 
-jn.pad = resign(_pad)(jn.pad)
+jn.pad = re_sign(_pad)(jn.pad)
