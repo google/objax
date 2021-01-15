@@ -16,11 +16,11 @@
 __all__ = ['dynamic_slice', 'flatten', 'interpolate', 'one_hot', 'pad', 'rsqrt', 'scan', 'stop_gradient',
            'top_k', 'upsample_2d', 'upscale_nn']
 
+from typing import Union, Tuple
 
 import jax.nn
 from jax import numpy as jn, lax
 
-from typing import Union, Tuple
 from objax import util
 from objax.constants import Interpolate
 from objax.typing import JaxArray
