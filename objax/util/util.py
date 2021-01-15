@@ -15,7 +15,7 @@
 
 __all__ = ['EasyDict', 'args_indexes', 'class_name', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
            'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer',
-           'repr_function', 'to_interpolate', 'to_padding', 'to_tuple']
+           're_sign', 'repr_function', 'to_interpolate', 'to_padding', 'to_tuple']
 
 import contextlib
 import functools
@@ -170,6 +170,16 @@ def to_interpolate(interpolate: Union[Interpolate, str]) -> Union[str]:
         return Interpolate[interpolate.upper()].value
 
     assert isinstance(interpolate, (str, Interpolate)), f'Argument "{interpolate}" must be a string or Interpolate'
+
+
+def re_sign(f: Callable) -> Callable:
+    """Decorator to replace the signature of an operation with the one from f."""
+
+    def wrap(op):
+        op.__signature__ = inspect.signature(f)
+        return op
+
+    return wrap
 
 
 def repr_function(f: Callable) -> str:
