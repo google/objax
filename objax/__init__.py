@@ -14,6 +14,10 @@
 
 import sys
 
+from ._patch_jax import *
+
+pass  # To avoid reordering imports from above
+
 from . import functional
 from . import io
 from . import jaxboard
