@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ from typing import List, Optional
 from jax import numpy as jn
 
 from objax import functional
-from objax.module import Module, ModuleList
+from objax.module import ModuleList
+from objax.module_base import Module
 from objax.typing import JaxArray
 from objax.util import class_name
 from objax.variable import TrainRef, StateVar, TrainVar, VarCollection

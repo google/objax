@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ from typing import List, Optional, Callable, Tuple, Dict, Union
 
 import jax
 
-from objax.module import Function, Module
+from objax.module import Function
+from objax.module_base import Module
 from objax.typing import JaxArray
 from objax.util import repr_function, class_name
 from objax.variable import BaseState, TrainVar, VarCollection

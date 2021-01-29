@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['ForceArgs', 'Function', 'Jit', 'Module', 'ModuleList', 'Parallel', 'Vectorize']
+__all__ = ['ForceArgs', 'Function', 'Jit', 'ModuleList', 'Parallel', 'Vectorize']
 
 from collections import namedtuple
 from typing import Optional, List, Union, Callable, Tuple
@@ -21,39 +21,11 @@ import jax
 import jax.numpy as jn
 from jax.interpreters.pxla import ShardedDeviceArray
 
+from objax.module_base import Module
 from objax.typing import JaxArray
 from objax.util import class_name, override_args_kwargs, positional_args_names, repr_function
 from objax.variable import BaseVar, RandomState, VarCollection
-
-
-class Module:
-    """A module is a container to associate variables and functions."""
-
-    def vars(self, scope: str = '') -> VarCollection:
-        """Collect all the variables (and their names) contained in the module and its submodules.
-        Important: Variables and modules stored Python structures such as dict or list are not collected. See ModuleList
-        if you need such a feature.
-
-        Args:
-            scope: string to prefix to the variable names.
-        Returns:
-            A VarCollection of all the variables.
-        """
-        vc = VarCollection()
-        scope += f'({self.__class__.__name__}).'
-        for k, v in self.__dict__.items():
-            if isinstance(v, BaseVar):
-                vc[scope + k] = v
-            elif isinstance(v, Module):
-                if k == '__wrapped__':
-                    vc.update(v.vars(scope=scope[:-1]))
-                else:
-                    vc.update(v.vars(scope=scope + k))
-        return vc
-
-    def __call__(self, *args, **kwargs):
-        """Optional module __call__ method, typically a forward pass computation for standard primitives."""
-        raise NotImplementedError
+from objax.util.tracing import find_used_variables
 
 
 class ForceArgs(Module):
@@ -196,6 +168,16 @@ class Function(Module):
             return Function(f, vc)
 
         return from_function
+
+    @staticmethod
+    def auto_vars(f: Callable):
+        """Turns a function into module by automatically detecting used Objax variables. Could be used as a decorator.
+
+        WARNING: This is an experimental feature.
+        It can detect variables used by function in many common cases, but not all cases.
+        This feature may be removed in the future version of Objax if it appear to be too unreliable.
+        """
+        return Function(f, find_used_variables(f))
 
     def __repr__(self):
         return f'{class_name(self)}(f={repr_function(self.__wrapped__)})'

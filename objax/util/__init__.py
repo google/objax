@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,3 +16,4 @@ from . import image
 from . import check
 from .util import *
 from .objax2tf import Objax2Tf
+from .tracing import find_used_variables

@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ from jax import numpy as jn, random as jr, lax
 
 from objax import functional, random, util
 from objax.constants import ConvPadding
-from objax.module import ModuleList, Module
+from objax.module import ModuleList
+from objax.module_base import Module
 from objax.nn.init import kaiming_normal, xavier_normal
 from objax.typing import JaxArray, ConvPaddingInt
 from objax.util import class_name

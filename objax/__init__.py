@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ from . import util
 from ._version import __version__
 from .constants import *
 from .gradient import *
+from .module_base import *
 from .module import *
 from .variable import *
 
