@@ -14,19 +14,19 @@
 
 from typing import List
 
-from jax.experimental import jax2tf
-
-from objax.typing import JaxArray
 from objax.module import Module
+from objax.typing import JaxArray
 
 try:
     # Only import tensorflow if available.
     import tensorflow as tf
+
     tf.config.experimental.set_visible_devices([], 'GPU')
 except ImportError:
     # Make fake tf, so code in this file will be successfully imported even when Tensorflow is not installed.
     tf = type('tf', (), {})
     setattr(tf, 'Module', object)
+
 
     def _fake_tf_function(func=None, **kwargs):
         del kwargs
@@ -34,6 +34,7 @@ except ImportError:
             return func
         else:
             return lambda x: x
+
 
     setattr(tf, 'function', _fake_tf_function)
 
@@ -47,6 +48,7 @@ class Objax2Tf(tf.Module):
         Args:
             module: Objax module to be converted to Tensorflow tf.Module.
         """
+        from jax.experimental import jax2tf
         assert hasattr(tf, '__version__'), 'Tensorflow must be installed for Objax2Tf to work.'
         assert tf.__version__ >= '2.0', 'Objax2Tf works only with Tensorflow 2.'
         assert isinstance(module, Module), 'Input argument to Objax2Tf must be an Objax module.'
