@@ -27,14 +27,12 @@ except ImportError:
     tf = type('tf', (), {})
     setattr(tf, 'Module', object)
 
-
     def _fake_tf_function(func=None, **kwargs):
         del kwargs
         if func is not None:
             return func
         else:
             return lambda x: x
-
 
     setattr(tf, 'function', _fake_tf_function)
 
