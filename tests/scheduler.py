@@ -14,10 +14,8 @@
 
 """Unittests for optimizers."""
 
-import math
 import unittest
 
-import jax.numpy as jn
 import numpy as np
 
 import objax
