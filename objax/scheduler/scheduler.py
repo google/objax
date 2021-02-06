@@ -19,6 +19,7 @@ from typing import List, Tuple, Union
 
 import jax.numpy as jn
 
+
 class Scheduler:
     def __init__(self,
                  max_step: int,
@@ -91,7 +92,8 @@ class LinearAnnealing(Scheduler):
         else:
             step = jn.minimum(step, self.max_step)
 
-        return 1.0 - (step / (self.max_step-1)) * (1.0 - self.min_lr_multiplier)
+        return 1.0 - (step / (self.max_step - 1)) * (
+            1.0 - self.min_lr_multiplier)
 
 
 class StepDecay(Scheduler):
