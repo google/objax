@@ -12,26 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-
-from ._patch_jax import *
-
-pass  # To avoid reordering imports from above
-
-from . import functional
-from . import io
-from . import jaxboard
-from . import nn
-from . import optimizer
-from . import scheduler
-from . import privacy
-from . import random
-from . import typing
-from . import util
-from ._version import __version__
-from .constants import *
-from .gradient import *
-from .module import *
-from .variable import *
-
-assert sys.version_info >= (3, 6)
+from .scheduler import *
