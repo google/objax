@@ -82,7 +82,7 @@ class TestResNetV2Pretrained(unittest.TestCase):
     ])
     def test_pretrained_keras_weight(self, keras_name, objax_name):
         # Include top
-        model_keras = tf.keras.applications.__dict__[keras_name](include_top=True,
+        model_keras = getattr(tf.keras.applications, keras_name)(include_top=True,
                                                                  weights='imagenet',
                                                                  classes=1000,
                                                                  classifier_activation='linear')
@@ -91,7 +91,7 @@ class TestResNetV2Pretrained(unittest.TestCase):
         self.check_output_shape(model_objax, 1000)
         del model_keras, model_objax
         # Exclude top
-        model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
+        model_keras = getattr(tf.keras.applications, keras_name)(include_top=False,
                                                                  weights='imagenet',
                                                                  pooling=None)
         model_objax = load_pretrained_weights_from_keras(objax_name, include_top=False, num_classes=10)
@@ -104,7 +104,7 @@ class TestResNetV2Pretrained(unittest.TestCase):
         ("ResNet152V2", "ResNet152"),
     ])
     def test_weight_transfer_include_top(self, keras_name, objax_name):
-        model_keras = tf.keras.applications.__dict__[keras_name](include_top=True,
+        model_keras = getattr(tf.keras.applications, keras_name)(include_top=True,
                                                                  weights=None,
                                                                  classes=1000,
                                                                  classifier_activation='linear')
@@ -123,7 +123,7 @@ class TestResNetV2Pretrained(unittest.TestCase):
         ("ResNet152V2", "ResNet152"),
     ])
     def test_weight_transfer_without_top(self, keras_name, objax_name):
-        model_keras = tf.keras.applications.__dict__[keras_name](include_top=False,
+        model_keras = getattr(tf.keras.applications, keras_name)(include_top=False,
                                                                  weights=None,
                                                                  classes=1000,
                                                                  classifier_activation='linear')
