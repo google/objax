@@ -79,6 +79,34 @@ Modules
     Usage of `Function` is not necessary: it is made available for aesthetic reasons (to accomodate for users personal
     taste). It is also used internally to keep the code simple for Grad, Jit, Parallel, Vectorize and future primitives.
 
+    .. automethod:: with_vars
+
+        Usage example::
+
+            import objax
+
+            m = objax.nn.Linear(2, 3)
+
+            @objax.Function.with_vars(m.vars())
+            def f(x, y):
+                return ((m(x) - y) ** 2).mean()
+
+            print(type(f))  # <class 'objax.module.Function'>
+
+    .. automethod:: auto_vars
+
+        Usage example::
+
+            import objax
+
+            m = objax.nn.Linear(2, 3)
+
+            @objax.Function.auto_vars
+            def f(x, y):
+                return ((m(x) - y) ** 2).mean()
+
+            print(type(f))  # <class 'objax.module.Function'>
+
 .. autoclass:: ForceArgs
     :members:
 
