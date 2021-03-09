@@ -23,26 +23,26 @@ import objax
 
 class TestScheduler(unittest.TestCase):
     def test_linear_annealing(self):
-        lin = objax.optimizer.scheduler.LinearAnnealing(max_step=10, base_lr=1, is_cycle=True, min_lr=0.1)
+        sched = objax.optimizer.scheduler.LinearAnnealing(max_step=10, base_lr=1, is_cycle=True, min_lr=0.1)
         lrs = []
         for i in range(10):
-            lrs.append(lin())
+            lrs.append(sched(step=i))
         lrs_gt = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
         np.testing.assert_array_almost_equal(lrs, lrs_gt)
 
     def test_step_decay(self):
-        lin = objax.optimizer.scheduler.StepDecay(step_size=3, base_lr=1, gamma=0.9)
+        sched = objax.optimizer.scheduler.StepDecay(step_size=3, base_lr=1, gamma=0.9)
         lrs = []
         for i in range(10):
-            lrs.append(lin())
+            lrs.append(sched(step=i))
         lrs_gt = [1, 1, 1, 0.9, 0.9, 0.9, 0.81, 0.81, 0.81, 0.729]
         np.testing.assert_array_almost_equal(lrs, lrs_gt)
 
     def test_multi_step_decay(self):
-        lin = objax.optimizer.scheduler.StepDecay(step_size=[3, 5, 8], base_lr=1, gamma=0.9)
+        sched = objax.optimizer.scheduler.StepDecay(step_size=[3, 5, 8], base_lr=1, gamma=0.9)
         lrs = []
         for i in range(10):
-            lrs.append(lin())
+            lrs.append(sched(step=i))
         lrs_gt = [1, 1, 1, 0.9, 0.9, 0.81, 0.81, 0.81, 0.729, 0.729]
         np.testing.assert_array_almost_equal(lrs, lrs_gt)
 
