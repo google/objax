@@ -15,6 +15,7 @@
 __all__ = ['LinearAnnealing', 'StepDecay']
 
 
+import abc
 from typing import List, Tuple, Union
 
 import jax.numpy as jn
