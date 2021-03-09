@@ -23,7 +23,6 @@ from . import io
 from . import jaxboard
 from . import nn
 from . import optimizer
-from . import scheduler
 from . import privacy
 from . import random
 from . import typing
