@@ -22,27 +22,20 @@ import jax.numpy as jn
 
 class Scheduler:
     def __init__(self,
-                 max_step: int,
-                 base_lr: float = 1.0,
-                 is_cycle: bool = True):
+                 base_lr: float = 1.0):
         """Constructs an instance for learning rate scheduler.
 
         Args:
-            max_step: maximum number of train step.
             base_lr: base learning rate.
-            is_cycle: trigger cyclical learning rate multiplier when step
-                exceeds max_step.
         """
-        self.step = 0
-        self.max_step = max_step
         self.base_lr = base_lr
-        self.is_cycle = is_cycle
 
-    def multiplier(self, step):
+    @abc.abstractmethod
+    def multiplier(self, step: float = 0):
         """Returns learning rate multiplier w.r.t. certain schedule."""
-        pass
+        raise NotImplementedError
 
-    def __call__(self, step: int = 0):
+    def __call__(self, step: float = 0):
         """Returns learning rate or multiplier at certain step.
 
         Args:
@@ -52,18 +45,12 @@ class Scheduler:
             learning rate when base_lr is provided; otherwise,
             only multiplier is returned.
         """
-        if not step:
-            step = self.step
-        else:
-            self.step = step
-        self.step += 1
-        multiplier = self.multiplier(step=step)
-        return self.base_lr * multiplier
+        return self.base_lr * self.multiplier(step)
 
 
 class LinearAnnealing(Scheduler):
     def __init__(self,
-                 max_step: int,
+                 max_step: float,
                  base_lr: float = 1.0,
                  is_cycle: bool = True,
                  min_lr: float = 0.0):
@@ -76,14 +63,14 @@ class LinearAnnealing(Scheduler):
                 exceeds max_step.
             min_lr: minimum learning rate at max_step.
         """
-        super().__init__(max_step=max_step,
-                         base_lr=base_lr,
-                         is_cycle=is_cycle)
+        super().__init__(base_lr=base_lr)
         assert base_lr >= min_lr, (
             'base_lr should be greater than or equal to min_lr.')
+        self.max_step = max_step
+        self.is_cycle = is_cycle
         self.min_lr_multiplier = min_lr / self.base_lr
 
-    def multiplier(self, step):
+    def multiplier(self, step: float):
         """Returns linear annealing learning rate multiplier."""
 
         # If is_cycle, we use the remainder of step; otherwise, we stop update.
@@ -98,7 +85,7 @@ class LinearAnnealing(Scheduler):
 
 class StepDecay(Scheduler):
     def __init__(self,
-                 step_size: Union[int, List, Tuple],
+                 step_size: Union[float, List, Tuple],
                  base_lr: float = 1.0,
                  gamma: float = 0.1,
                  **kwargs):
@@ -111,13 +98,11 @@ class StepDecay(Scheduler):
             kwargs: for backward compatibility
         """
         del kwargs
-        super().__init__(max_step=None,
-                         base_lr=base_lr,
-                         is_cycle=False)
+        super().__init__(base_lr=base_lr)
         self.gamma = gamma
         self.step_size = step_size
 
-    def multiplier(self, step):
+    def multiplier(self, step: float):
         """Returns step decay learning rate multiplier."""
         if isinstance(self.step_size, (tuple, list)):
             exponent = jn.sum(jn.greater_equal(step, jn.array(self.step_size)))
