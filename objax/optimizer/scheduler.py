@@ -32,11 +32,11 @@ class Scheduler:
         self.base_lr = base_lr
 
     @abc.abstractmethod
-    def multiplier(self, step: float = 0):
+    def multiplier(self, step: float):
         """Returns learning rate multiplier w.r.t. certain schedule."""
         raise NotImplementedError
 
-    def __call__(self, step: float = 0):
+    def __call__(self, step: float):
         """Returns learning rate or multiplier at certain step.
 
         Args:
