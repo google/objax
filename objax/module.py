@@ -19,6 +19,7 @@ from typing import Optional, List, Union, Callable, Tuple
 
 import jax
 import jax.numpy as jn
+import numpy as np
 from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
@@ -291,7 +292,7 @@ class Parallel(Module):
         assert hasattr(x, 'ndim'), f'Expected JaxArray, got {type(x)}. If you are trying to pass a scalar to ' \
                                    f'parallel, first convert it to a JaxArray, for example np.float(0.5)'
         if x.ndim == 0:
-            return jn.broadcast_to(x, [self.ndevices])
+            return np.broadcast_to(x, [self.ndevices])
         assert x.shape[0] % self.ndevices == 0, f'Must be able to equally divide batch {x.shape} among ' \
                                                 f'{self.ndevices} devices, but does not go equally.'
         return x.reshape((self.ndevices, x.shape[0] // self.ndevices) + x.shape[1:])
