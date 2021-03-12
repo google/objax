@@ -31,6 +31,8 @@ objax.util
 
 .. autofunction:: dummy_context_mgr
 
+.. autofunction:: find_used_variables
+
 .. autofunction:: ilog2
 
 .. autofunction:: positional_args_names
