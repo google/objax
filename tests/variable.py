@@ -16,6 +16,7 @@
 
 import unittest
 
+import numpy as np
 import jax.numpy as jn
 
 import objax
@@ -137,6 +138,65 @@ class TestVariable(unittest.TestCase):
         with vc.replicate():
             self.assertEqual(len(vc['var'].value.shape), 2)
             self.assertEqual(vc['var'].value.shape[-1], 5)
+
+    def test_jax_duck_typing_jax_api_one_float_arg(self):
+        API_LIST = [
+            'abs', 'absolute', 'all', 'alltrue', 'amax', 'amin', 'any', 'arccos', 'arccosh', 'arcsin', 'arcsinh',
+            'arctan', 'arctanh', 'argmax', 'argmin', 'argsort', 'argwhere', 'around', 'asarray', 'average',
+            'cbrt', 'cdouble', 'ceil', 'complex128', 'complex64', 'conj', 'conjugate',
+            'corrcoef', 'cos', 'cosh', 'count_nonzero', 'csingle', 'cumprod', 'cumproduct', 'cumsum', 'deg2rad',
+            'degrees', 'diag', 'double', 'empty_like', 'exp', 'exp2', 'expm1', 'fabs', 'fix', 'flatnonzero', 'float16',
+            'float32', 'float64', 'floor', 'frexp', 'i0', 'int16', 'int32', 'int64', 'int8',
+            'iscomplex', 'iscomplexobj', 'isfinite', 'isinf', 'isnan', 'isneginf', 'isposinf', 'isreal', 'isrealobj',
+            'log', 'log10', 'log1p', 'log2', 'max', 'mean', 'median', 'min', 'modf', 'msort', 'nan_to_num',
+            'nanargmax', 'nanargmin', 'nancumprod', 'nancumsum', 'nanmedian', 'nanmax', 'nanmean', 'nanmin', 'nanprod',
+            'nanstd', 'nansum', 'nanvar', 'ndim', 'negative', 'nonzero', 'ones_like', 'positive', 'prod', 'product',
+            'ptp', 'rad2deg', 'radians', 'ravel', 'reciprocal', 'rint', 'round', 'shape', 'sign', 'signbit', 'sin',
+            'sinc', 'single', 'sinh', 'size', 'sometrue', 'sort', 'sort_complex', 'sqrt', 'square', 'squeeze', 'std',
+            'sum', 'tan', 'tanh', 'transpose', 'trunc', 'uint16', 'uint32', 'uint64', 'uint8', 'vander', 'var',
+            'zeros_like'
+        ]
+        v = objax.TrainVar(jn.array([1., 2., 3.], dtype=jn.float32))
+        for name in API_LIST:
+            fn = jn.__dict__[name]
+            expected = fn(v.value)
+            actual = fn(v)
+            np.testing.assert_allclose(expected, actual)
+
+    def test_jax_duck_typing_jax_api_two_float_arg(self):
+        API_LIST = [
+            'add', 'allclose', 'arctan2', 'array_equal', 'array_equiv', 'convolve', 'copysign', 'correlate', 'cross',
+            'divide', 'divmod', 'dot', 'equal', 'float_power', 'floor_divide', 'fmax', 'fmin', 'fmod', 'greater',
+            'greater_equal', 'heaviside', 'hypot', 'inner', 'isclose', 'kron', 'less', 'less_equal', 'logaddexp',
+            'logaddexp2', 'matmul', 'maximum', 'minimum', 'mod', 'multiply', 'nextafter', 'not_equal', 'outer',
+            'polyadd', 'polysub', 'power', 'remainder', 'searchsorted', 'subtract', 'true_divide'
+        ]
+        v1 = objax.TrainVar(jn.array([1., 2., 3.], dtype=jn.float32))
+        v2 = objax.TrainVar(jn.array([10., -20., 30.], dtype=jn.float32))
+        for name in API_LIST:
+            fn = jn.__dict__[name]
+            expected = fn(v1.value, v2.value)
+            actual = fn(v1, v2)
+            np.testing.assert_allclose(expected, actual)
+
+    def test_jax_duck_typing_jax_api_one_int_arg(self):
+        API_LIST = ['bincount', 'bitwise_not', 'invert', 'packbits']
+        v = objax.TrainVar(jn.array([1, 2, 3], dtype=jn.int32))
+        for name in API_LIST:
+            fn = jn.__dict__[name]
+            expected = fn(v.value)
+            actual = fn(v)
+            np.testing.assert_allclose(expected, actual)
+
+    def test_jax_duck_typing_jax_api_two_int_args(self):
+        API_LIST = ['bitwise_and', 'bitwise_or', 'bitwise_xor', 'gcd', 'lcm', 'ldexp', 'left_shift', 'right_shift']
+        v1 = objax.TrainVar(jn.array([1, 2, 3], dtype=jn.int32))
+        v2 = objax.TrainVar(jn.array([10, -20, 30], dtype=jn.int32))
+        for name in API_LIST:
+            fn = jn.__dict__[name]
+            expected = fn(v1.value, v2.value)
+            actual = fn(v1, v2)
+            np.testing.assert_allclose(expected, actual)
 
 
 if __name__ == '__main__':

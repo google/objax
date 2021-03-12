@@ -2,6 +2,6 @@ scipy
 numpy>=1.18.0
 pillow
 jaxlib
-jax
+jax>=0.2.10
 tensorboard>=2.3.0
 parameterized

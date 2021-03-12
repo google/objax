@@ -47,10 +47,10 @@ class ExponentialMovingAverage(Module):
             if isinstance(v, TrainRef):
                 v = v.ref
             if isinstance(v, TrainVar):
-                trainable[v] = True
+                trainable[id(v)] = v
             else:
-                non_trainable[v] = True
-        self.refs = ModuleList(list(non_trainable.keys()) + [TrainRef(v) for v in trainable.keys()])
+                non_trainable[id(v)] = v
+        self.refs = ModuleList(list(non_trainable.values()) + [TrainRef(v) for v in trainable.values()])
         self.m = ModuleList(StateVar(jn.zeros_like(x.value)) for x in self.refs)
 
     def __call__(self):

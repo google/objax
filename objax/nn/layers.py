@@ -199,7 +199,7 @@ class Conv2D(Module):
                                      rhs_dilation=self.dilations,
                                      feature_group_count=self.groups,
                                      dimension_numbers=('NCHW', 'HWIO', 'NCHW'))
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 
@@ -255,7 +255,7 @@ class ConvTranspose2D(Conv2D):
         y = lax.conv_transpose(x, self.w.value, self.strides, self.padding,
                                rhs_dilation=self.dilations,
                                dimension_numbers=('NCHW', 'HWIO', 'NCHW'), transpose_kernel=True)
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 
@@ -347,7 +347,7 @@ class Linear(Module):
     def __call__(self, x: JaxArray) -> JaxArray:
         """Returns the results of applying the linear transformation to input x."""
         y = jn.dot(x, self.w.value)
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 

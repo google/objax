@@ -29,6 +29,13 @@ from objax.util import map_to_device, Renamer, repr_function, class_name
 from objax.util.check import assert_assigned_type_and_shape_match
 
 
+def _get_jax_value(x):
+    if isinstance(x, BaseVar):
+        return x.value
+    else:
+        return x
+
+
 def reduce_mean(x: JaxArray) -> JaxArray:
     return x.mean(0)
 
@@ -73,6 +80,81 @@ class BaseVar(abc.ABC):
         if not self._reduce:
             return t
         return f'{t[:-1]}, reduce={repr_function(self._reduce)})'
+
+    # Python looks up special methods only on classes, not instances. This means
+    # these methods needs to be defined explicitly rather than relying on
+    # __getattr__.
+    def __neg__(self): return self.value.__neg__()  # noqa: E704
+    def __pos__(self): return self.value.__pos__()  # noqa: E704
+    def __eq__(self, other): return self.value.__eq__(_get_jax_value(other))  # noqa: E704
+    def __ne__(self, other): return self.value.__ne__(_get_jax_value(other))  # noqa: E704
+    def __lt__(self, other): return self.value.__lt__(_get_jax_value(other))  # noqa: E704
+    def __le__(self, other): return self.value.__le__(_get_jax_value(other))  # noqa: E704
+    def __gt__(self, other): return self.value.__gt__(_get_jax_value(other))  # noqa: E704
+    def __ge__(self, other): return self.value.__ge__(_get_jax_value(other))  # noqa: E704
+    def __abs__(self): return self.value.__abs__()  # noqa: E704
+    def __add__(self, other): return self.value.__add__(_get_jax_value(other))  # noqa: E704
+    def __radd__(self, other): return self.value.__radd__(_get_jax_value(other))  # noqa: E704
+    def __sub__(self, other): return self.value.__sub__(_get_jax_value(other))  # noqa: E704
+    def __rsub__(self, other): return self.value.__rsub__(_get_jax_value(other))  # noqa: E704
+    def __mul__(self, other): return self.value.__mul__(_get_jax_value(other))  # noqa: E704
+    def __rmul__(self, other): return self.value.__rmul__(_get_jax_value(other))  # noqa: E704
+    def __div__(self, other): return self.value.__div__(_get_jax_value(other))  # noqa: E704
+    def __rdiv__(self, other): return self.value.__rdiv__(_get_jax_value(other))  # noqa: E704
+    def __truediv__(self, other): return self.value.__truediv__(_get_jax_value(other))  # noqa: E704
+    def __rtruediv__(self, other): return self.value.__rtruediv__(_get_jax_value(other))  # noqa: E704
+    def __floordiv__(self, other): return self.value.__floordiv__(_get_jax_value(other))  # noqa: E704
+    def __rfloordiv__(self, other): return self.value.__rfloordiv__(_get_jax_value(other))  # noqa: E704
+    def __divmod__(self, other): return self.value.__divmod__(_get_jax_value(other))  # noqa: E704
+    def __rdivmod__(self, other): return self.value.__rdivmod__(_get_jax_value(other))  # noqa: E704
+    def __mod__(self, other): return self.value.__mod__(_get_jax_value(other))  # noqa: E704
+    def __rmod__(self, other): return self.value.__rmod__(_get_jax_value(other))  # noqa: E704
+    def __pow__(self, other): return self.value.__pow__(_get_jax_value(other))  # noqa: E704
+    def __rpow__(self, other): return self.value.__rpow__(_get_jax_value(other))  # noqa: E704
+    def __matmul__(self, other): return self.value.__matmul__(_get_jax_value(other))  # noqa: E704
+    def __rmatmul__(self, other): return self.value.__rmatmul__(_get_jax_value(other))  # noqa: E704
+    def __and__(self, other): return self.value.__and__(_get_jax_value(other))  # noqa: E704
+    def __rand__(self, other): return self.value.__rand__(_get_jax_value(other))  # noqa: E704
+    def __or__(self, other): return self.value.__or__(_get_jax_value(other))  # noqa: E704
+    def __ror__(self, other): return self.value.__ror__(_get_jax_value(other))  # noqa: E704
+    def __xor__(self, other): return self.value.__xor__(_get_jax_value(other))  # noqa: E704
+    def __rxor__(self, other): return self.value.__rxor__(_get_jax_value(other))  # noqa: E704
+    def __invert__(self): return self.value.__invert__()  # noqa: E704
+    def __lshift__(self, other): return self.value.__lshift__(_get_jax_value(other))  # noqa: E704
+    def __rlshift__(self, other): return self.value.__rlshift__(_get_jax_value(other))  # noqa: E704
+    def __rshift__(self, other): return self.value.__rshift__(_get_jax_value(other))  # noqa: E704
+    def __rrshift__(self, other): return self.value.__rrshift__(_get_jax_value(other))  # noqa: E704
+    def __int__(self): return self.value.__int__()  # noqa: E704
+    def __long__(self): return self.value.__long__()  # noqa: E704
+    # def __hex__(self): return self.value.__hex__()  # noqa: E704
+    # def __oct__(self): return self.value.__oct__()  # noqa: E704
+    def __float__(self): return self.value.__float__()  # noqa: E704
+    # def __complex__(self): return self.value.__complex__()  # noqa: E704
+
+    def __jax_array__(self):
+        return self.value
+
+    def __array__(self, dtype=None):
+        return self.value.__array__(dtype)
+
+    def __bool__(self):
+        raise TypeError('To prevent accidental errors Objax variables can not be used as Python bool. '
+                        'To check if variable is `None` use `is None` or `is not None` instead.')
+
+    @property
+    def dtype(self):
+        """Variable data type."""
+        return self.value.dtype
+
+    @property
+    def shape(self):
+        """Variable shape."""
+        return self.value.shape
+
+    @property
+    def ndim(self):
+        """Number of dimentions."""
+        return self.value.ndim
 
 
 class TrainVar(BaseVar):
@@ -215,8 +297,8 @@ class VarCollection(Dict[str, BaseVar]):
         once."""
         seen = set()
         for v in self.values():
-            if v not in seen:
-                seen.add(v)
+            if id(v) not in seen:
+                seen.add(id(v))
                 yield v
 
     def __setitem__(self, key: str, value: BaseVar):
@@ -296,12 +378,12 @@ class VarCollection(Dict[str, BaseVar]):
             if isinstance(v, TrainRef):
                 v = v.ref
                 assert not isinstance(v, TrainRef)
-            if v not in visited:  # Careful not to reduce twice in case of a variable and a reference to it.
+            if id(v) not in visited:  # Careful not to reduce twice in case of a variable and a reference to it.
                 if isinstance(v, RandomState):
                     v.assign(saved_states.pop())
                 else:
                     v.reduce(v.value)
-                visited.add(v)
+                visited.add(id(v))
 
     def subset(self, is_a: Optional[Union[type, Tuple[type, ...]]] = None,
                is_not: Optional[Union[type, Tuple[type, ...]]] = None) -> 'VarCollection':

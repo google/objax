@@ -27,7 +27,7 @@ class LinearArgs(objax.nn.Linear):
     def __call__(self, x: JaxArray, some_args: float) -> JaxArray:
         """Returns the results of applying the linear transformation to input x."""
         y = jn.dot(x, self.w.value) * some_args
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 
@@ -38,7 +38,7 @@ class LinearTrain(objax.nn.Linear):
         y = jn.dot(x, self.w.value)
         if training:
             y = -y
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 
