@@ -29,7 +29,8 @@ from objax.util import map_to_device, Renamer, repr_function, class_name
 from objax.util.check import assert_assigned_type_and_shape_match
 
 
-def _get_jax_value(x):
+def get_jax_value(x: Union[JaxArray, 'BaseVar']):
+    """Returns JAX value encapsulated in the input argument."""
     if isinstance(x, BaseVar):
         return x.value
     else:
@@ -88,42 +89,42 @@ class BaseVar(abc.ABC):
     def __pos__(self): return self.value.__pos__()  # noqa: E704
     def __abs__(self): return self.value.__abs__()  # noqa: E704
     def __invert__(self): return self.value.__invert__()  # noqa: E704
-    def __eq__(self, other): return self.value.__eq__(_get_jax_value(other))  # noqa: E704
-    def __ne__(self, other): return self.value.__ne__(_get_jax_value(other))  # noqa: E704
-    def __lt__(self, other): return self.value.__lt__(_get_jax_value(other))  # noqa: E704
-    def __le__(self, other): return self.value.__le__(_get_jax_value(other))  # noqa: E704
-    def __gt__(self, other): return self.value.__gt__(_get_jax_value(other))  # noqa: E704
-    def __ge__(self, other): return self.value.__ge__(_get_jax_value(other))  # noqa: E704
-    def __add__(self, other): return self.value.__add__(_get_jax_value(other))  # noqa: E704
-    def __radd__(self, other): return self.value.__radd__(_get_jax_value(other))  # noqa: E704
-    def __sub__(self, other): return self.value.__sub__(_get_jax_value(other))  # noqa: E704
-    def __rsub__(self, other): return self.value.__rsub__(_get_jax_value(other))  # noqa: E704
-    def __mul__(self, other): return self.value.__mul__(_get_jax_value(other))  # noqa: E704
-    def __rmul__(self, other): return self.value.__rmul__(_get_jax_value(other))  # noqa: E704
-    def __div__(self, other): return self.value.__div__(_get_jax_value(other))  # noqa: E704
-    def __rdiv__(self, other): return self.value.__rdiv__(_get_jax_value(other))  # noqa: E704
-    def __truediv__(self, other): return self.value.__truediv__(_get_jax_value(other))  # noqa: E704
-    def __rtruediv__(self, other): return self.value.__rtruediv__(_get_jax_value(other))  # noqa: E704
-    def __floordiv__(self, other): return self.value.__floordiv__(_get_jax_value(other))  # noqa: E704
-    def __rfloordiv__(self, other): return self.value.__rfloordiv__(_get_jax_value(other))  # noqa: E704
-    def __divmod__(self, other): return self.value.__divmod__(_get_jax_value(other))  # noqa: E704
-    def __rdivmod__(self, other): return self.value.__rdivmod__(_get_jax_value(other))  # noqa: E704
-    def __mod__(self, other): return self.value.__mod__(_get_jax_value(other))  # noqa: E704
-    def __rmod__(self, other): return self.value.__rmod__(_get_jax_value(other))  # noqa: E704
-    def __pow__(self, other): return self.value.__pow__(_get_jax_value(other))  # noqa: E704
-    def __rpow__(self, other): return self.value.__rpow__(_get_jax_value(other))  # noqa: E704
-    def __matmul__(self, other): return self.value.__matmul__(_get_jax_value(other))  # noqa: E704
-    def __rmatmul__(self, other): return self.value.__rmatmul__(_get_jax_value(other))  # noqa: E704
-    def __and__(self, other): return self.value.__and__(_get_jax_value(other))  # noqa: E704
-    def __rand__(self, other): return self.value.__rand__(_get_jax_value(other))  # noqa: E704
-    def __or__(self, other): return self.value.__or__(_get_jax_value(other))  # noqa: E704
-    def __ror__(self, other): return self.value.__ror__(_get_jax_value(other))  # noqa: E704
-    def __xor__(self, other): return self.value.__xor__(_get_jax_value(other))  # noqa: E704
-    def __rxor__(self, other): return self.value.__rxor__(_get_jax_value(other))  # noqa: E704
-    def __lshift__(self, other): return self.value.__lshift__(_get_jax_value(other))  # noqa: E704
-    def __rlshift__(self, other): return self.value.__rlshift__(_get_jax_value(other))  # noqa: E704
-    def __rshift__(self, other): return self.value.__rshift__(_get_jax_value(other))  # noqa: E704
-    def __rrshift__(self, other): return self.value.__rrshift__(_get_jax_value(other))  # noqa: E704
+    def __eq__(self, other): return self.value.__eq__(get_jax_value(other))  # noqa: E704
+    def __ne__(self, other): return self.value.__ne__(get_jax_value(other))  # noqa: E704
+    def __lt__(self, other): return self.value.__lt__(get_jax_value(other))  # noqa: E704
+    def __le__(self, other): return self.value.__le__(get_jax_value(other))  # noqa: E704
+    def __gt__(self, other): return self.value.__gt__(get_jax_value(other))  # noqa: E704
+    def __ge__(self, other): return self.value.__ge__(get_jax_value(other))  # noqa: E704
+    def __add__(self, other): return self.value.__add__(get_jax_value(other))  # noqa: E704
+    def __radd__(self, other): return self.value.__radd__(get_jax_value(other))  # noqa: E704
+    def __sub__(self, other): return self.value.__sub__(get_jax_value(other))  # noqa: E704
+    def __rsub__(self, other): return self.value.__rsub__(get_jax_value(other))  # noqa: E704
+    def __mul__(self, other): return self.value.__mul__(get_jax_value(other))  # noqa: E704
+    def __rmul__(self, other): return self.value.__rmul__(get_jax_value(other))  # noqa: E704
+    def __div__(self, other): return self.value.__div__(get_jax_value(other))  # noqa: E704
+    def __rdiv__(self, other): return self.value.__rdiv__(get_jax_value(other))  # noqa: E704
+    def __truediv__(self, other): return self.value.__truediv__(get_jax_value(other))  # noqa: E704
+    def __rtruediv__(self, other): return self.value.__rtruediv__(get_jax_value(other))  # noqa: E704
+    def __floordiv__(self, other): return self.value.__floordiv__(get_jax_value(other))  # noqa: E704
+    def __rfloordiv__(self, other): return self.value.__rfloordiv__(get_jax_value(other))  # noqa: E704
+    def __divmod__(self, other): return self.value.__divmod__(get_jax_value(other))  # noqa: E704
+    def __rdivmod__(self, other): return self.value.__rdivmod__(get_jax_value(other))  # noqa: E704
+    def __mod__(self, other): return self.value.__mod__(get_jax_value(other))  # noqa: E704
+    def __rmod__(self, other): return self.value.__rmod__(get_jax_value(other))  # noqa: E704
+    def __pow__(self, other): return self.value.__pow__(get_jax_value(other))  # noqa: E704
+    def __rpow__(self, other): return self.value.__rpow__(get_jax_value(other))  # noqa: E704
+    def __matmul__(self, other): return self.value.__matmul__(get_jax_value(other))  # noqa: E704
+    def __rmatmul__(self, other): return self.value.__rmatmul__(get_jax_value(other))  # noqa: E704
+    def __and__(self, other): return self.value.__and__(get_jax_value(other))  # noqa: E704
+    def __rand__(self, other): return self.value.__rand__(get_jax_value(other))  # noqa: E704
+    def __or__(self, other): return self.value.__or__(get_jax_value(other))  # noqa: E704
+    def __ror__(self, other): return self.value.__ror__(get_jax_value(other))  # noqa: E704
+    def __xor__(self, other): return self.value.__xor__(get_jax_value(other))  # noqa: E704
+    def __rxor__(self, other): return self.value.__rxor__(get_jax_value(other))  # noqa: E704
+    def __lshift__(self, other): return self.value.__lshift__(get_jax_value(other))  # noqa: E704
+    def __rlshift__(self, other): return self.value.__rlshift__(get_jax_value(other))  # noqa: E704
+    def __rshift__(self, other): return self.value.__rshift__(get_jax_value(other))  # noqa: E704
+    def __rrshift__(self, other): return self.value.__rrshift__(get_jax_value(other))  # noqa: E704
     def __round__(self, ndigits=None): return self.value.__round__(ndigits)  # noqa: E704
 
     def __getitem__(self, idx):
