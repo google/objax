@@ -80,7 +80,7 @@ class LinearAnnealing(Scheduler):
         else:
             step = jn.minimum(step, self.max_step)
 
-        return 1.0 - (step / (self.max_step - 1)) * (
+        return 1.0 - (step / self.max_step) * (
             1.0 - self.min_lr_multiplier)
 
 
@@ -88,17 +88,14 @@ class StepDecay(Scheduler):
     def __init__(self,
                  step_size: Union[float, List, Tuple],
                  base_lr: float = 1.0,
-                 gamma: float = 0.1,
-                 **kwargs):
+                 gamma: float = 0.1):
         """Constructs an instance for step decay learning rate scheduler.
 
         Args:
             step_size: number of train steps to reduce learning rate.
             base_lr: base learning rate.
             gamma: learning rate decay rate.
-            kwargs: for backward compatibility
         """
-        del kwargs
         super().__init__(base_lr=base_lr)
         self.gamma = gamma
         self.step_size = step_size

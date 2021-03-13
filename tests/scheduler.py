@@ -23,7 +23,7 @@ import objax
 
 class TestScheduler(unittest.TestCase):
     def test_linear_annealing(self):
-        sched = objax.optimizer.scheduler.LinearAnnealing(max_step=10, base_lr=1, is_cycle=True, min_lr=0.1)
+        sched = objax.optimizer.scheduler.LinearAnnealing(max_step=10, base_lr=1, is_cycle=True, min_lr=0)
         lrs = []
         for i in range(10):
             lrs.append(sched(step=i))

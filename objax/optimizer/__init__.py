@@ -17,4 +17,4 @@ from .ema import *
 from .lars import *
 from .momentum import *
 from .sgd import *
-from .scheduler import *
+from . import scheduler
