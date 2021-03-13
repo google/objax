@@ -150,6 +150,23 @@ class TestModule(unittest.TestCase):
         self.assertEqual(u.tolist(), [[-2.0, -1.0], [0.0, 1.0], [2.0, 3.0]])
         self.assertEqual(v.tolist(), [[1.0, 0.0], [-1.0, -2.0], [-3.0, -4.0]])
 
+    def test_auto_vars_decorator(self):
+        m = ComplexModule(2)
+
+        @objax.Function.auto_vars
+        def my_func(x: JaxArray, y: JaxArray, *, named: int = 1) -> Tuple[JaxArray, JaxArray]:
+            return m(x, training=True) - named, m(y, training=False) + named
+
+        self.assertEqual(my_func.vars(), m.vars('{my_func}m.'))
+        self.assertEqual(inspect.signature(my_func),
+                         inspect.Signature([inspect.Parameter('x', inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                                              annotation=JaxArray),
+                                            inspect.Parameter('y', inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                                              annotation=JaxArray),
+                                            inspect.Parameter('named', inspect.Parameter.KEYWORD_ONLY,
+                                                              annotation=int, default=1)],
+                                           return_annotation=Tuple[JaxArray, JaxArray]))
+
     def test_force_args(self):
         # def __call__(self, x, some_arg1, some_arg2):
         #     # without forces args equivalent to (x + some_arg1 * 5 + some_arg2 * 2)

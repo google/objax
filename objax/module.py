@@ -191,12 +191,30 @@ class Function(Module):
 
     @staticmethod
     def with_vars(vc: VarCollection):
-        """Method to use as decorator in function definitions."""
+        """Decorator which turns a function into a module using provided variable collection.
+
+        Args:
+            vc: the VarCollection of variables used by the function.
+        """
 
         def from_function(f: Callable):
             return Function(f, vc)
 
         return from_function
+
+    @staticmethod
+    def auto_vars(f: Callable):
+        """Turns a function into a module by auto detecting used Objax variables. Could be used as a decorator.
+
+        WARNING: This is an experimental feature.
+        It can detect variables used by function in many common cases, but not all cases.
+        This feature may be removed in the future version of Objax if it appear to be too unreliable.
+
+        Args:
+            f: function which will be converted into a module.
+        """
+        from objax.util.tracing import find_used_variables
+        return Function(f, find_used_variables(f))
 
     def __repr__(self):
         return f'{class_name(self)}(f={repr_function(self.__wrapped__)})'
