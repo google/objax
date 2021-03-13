@@ -198,6 +198,60 @@ class TestVariable(unittest.TestCase):
             actual = fn(v1, v2)
             np.testing.assert_allclose(expected, actual)
 
+    def test_jax_duck_typing_unary_operators(self):
+        API_LIST = ['__neg__', '__pos__', '__abs__', '__invert__']
+        v = objax.TrainVar(jn.array([1, 2, 3, -4], dtype=jn.int32))
+        for name in API_LIST:
+            expected = getattr(v.value, name)()
+            actual = getattr(v, name)()
+            np.testing.assert_allclose(expected, actual)
+        # __round__ required floating point input
+        vf = objax.TrainVar(jn.array([1.2, 2.4, 3.7, -4.5], dtype=jn.float32))
+        np.testing.assert_allclose(vf.value.__round__(), vf.__round__())
+
+    def test_jax_duck_typing_binary_operators(self):
+        API_LIST = [
+            '__eq__', '__ne__', '__lt__', '__le__', '__gt__', '__ge__', '__add__', '__radd__', '__sub__', '__rsub__',
+            '__mul__', '__rmul__', '__div__', '__rdiv__', '__truediv__', '__rtruediv__', '__floordiv__',
+            '__rfloordiv__', '__divmod__', '__rdivmod__', '__mod__', '__rmod__', '__pow__', '__rpow__',
+            '__and__', '__rand__', '__or__', '__ror__', '__xor__', '__rxor__', '__lshift__', '__rlshift__',
+            '__rshift__', '__rrshift__', '__matmul__', '__rmatmul__',
+        ]
+        v1 = objax.TrainVar(jn.array([1, 2, 3, -4], dtype=jn.int32))
+        v2 = objax.TrainVar(jn.array([1, -2, 5, -4], dtype=jn.int32))
+        for name in API_LIST:
+            expected = getattr(v1.value, name)(v2.value)
+            actual = getattr(v1, name)(v2)
+            np.testing.assert_allclose(expected, actual)
+
+    def test_jax_duck_typing_jax_array_methods(self):
+        API_LIST = [
+            'all', 'any', 'argmax', 'argmin', 'argsort', 'conj', 'conjugate', 'cumprod', 'cumsum', 'diagonal',
+            'flatten', 'max', 'mean', 'min', 'nonzero', 'prod', 'ptp', 'ravel', 'round', 'sort', 'squeeze',
+            'std', 'sum', 'trace', 'transpose', 'var'
+        ]
+        v = objax.TrainVar(jn.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], dtype=jn.float32))
+        for name in API_LIST:
+            expected = getattr(v.value, name)()
+            actual = getattr(v, name)()
+            np.testing.assert_allclose(expected, actual)
+        # other methods
+        np.testing.assert_allclose(v.value.T, v.T)
+        np.testing.assert_allclose(v.value.real, v.real)
+        np.testing.assert_allclose(v.value.imag, v.imag)
+        np.testing.assert_allclose(v.value.clip(0., 4.), v.clip(0., 4.))
+        np.testing.assert_allclose(v.value.dot(v.value), v.dot(v))
+        np.testing.assert_allclose(v.value.repeat(3), v.repeat(3))
+        np.testing.assert_allclose(v.value.swapaxes(0, 1), v.swapaxes(0, 1))
+        np.testing.assert_allclose(v.value.take([1, 2, 3]), v.take([1, 2, 3]))
+        np.testing.assert_allclose(v.value.tile([1, 2]), v.tile([1, 2]))
+        np.testing.assert_allclose(v.value.reshape([-1]), v.reshape([-1]))
+
+    def test_jax_duck_typing_get_item(self):
+        v = objax.TrainVar(jn.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], dtype=jn.float32))
+        np.testing.assert_allclose(v.value[0, 1], v[0, 1])
+        np.testing.assert_allclose(v.value[1, :], v[1, :])
+
 
 if __name__ == '__main__':
     unittest.main()

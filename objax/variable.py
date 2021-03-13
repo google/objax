@@ -86,13 +86,14 @@ class BaseVar(abc.ABC):
     # __getattr__.
     def __neg__(self): return self.value.__neg__()  # noqa: E704
     def __pos__(self): return self.value.__pos__()  # noqa: E704
+    def __abs__(self): return self.value.__abs__()  # noqa: E704
+    def __invert__(self): return self.value.__invert__()  # noqa: E704
     def __eq__(self, other): return self.value.__eq__(_get_jax_value(other))  # noqa: E704
     def __ne__(self, other): return self.value.__ne__(_get_jax_value(other))  # noqa: E704
     def __lt__(self, other): return self.value.__lt__(_get_jax_value(other))  # noqa: E704
     def __le__(self, other): return self.value.__le__(_get_jax_value(other))  # noqa: E704
     def __gt__(self, other): return self.value.__gt__(_get_jax_value(other))  # noqa: E704
     def __ge__(self, other): return self.value.__ge__(_get_jax_value(other))  # noqa: E704
-    def __abs__(self): return self.value.__abs__()  # noqa: E704
     def __add__(self, other): return self.value.__add__(_get_jax_value(other))  # noqa: E704
     def __radd__(self, other): return self.value.__radd__(_get_jax_value(other))  # noqa: E704
     def __sub__(self, other): return self.value.__sub__(_get_jax_value(other))  # noqa: E704
@@ -119,17 +120,14 @@ class BaseVar(abc.ABC):
     def __ror__(self, other): return self.value.__ror__(_get_jax_value(other))  # noqa: E704
     def __xor__(self, other): return self.value.__xor__(_get_jax_value(other))  # noqa: E704
     def __rxor__(self, other): return self.value.__rxor__(_get_jax_value(other))  # noqa: E704
-    def __invert__(self): return self.value.__invert__()  # noqa: E704
     def __lshift__(self, other): return self.value.__lshift__(_get_jax_value(other))  # noqa: E704
     def __rlshift__(self, other): return self.value.__rlshift__(_get_jax_value(other))  # noqa: E704
     def __rshift__(self, other): return self.value.__rshift__(_get_jax_value(other))  # noqa: E704
     def __rrshift__(self, other): return self.value.__rrshift__(_get_jax_value(other))  # noqa: E704
-    def __int__(self): return self.value.__int__()  # noqa: E704
-    def __long__(self): return self.value.__long__()  # noqa: E704
-    # def __hex__(self): return self.value.__hex__()  # noqa: E704
-    # def __oct__(self): return self.value.__oct__()  # noqa: E704
-    def __float__(self): return self.value.__float__()  # noqa: E704
-    # def __complex__(self): return self.value.__complex__()  # noqa: E704
+    def __round__(self, ndigits=None): return self.value.__round__(ndigits)  # noqa: E704
+
+    def __getitem__(self, idx):
+        return self.value.__getitem__(idx)
 
     def __jax_array__(self):
         return self.value
@@ -140,6 +138,9 @@ class BaseVar(abc.ABC):
     def __bool__(self):
         raise TypeError('To prevent accidental errors Objax variables can not be used as Python bool. '
                         'To check if variable is `None` use `is None` or `is not None` instead.')
+
+    def __getattr__(self, name):
+        return getattr(self.value, name)
 
     @property
     def dtype(self):
@@ -316,7 +317,7 @@ class VarCollection(Dict[str, BaseVar]):
         conflicts = set()
         for k, v in other:
             if k in self:
-                if self[k] != v:
+                if self[k] is not v:
                     conflicts.add(k)
             else:
                 self[k] = v
