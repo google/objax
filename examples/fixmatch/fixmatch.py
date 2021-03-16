@@ -39,10 +39,10 @@ class FixMatch(TrainLoopSSL):
         super().__init__(nclass, **kwargs)
         self.model = model(nin=3, nclass=nclass, **kwargs)
         model_vars = self.model.vars()
-        self.ema = objax.optimizer.ExponentialMovingAverage(model_vars.subset(objax.TrainVar),
-                                                            momentum=0.999, debias=False)
+        self.model_ema = objax.optimizer.ExponentialMovingAverageModule(self.model, momentum=0.999, debias=False)
         self.opt = objax.optimizer.Momentum(model_vars, momentum=0.9, nesterov=True)
 
+        @objax.Function.with_vars(model_vars)
         def loss_function(x, u, y):
             xu = jn.concatenate([x, u.reshape((-1,) + u.shape[2:])], axis=0)
             logit = self.model(xu, training=True)
@@ -67,17 +67,17 @@ class FixMatch(TrainLoopSSL):
 
         gv = objax.GradValues(loss_function, model_vars)
 
+        @objax.Function.with_vars(self.vars())
         def train_op(step, x, u, y):
             g, v = gv(x, u, y)
             fstep = step[0] / (FLAGS.train_kimg << 10)
             lr = self.params.lr * jn.cos(fstep * (7 * jn.pi) / (2 * 8))
             self.opt(lr, objax.functional.parallel.pmean(g))
-            self.ema()
+            self.model_ema.update_ema()
             return objax.functional.parallel.pmean({'monitors/lr': lr, **v[1]})
 
-        eval_op = self.ema.replace_vars(lambda x: objax.functional.softmax(self.model(x, training=False)))
-        self.eval_op = objax.Parallel(eval_op, model_vars + self.ema.vars())
-        self.train_op = objax.Parallel(train_op, self.vars(), reduce=lambda x: x[0])
+        self.eval_op = objax.Parallel(objax.ForceArgs(self.model_ema, training=False))
+        self.train_op = objax.Parallel(train_op, reduce=lambda x: x[0])
 
 
 def main(argv):

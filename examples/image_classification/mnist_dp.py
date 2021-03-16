@@ -96,6 +96,7 @@ predict = objax.Jit(model)
 print(model_vars)
 
 
+@objax.Function.with_vars(model.vars())
 def loss(x, label):
     logit = model(x)
     return objax.functional.loss.cross_entropy_logits(logit, label).mean()
@@ -112,17 +113,16 @@ gv = objax.privacy.dpsgd.PrivateGradValues(loss, model_vars,
                                            batch_axis=(0, 0))
 
 
+# Different from GradValues, in the case of PrivateGradValues, gv.vars() has its
+# own internal variable, the key of the random number generator.
+@objax.Function.with_vars(model.vars() + gv.vars() + opt.vars())
 def train_op(x, xl):
     g, v = gv(x, xl)  # returns private gradients, loss
     opt(lr, g)
     return v
 
 
-# gv.vars() contains model_vars.
-# Different from GradValues, in the case of PrivateGradValues, gv.vars() has its
-# own internal variable, the key of the random number generator.
-# When we jit train_op, we need to have the interval variable passed to Jit.
-train_op = objax.Jit(train_op, gv.vars() + opt.vars())
+train_op = objax.Jit(train_op)
 
 # Training
 with SummaryWriter(os.path.join(log_dir, 'tb')) as tensorboard:

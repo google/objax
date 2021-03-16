@@ -1,7 +1,7 @@
 Code Examples
 =============
 
-This section describes the code examples found in :code:`objax/examples`
+This section describes the code examples found in `objax/examples <https://github.com/google/objax/tree/master/examples>`_.
 
 Classification
 --------------
@@ -9,7 +9,7 @@ Classification
 Image
 ^^^^^
 
-Example code available at :code:`examples/image_classification`.
+Example code available at `examples/image_classification <https://github.com/google/objax/tree/master/examples/image_classification>`_.
 
 Logistic Regression
 """""""""""""""""""
@@ -45,7 +45,7 @@ Train and evaluate a DNNet model for multiclass classification on the `MNIST <ht
 Code        `examples/image_classification/mnist_dnn.py <https://github.com/google/objax/blob/master/examples/image_classification/mnist_dnn.py>`_
 Data        `MNIST <http://yann.lecun.com/exdb/mnist/>`_ from
             `tensorflow_datasets <https://www.tensorflow.org/datasets/api_docs/python/tfds>`_
-Network     Deep Neural Net :py:class:`objax.zoo.DNNet`
+Network     Deep Neural Net :py:class:`objax.zoo.dnnet.DNNet`
 Loss        :py:func:`objax.functional.loss.cross_entropy_logits`
 Optimizer   :py:class:`objax.optimizer.Adam`
 Accuracy    ~98%
@@ -206,7 +206,7 @@ Techniques  Load VGG-19 model with pretrained weights and run 1000-way image cla
 Semi-Supervised Learning
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Example code available at :code:`examples/fixmatch`.
+Example code available at `examples/fixmatch <https://github.com/google/objax/tree/master/examples/fixmatch>`_.
 
 Semi-Supervised Learning with FixMatch
 """"""""""""""""""""""""""""""""""""""
@@ -241,7 +241,7 @@ Techniques  * Load data from multiple data pipelines.
 GPT-2
 -----
 
-Example code is available at :code:`examples/gpt-2`.
+Example code is available at `examples/gpt-2 <https://github.com/google/objax/tree/master/examples/gpt-2>`_.
 
 Generating a Text Sequence using GPT-2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -260,7 +260,7 @@ Techniques  * Define Transformer model.
 RNN
 ---
 
-Example code is available at :code:`examples/text_generation`.
+Example code is available at `examples/text_generation <https://github.com/google/objax/tree/master/examples/text_generation>`_.
 
 Train a Vanilla RNN to Predict Characters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -291,7 +291,7 @@ Techniques  * Model weight averaging for improved accuracy using :py:class:`obja
 Optimization
 ------------
 
-Example codes available at :code:`examples/maml`.
+Example codes available at `examples/maml <https://github.com/google/objax/tree/master/examples/maml>`_.
 
 Model Agnostic Meta-Learning (MAML)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -314,7 +314,7 @@ Techniques  Gradient of gradient.
 Jaxboard
 --------
 
-Example code available at :code:`examples/jaxboard`.
+Example code available at `examples/jaxboard <https://github.com/google/objax/tree/master/examples/jaxboard>`_.
 
 How to Use Jaxboard
 ^^^^^^^^^^^^^^^^^^^

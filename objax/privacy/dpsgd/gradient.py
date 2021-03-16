@@ -14,14 +14,17 @@
 
 __all__ = ['PrivateGradValues']
 
+import functools
 from typing import Optional, Callable, Tuple
 
+import jax
 import jax.numpy as jn
 
 from objax import random
 from objax.gradient import GradValues
-from objax.module import Module, Vectorize
+from objax.module import Function, Module, Vectorize
 from objax.typing import JaxArray
+from objax.util import repr_function, class_name
 from objax.variable import VarCollection
 
 
@@ -36,7 +39,8 @@ class PrivateGradValues(Module):
                  l2_norm_clip: float,
                  microbatch: int,
                  batch_axis: Tuple[Optional[int], ...] = (0,),
-                 keygen: random.Generator = random.DEFAULT_GENERATOR):
+                 keygen: random.Generator = random.DEFAULT_GENERATOR,
+                 use_norm_accumulation: bool = False):
         """Constructs a PrivateGradValues instance.
 
         Args:
@@ -47,6 +51,9 @@ class PrivateGradValues(Module):
             microbatch: the size of each microbatch.
             batch_axis: the axis to use as batch during vectorization. Should be a tuple of 0s.
             keygen: a Generator for random numbers. Defaults to objax.random.DEFAULT_GENERATOR.
+            use_norm_accumulation: whether to use norm accumulation as a first step to compute the clipped
+              gradients (more details further). This is more memory efficient and often faster when the model
+              is very deep and uses a large batch-size.
         """
         super().__init__()
 
@@ -55,17 +62,91 @@ class PrivateGradValues(Module):
 
         self.__wrapped__ = gv = GradValues(f, vc)
 
-        def clipped_grad(*args):
-            grads, values = gv(*args)
-            total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
-            idivisor = 1 / jn.maximum(total_grad_norm / l2_norm_clip, 1.)
-            return [g * idivisor for g in grads], values
-
+        self.batch_axis = batch_axis
         self.microbatch = microbatch
         self.l2_norm_clip = l2_norm_clip
         self.noise_multiplier = noise_multiplier
         self.keygen = keygen
-        self.private_grad = Vectorize(clipped_grad, gv.vars(), batch_axis=batch_axis)
+
+        if use_norm_accumulation:
+            self.clipped_grad = self._make_clipped_grad_fn_norm_accumulation(f, gv, vc)
+        else:
+            self.clipped_grad = self._make_clipped_grad_fn_simple(f, gv, vc)
+
+    def _make_clipped_grad_fn_simple(self, f: Callable, gv: GradValues, vc: VarCollection) -> Callable:
+        """Creates a function that computes gradients clipped per-sample.
+        This algorithm vectorizes the computation of a clipped gradient defined over a single sample.
+
+        Args:
+          f: the function for which to compute gradients.
+          gv: the GradValues object that computes non-clipped gradients.
+          vc: the variables for which to compute gradients.
+
+        Returns:
+          clipped_grad: the function computing the average of gradients clipped per-sample.
+        """
+        @Function.with_vars(gv.vars())
+        def clipped_grad_single_example(*args):
+            grads, values = gv(*args)
+            total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
+            idivisor = 1 / jn.maximum(total_grad_norm / self.l2_norm_clip, 1.)
+            return [g * idivisor for g in grads], values
+
+        clipped_grad_vectorized = Vectorize(clipped_grad_single_example,
+                                            batch_axis=self.batch_axis)
+
+        def clipped_grad(*args):
+            g, v = clipped_grad_vectorized(*args)
+            g, v = jax.tree_map(functools.partial(jn.mean, axis=0), (g, v))
+            return g, v
+
+        return clipped_grad
+
+    def _make_clipped_grad_fn_norm_accumulation(self, f: Callable, gv: GradValues, vc: VarCollection) -> Callable:
+        """Creates a function that computes gradients clipped per-sample.
+        This algorithm first accumulates the norm of the gradient per sample, and then
+        performs an additional weighted backward pass that is equivalent to per-sample clipping.
+        The accumulation allows jax to free up memory whenever the automatic differentiation engine
+        is done processing a layer. This is more memory efficient and can be faster than the "simple" approach
+        defined above, in particular at large batch-sizes for deep models.
+
+        Reference: https://arxiv.org/abs/2009.03106.
+
+        Args:
+          f: the function for which to compute gradients.
+          gv: the GradValues object that computes non-clipped gradients.
+          vc: the variables for which to compute gradients.
+
+        Returns:
+          clipped_grad: the function computing the average of gradients clipped per-sample.
+        """
+        @Function.with_vars(gv.vars())
+        def grad_norm_fn(*args):
+            grads, values = gv(*args)
+            total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
+            return total_grad_norm, values
+
+        grad_norm_fn_vectorized = Vectorize(grad_norm_fn, batch_axis=self.batch_axis)
+        loss_fn_vectorized = Vectorize(Function.with_vars(gv.vars())(f), batch_axis=self.batch_axis)
+
+        def weighted_loss_fn(weights, *args):
+            returned = loss_fn_vectorized(*args)
+            # the following assumes that the loss is the first element output by loss_fn_vectorized
+            if isinstance(returned, jn.ndarray):
+                loss_vector = returned
+            else:
+                loss_vector = returned[0]
+            return jn.mean(loss_vector * weights)
+
+        weighted_grad_fn = GradValues(weighted_loss_fn, vc)
+
+        def clipped_grad(*args):
+            grad_norms, values = grad_norm_fn_vectorized(*args)
+            idivisor = 1 / jn.maximum(grad_norms / self.l2_norm_clip, 1.)
+            clipped_grads, _ = weighted_grad_fn(idivisor, *args)
+            return clipped_grads, jax.tree_map(functools.partial(jn.mean, axis=0), values)
+
+        return clipped_grad
 
     def reshape_microbatch(self, x: JaxArray) -> JaxArray:
         """Reshapes examples into microbatches.
@@ -94,7 +175,12 @@ class PrivateGradValues(Module):
         assert batch % self.microbatch == 0
         num_microbatches = batch // self.microbatch
         stddev = self.l2_norm_clip * self.noise_multiplier / num_microbatches
-        g, v = self.private_grad(*[self.reshape_microbatch(x) for x in args])
-        g, v = ([x.mean(0) for x in gv] for gv in (g, v))
+        g, v = self.clipped_grad(*[self.reshape_microbatch(x) for x in args])
         g = [gx + random.normal(gx.shape, stddev=stddev, generator=self.keygen) for gx in g]
         return g, v
+
+    def __repr__(self):
+        args = dict(f=repr_function(self.__wrapped__.f), noise_multiplier=self.noise_multiplier,
+                    l2_norm_clip=self.l2_norm_clip, microbatch=self.microbatch, batch_axis=self.batch_axis)
+        args = ', '.join(f'{k}={v}' for k, v in args.items())
+        return f'{class_name(self)}({args})'

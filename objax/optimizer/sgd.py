@@ -18,6 +18,7 @@ from typing import List
 
 from objax.module import Module, ModuleList
 from objax.typing import JaxArray
+from objax.util import class_name
 from objax.variable import TrainRef, TrainVar, VarCollection
 
 
@@ -42,3 +43,6 @@ class SGD(Module):
         assert len(grads) == len(self.train_vars), 'Expecting as many gradients as trainable variables'
         for g, p in zip(grads, self.train_vars):
             p.value -= lr * g
+
+    def __repr__(self):
+        return f'{class_name(self)}()'

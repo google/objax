@@ -28,11 +28,10 @@ X_test = X_test.transpose(0, 3, 1, 2) / 255.0
 # Model
 model = WideResNet(nin=3, nclass=10, depth=28, width=2)
 opt = objax.optimizer.Adam(model.vars())
-predict = objax.Jit(lambda x: objax.functional.softmax(model(x, training=False)),
-                    model.vars())
 
 
 # Losses
+@objax.Function.with_vars(model.vars())
 def loss(x, label):
     logit = model(x, training=True)
     return objax.functional.loss.cross_entropy_logits_sparse(logit, label).mean()
@@ -41,14 +40,17 @@ def loss(x, label):
 gv = objax.GradValues(loss, model.vars())
 
 
+@objax.Function.with_vars(model.vars() + gv.vars() + opt.vars())
 def train_op(x, y, lr):
     g, v = gv(x, y)
     opt(lr=lr, grads=g)
     return v
 
 
-# gv.vars() contains the model variables.
-train_op = objax.Jit(train_op, gv.vars() + opt.vars())
+train_op = objax.Jit(train_op)
+predict = objax.Jit(objax.nn.Sequential([
+    objax.ForceArgs(model, training=False), objax.functional.softmax
+]))
 
 
 def augment(x):
@@ -56,7 +58,7 @@ def augment(x):
         x = x[:, :, :, ::-1]  # Flip the batch images about the horizontal axis
     # Pixel-shift all images in the batch by up to 4 pixels in any direction.
     x_pad = np.pad(x, [[0, 0], [0, 0], [4, 4], [4, 4]], 'reflect')
-    rx, ry = np.random.randint(0, 4), np.random.randint(0, 4)
+    rx, ry = np.random.randint(0, 8), np.random.randint(0, 8)
     x = x_pad[:, :, rx:rx + 32, ry:ry + 32]
     return x
 
@@ -75,4 +77,4 @@ for epoch in range(30):
     # Eval
     test_predictions = [predict(x_batch).argmax(1) for x_batch in X_test.reshape((50, -1) + X_test.shape[1:])]
     accuracy = np.array(test_predictions).flatten() == Y_test.flatten()
-    print('Epoch %04d  Loss %.2f  Accuracy %.2f' % (epoch + 1, np.mean(loss), 100 * np.mean(accuracy)))
+    print(f'Epoch {epoch + 1:4d}  Loss {np.mean(loss):.2f}  Accuracy {100 * np.mean(accuracy):.2f}')

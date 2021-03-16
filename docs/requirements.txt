@@ -8,4 +8,5 @@ ipykernel
 objax
 # needed to avoid https://github.com/sphinx-doc/sphinx/issues/8198
 pygments>=2.4.1
+tensorflow
 .

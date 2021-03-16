@@ -61,8 +61,8 @@ class TestLoss(unittest.TestCase):
         x = jn.array([[3, 5, 2.5, 7]], dtype=jn.float32)
         y = jn.array([[2.5, 5, 4, 8]], dtype=jn.float32)
         output = objax.functional.loss.mean_squared_log_error(x, y, keep_axis=(0,))
-        expected = jn.array([0.039730113], dtype=jn.float32)
-        self.assertAlmostEqual(jn.abs(output - expected).sum(), 0, delta=1e-12)
+        expected = jn.array([0.039730143], dtype=jn.float32)
+        self.assertAlmostEqual(jn.abs(output - expected).sum(), 0, delta=1e-7)
         # Test mean squared error on x and y with no `keep_axis`
         x = jn.array([[0.1152, 0.6301, 0.6845], [0.0958, 0.2180, 0.8503]], dtype=jn.float32)
         y = jn.array([[0.0026, 0.9501, 0.1955], [0.3537, 0.1689, 0.7774]], dtype=jn.float32)

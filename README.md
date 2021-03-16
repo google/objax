@@ -81,6 +81,20 @@ git clone https://github.com/google/objax.git
 cd objax/examples
 ```
 
+### Citing Objax
+
+To cite this repository:
+
+```
+@software{objax2020github,
+  author = {{Objax Developers}},
+  title = {{Objax}},
+  url = {https://github.com/google/objax},
+  version = {1.2.0},
+  year = {2020},
+}
+```
+
 ## Developer documentation
 
 Here is information about
