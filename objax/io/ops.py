@@ -49,14 +49,17 @@ def load_var_collection(file: Union[str, IO[BinaryIO]],
         file = open(file, 'rb')
     data = np.load(file, allow_pickle=False)
     name_index = {renamer(k): str(i) for i, k in enumerate(data['names'])}
-    name_vars = collections.defaultdict(list)
+    var_names = collections.defaultdict(list)
+    var_values = {}
     for k, v in vc.items():
         if isinstance(v, TrainRef):
             v = v.ref
-        name_vars[v].append(k)
+        var_names[id(v)].append(k)
+        var_values[id(v)] = v
     misses = []
     used_vars = set()
-    for v, names in name_vars.items():
+    for var_id, names in var_names.items():
+        v = var_values[var_id]
         for name in names:
             index = name_index.get(name)
             if index is not None:
@@ -91,10 +94,10 @@ def save_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
     for k, v in vc.items():
         if isinstance(v, TrainRef):
             v = v.ref
-        if v not in seen:
+        if id(v) not in seen:
             names.append(k)
             data[str(len(data))] = v.value
-            seen.add(v)
+            seen.add(id(v))
         if isinstance(v.value, ShardedDeviceArray):
             replicated.append(k)
     if replicated:
