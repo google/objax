@@ -206,6 +206,28 @@ A simple constant optimization example::
     The XLA backend (the interface to the hardware) will do the constant optimization and may take a long time and
     a lot of memory due to compilation, often with very little gain in final performance, if any.
 
+RandomState and Jit
+^^^^^^^^^^^^^^^^^^^
+
+You need to includes the generator's (e.g., :code:`objax.random.DEFAULT_GENERATOR`) variables to the variables
+of the module of function that is jitted, otherwise they will be treated as constants and the jitted function
+will always return the same value.
+
+.. code-block:: python
+
+    import objax
+    objax.random.DEFAULT_GENERATOR.seed(123)
+
+    @objax.Function.with_vars(objax.random.DEFAULT_GENERATOR.vars())
+    def function():
+        d = objax.random.uniform((1,))
+        return d
+
+    function_jit = objax.Jit(function)
+    for _ in range(3):
+        print(function_jit())
+        # Prints three different random values
+
 
 Parallelism
 -----------
