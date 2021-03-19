@@ -62,12 +62,20 @@ DEFAULT_GENERATOR = Generator(0)
 
 def normal(shape: Tuple[int, ...], *, mean: float = 0, stddev: float = 1, generator: Generator = DEFAULT_GENERATOR):
     """Returns a ``JaxArray`` of shape ``shape`` with random numbers from a normal distribution
-    with mean ``mean`` and standard deviation ``stddev``."""
+    with mean ``mean`` and standard deviation ``stddev``.
+
+    NOTE: if random numbers are generated inside a jitted, parallelized or vectorized function
+    then generator variables (including DEFAULT_GENERATOR) have to be added to the
+    variable collection."""
     return jr.normal(generator(), shape=shape) * stddev + mean
 
 
 def randint(shape: Tuple[int, ...], low: int, high: int, generator: Generator = DEFAULT_GENERATOR):
-    """Returns a ``JaxAarray`` of shape ``shape`` with random integers in {low, ..., high-1}."""
+    """Returns a ``JaxAarray`` of shape ``shape`` with random integers in {low, ..., high-1}.
+
+    NOTE: if random numbers are generated inside a jitted, parallelized or vectorized function
+    then generator variables (including DEFAULT_GENERATOR) have to be added to the
+    variable collection."""
     return jr.randint(generator(), shape=shape, minval=low, maxval=high)
 
 
@@ -77,10 +85,18 @@ def truncated_normal(shape: Tuple[int, ...], *,
                      upper: float = 2,
                      generator: Generator = DEFAULT_GENERATOR):
     """Returns a ``JaxArray`` of shape ``shape`` with random numbers from a normal distribution
-    with mean 0 and standard deviation ``stddev`` truncated by (``lower``, ``upper``)."""
+    with mean 0 and standard deviation ``stddev`` truncated by (``lower``, ``upper``).
+
+    NOTE: if random numbers are generated inside a jitted, parallelized or vectorized function
+    then generator variables (including DEFAULT_GENERATOR) have to be added to the
+    variable collection."""
     return jr.truncated_normal(generator(), shape=shape, lower=lower, upper=upper) * stddev
 
 
 def uniform(shape: Tuple[int, ...], generator: Generator = DEFAULT_GENERATOR):
-    """Returns a ``JaxArray`` of shape ``shape`` with random numbers from a uniform distribution [0, 1]."""
+    """Returns a ``JaxArray`` of shape ``shape`` with random numbers from a uniform distribution [0, 1].
+
+    NOTE: if random numbers are generated inside a jitted, parallelized or vectorized function
+    then generator variables (including DEFAULT_GENERATOR) have to be added to the
+    variable collection."""
     return jr.uniform(generator(), shape=shape)
