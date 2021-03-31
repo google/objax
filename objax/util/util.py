@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-__all__ = ['EasyDict', 'args_indexes', 'class_name', 'dummy_context_mgr', 'ilog2', 'local_kwargs', 'map_to_device',
-           'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer',
+__all__ = ['EasyDict', 'args_indexes', 'class_name', 'dummy_context_mgr', 'get_local_devices', 'ilog2', 'local_kwargs',
+           'map_to_device', 'multi_host_barrier', 'override_args_kwargs', 'positional_args_names', 'Renamer',
            're_sign', 'repr_function', 'to_interpolate', 'to_padding', 'to_tuple']
 
 import contextlib
@@ -106,6 +106,20 @@ def class_name(x) -> str:
 def dummy_context_mgr():
     """Empty Context Manager."""
     yield None
+
+
+_local_devices = None
+
+
+def get_local_devices():
+    """Returns list of local devices in the same order which is used by jax.pmap."""
+    # Lazy initialization of _local_devices to prevent any undesirable behavior before devices are initialized.
+    global _local_devices
+    if _local_devices is None:
+        x = jn.zeros((jax.local_device_count(), 1), dtype=jn.float32)
+        sharded_x = map_to_device(x)
+        _local_devices = [b.device() for b in sharded_x.device_buffers]
+    return _local_devices
 
 
 def ilog2(x: float):
