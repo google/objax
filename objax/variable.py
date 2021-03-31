@@ -20,12 +20,11 @@ from contextlib import contextmanager
 from typing import List, Union, Tuple, Optional, Iterable, Dict, Iterator, Callable
 
 import jax
-import jax.numpy as jn
 import jax.random as jr
 import numpy as np
 
 from objax.typing import JaxArray
-from objax.util import map_to_device, Renamer, repr_function, class_name
+from objax.util import get_local_devices, Renamer, repr_function, class_name
 from objax.util.check import assert_assigned_type_and_shape_match
 
 
@@ -363,15 +362,15 @@ class VarCollection(Dict[str, BaseVar]):
         device.
         Important: replicating also updates the random state in order to have a new one per device.
         """
-        ndevices = jax.local_device_count()
         replicated, saved_states = [], []
+        devices = get_local_devices()
+        ndevices = len(devices)
         for v in self:
             if isinstance(v, RandomState):
-                replicated.append(v.split(ndevices))
+                replicated.append(jax.api.device_put_sharded([shard for shard in v.split(ndevices)], devices))
                 saved_states.append(v.value)
             else:
-                replicated.append(jn.broadcast_to(v.value, (ndevices,) + v.value.shape))
-        replicated = map_to_device(replicated)
+                replicated.append(jax.api.device_put_replicated(v.value, devices))
         self.assign(replicated)
         yield
         visited = set()
