@@ -15,17 +15,25 @@
 __all__ = ['BaseVar', 'BaseState', 'RandomState', 'TrainRef', 'StateVar', 'TrainVar', 'VarCollection']
 
 import abc
+import re
 from contextlib import contextmanager
 from typing import List, Union, Tuple, Optional, Iterable, Dict, Iterator, Callable
 
 import jax
-import jax.numpy as jn
 import jax.random as jr
 import numpy as np
 
 from objax.typing import JaxArray
-from objax.util import map_to_device, Renamer
+from objax.util import get_local_devices, Renamer, repr_function, class_name
 from objax.util.check import assert_assigned_type_and_shape_match
+
+
+def get_jax_value(x: Union[JaxArray, 'BaseVar']):
+    """Returns JAX value encapsulated in the input argument."""
+    if isinstance(x, BaseVar):
+        return x.value
+    else:
+        return x
 
 
 def reduce_mean(x: JaxArray) -> JaxArray:
@@ -65,6 +73,89 @@ class BaseVar(abc.ABC):
         value to a single device."""
         if self._reduce:
             self.assign(self._reduce(tensors), check=False)
+
+    def __repr__(self):
+        rvalue = re.sub('[\n]+', '\n', repr(self._value))
+        t = f'{class_name(self)}({rvalue})'
+        if not self._reduce:
+            return t
+        return f'{t[:-1]}, reduce={repr_function(self._reduce)})'
+
+    # Python looks up special methods only on classes, not instances. This means
+    # these methods needs to be defined explicitly rather than relying on
+    # __getattr__.
+    def __neg__(self): return self.value.__neg__()  # noqa: E704
+    def __pos__(self): return self.value.__pos__()  # noqa: E704
+    def __abs__(self): return self.value.__abs__()  # noqa: E704
+    def __invert__(self): return self.value.__invert__()  # noqa: E704
+    def __eq__(self, other): return self.value.__eq__(get_jax_value(other))  # noqa: E704
+    def __ne__(self, other): return self.value.__ne__(get_jax_value(other))  # noqa: E704
+    def __lt__(self, other): return self.value.__lt__(get_jax_value(other))  # noqa: E704
+    def __le__(self, other): return self.value.__le__(get_jax_value(other))  # noqa: E704
+    def __gt__(self, other): return self.value.__gt__(get_jax_value(other))  # noqa: E704
+    def __ge__(self, other): return self.value.__ge__(get_jax_value(other))  # noqa: E704
+    def __add__(self, other): return self.value.__add__(get_jax_value(other))  # noqa: E704
+    def __radd__(self, other): return self.value.__radd__(get_jax_value(other))  # noqa: E704
+    def __sub__(self, other): return self.value.__sub__(get_jax_value(other))  # noqa: E704
+    def __rsub__(self, other): return self.value.__rsub__(get_jax_value(other))  # noqa: E704
+    def __mul__(self, other): return self.value.__mul__(get_jax_value(other))  # noqa: E704
+    def __rmul__(self, other): return self.value.__rmul__(get_jax_value(other))  # noqa: E704
+    def __div__(self, other): return self.value.__div__(get_jax_value(other))  # noqa: E704
+    def __rdiv__(self, other): return self.value.__rdiv__(get_jax_value(other))  # noqa: E704
+    def __truediv__(self, other): return self.value.__truediv__(get_jax_value(other))  # noqa: E704
+    def __rtruediv__(self, other): return self.value.__rtruediv__(get_jax_value(other))  # noqa: E704
+    def __floordiv__(self, other): return self.value.__floordiv__(get_jax_value(other))  # noqa: E704
+    def __rfloordiv__(self, other): return self.value.__rfloordiv__(get_jax_value(other))  # noqa: E704
+    def __divmod__(self, other): return self.value.__divmod__(get_jax_value(other))  # noqa: E704
+    def __rdivmod__(self, other): return self.value.__rdivmod__(get_jax_value(other))  # noqa: E704
+    def __mod__(self, other): return self.value.__mod__(get_jax_value(other))  # noqa: E704
+    def __rmod__(self, other): return self.value.__rmod__(get_jax_value(other))  # noqa: E704
+    def __pow__(self, other): return self.value.__pow__(get_jax_value(other))  # noqa: E704
+    def __rpow__(self, other): return self.value.__rpow__(get_jax_value(other))  # noqa: E704
+    def __matmul__(self, other): return self.value.__matmul__(get_jax_value(other))  # noqa: E704
+    def __rmatmul__(self, other): return self.value.__rmatmul__(get_jax_value(other))  # noqa: E704
+    def __and__(self, other): return self.value.__and__(get_jax_value(other))  # noqa: E704
+    def __rand__(self, other): return self.value.__rand__(get_jax_value(other))  # noqa: E704
+    def __or__(self, other): return self.value.__or__(get_jax_value(other))  # noqa: E704
+    def __ror__(self, other): return self.value.__ror__(get_jax_value(other))  # noqa: E704
+    def __xor__(self, other): return self.value.__xor__(get_jax_value(other))  # noqa: E704
+    def __rxor__(self, other): return self.value.__rxor__(get_jax_value(other))  # noqa: E704
+    def __lshift__(self, other): return self.value.__lshift__(get_jax_value(other))  # noqa: E704
+    def __rlshift__(self, other): return self.value.__rlshift__(get_jax_value(other))  # noqa: E704
+    def __rshift__(self, other): return self.value.__rshift__(get_jax_value(other))  # noqa: E704
+    def __rrshift__(self, other): return self.value.__rrshift__(get_jax_value(other))  # noqa: E704
+    def __round__(self, ndigits=None): return self.value.__round__(ndigits)  # noqa: E704
+
+    def __getitem__(self, idx):
+        return self.value.__getitem__(idx)
+
+    def __jax_array__(self):
+        return self.value
+
+    def __array__(self, dtype=None):
+        return self.value.__array__(dtype)
+
+    def __bool__(self):
+        raise TypeError('To prevent accidental errors Objax variables can not be used as Python bool. '
+                        'To check if variable is `None` use `is None` or `is not None` instead.')
+
+    def __getattr__(self, name):
+        return getattr(self.value, name)
+
+    @property
+    def dtype(self):
+        """Variable data type."""
+        return self.value.dtype
+
+    @property
+    def shape(self):
+        """Variable shape."""
+        return self.value.shape
+
+    @property
+    def ndim(self):
+        """Number of dimentions."""
+        return self.value.ndim
 
 
 class TrainVar(BaseVar):
@@ -128,6 +219,9 @@ class TrainRef(BaseState):
     @value.setter
     def value(self, tensor: JaxArray):
         self.ref.assign(tensor)
+
+    def __repr__(self):
+        return f'{class_name(self)}(ref={repr(self.ref)})'
 
 
 class StateVar(BaseState):
@@ -204,25 +298,31 @@ class VarCollection(Dict[str, BaseVar]):
         once."""
         seen = set()
         for v in self.values():
-            if v not in seen:
-                seen.add(v)
+            if id(v) not in seen:
+                seen.add(id(v))
                 yield v
 
     def __setitem__(self, key: str, value: BaseVar):
         """Overload bracket assignment to catch potential conflicts during assignment."""
-        if key in self:
+        if key in self and self[key] != value:
             raise ValueError('Name conflicts when appending to VarCollection', key)
         dict.__setitem__(self, key, value)
 
     def update(self, other: Union['VarCollection', Iterable[Tuple[str, BaseVar]]]):
         """Overload dict.update method to catch potential conflicts during assignment."""
-        keys = set(self.keys())
         if not isinstance(other, self.__class__):
             other = list(other)
-        dict.update(self, other)
-        if len(self) != len(keys) + len(other):
-            conflicts = sorted(keys & set(other.keys()))
-            raise ValueError('Name conflicts when combining VarCollection', conflicts)
+        else:
+            other = other.items()
+        conflicts = set()
+        for k, v in other:
+            if k in self:
+                if self[k] is not v:
+                    conflicts.add(k)
+            else:
+                self[k] = v
+        if conflicts:
+            raise ValueError(f'Name conflicts when combining VarCollection {sorted(conflicts)}')
 
     def assign(self, tensors: List[JaxArray]):
         """Assign tensors to the variables in the VarCollection. Each variable is assigned only once and in the order
@@ -262,15 +362,15 @@ class VarCollection(Dict[str, BaseVar]):
         device.
         Important: replicating also updates the random state in order to have a new one per device.
         """
-        ndevices = jax.local_device_count()
         replicated, saved_states = [], []
+        devices = get_local_devices()
+        ndevices = len(devices)
         for v in self:
             if isinstance(v, RandomState):
-                replicated.append(v.split(ndevices))
+                replicated.append(jax.api.device_put_sharded([shard for shard in v.split(ndevices)], devices))
                 saved_states.append(v.value)
             else:
-                replicated.append(jn.broadcast_to(v.value, (ndevices,) + v.value.shape))
-        replicated = map_to_device(replicated)
+                replicated.append(jax.api.device_put_replicated(v.value, devices))
         self.assign(replicated)
         yield
         visited = set()
@@ -279,12 +379,12 @@ class VarCollection(Dict[str, BaseVar]):
             if isinstance(v, TrainRef):
                 v = v.ref
                 assert not isinstance(v, TrainRef)
-            if v not in visited:  # Careful not to reduce twice in case of a variable and a reference to it.
+            if id(v) not in visited:  # Careful not to reduce twice in case of a variable and a reference to it.
                 if isinstance(v, RandomState):
                     v.assign(saved_states.pop())
                 else:
                     v.reduce(v.value)
-                visited.add(v)
+                visited.add(id(v))
 
     def subset(self, is_a: Optional[Union[type, Tuple[type, ...]]] = None,
                is_not: Optional[Union[type, Tuple[type, ...]]] = None) -> 'VarCollection':

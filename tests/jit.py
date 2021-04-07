@@ -27,7 +27,7 @@ class LinearArgs(objax.nn.Linear):
     def __call__(self, x: JaxArray, some_args: float) -> JaxArray:
         """Returns the results of applying the linear transformation to input x."""
         y = jn.dot(x, self.w.value) * some_args
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 
@@ -38,7 +38,7 @@ class LinearTrain(objax.nn.Linear):
         y = jn.dot(x, self.w.value)
         if training:
             y = -y
-        if self.b:
+        if self.b is not None:
             y += self.b.value
         return y
 
@@ -104,6 +104,17 @@ class TestJit(unittest.TestCase):
         v = jit_increase()
         self.assertEqual(v.tolist(), [2., 2.])
         self.assertEqual(m[0].value.tolist(), [2., 2.])
+
+    def test_constant_optimization(self):
+        m = objax.nn.Linear(3, 4)
+        jit_constant = objax.Jit(m, objax.VarCollection())
+
+        x = objax.random.normal((10, 3))
+        self.assertEqual(((m(x) - jit_constant(x)) ** 2).sum(), 0)
+
+        # Modify m (which was supposed to be constant!)
+        m.b.assign(m.b.value + 1)
+        self.assertEqual(((m(x) - jit_constant(x)) ** 2).sum(), 40)
 
 
 if __name__ == '__main__':

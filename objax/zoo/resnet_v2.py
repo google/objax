@@ -443,7 +443,7 @@ def load_pretrained_weights_from_keras(arch: str, include_top: bool = True, num_
     assert arch in model_registry, f'Model weights does not exist for {arch}.'
     assert not include_top or num_classes == 1000, ('Number of classes should be 1000 when including top layer.')
 
-    model_keras = tf.keras.applications.__dict__[arch + 'V2'](include_top=include_top,
+    model_keras = getattr(tf.keras.applications, arch + 'V2')(include_top=include_top,
                                                               weights='imagenet',
                                                               classes=1000,
                                                               classifier_activation='linear')

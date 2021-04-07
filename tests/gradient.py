@@ -466,89 +466,98 @@ class TestPrivateGradValues(unittest.TestCase):
         self.model = DNNet(layer_sizes=[self.ndim, self.nclass], activation=objax.functional.softmax)
         self.model_vars = self.model.vars()
 
-        def loss(x, y):
+        def loss_function(x, y):
             logit = self.model(x)
-            return ((y - logit) ** 2).mean(1).mean(0)
+            loss = ((y - logit) ** 2).mean(1).mean(0)
+            return loss, {'loss': loss}
 
-        self.loss = loss
+        self.loss = loss_function
 
     def test_private_gradvalues_compare_nonpriv(self):
         """Test if PrivateGradValues without clipping / noise is the same as non-private GradValues."""
         l2_norm_clip = 1e10
         noise_multiplier = 0
 
-        for microbatch in [1, 10, self.ntrain]:
-            gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss, self.model_vars,
-                                                                      noise_multiplier, l2_norm_clip, microbatch,
-                                                                      batch_axis=(0, 0)))
-            gv = objax.GradValues(self.loss, self.model_vars)
-            g_priv, v_priv = gv_priv(self.data, self.labels)
-            g, v = gv(self.data, self.labels)
+        for use_norm_accumulation in [True, False]:
+            for microbatch in [1, 10, self.ntrain]:
+                gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss, self.model_vars,
+                                                                          noise_multiplier, l2_norm_clip, microbatch,
+                                                                          batch_axis=(0, 0),
+                                                                          use_norm_accumulation=use_norm_accumulation))
+                gv = objax.GradValues(self.loss, self.model_vars)
+                g_priv, v_priv = gv_priv(self.data, self.labels)
+                g, v = gv(self.data, self.labels)
 
-            # Check the shape of the gradient.
-            self.assertEqual(g_priv[0].shape, tuple([self.nclass]))
-            self.assertEqual(g_priv[1].shape, tuple([self.ndim, self.nclass]))
+                # Check the shape of the gradient.
+                self.assertEqual(g_priv[0].shape, tuple([self.nclass]))
+                self.assertEqual(g_priv[1].shape, tuple([self.ndim, self.nclass]))
 
-            # Check if the private gradient is similar to the non-private gradient.
-            np.testing.assert_allclose(g[0], g_priv[0], atol=1e-7)
-            np.testing.assert_allclose(g[1], g_priv[1], atol=1e-7)
-            np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels), atol=1e-7)
+                # Check if the private gradient is similar to the non-private gradient.
+                np.testing.assert_allclose(g[0], g_priv[0], atol=1e-7)
+                np.testing.assert_allclose(g[1], g_priv[1], atol=1e-7)
+                np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels)[0], atol=1e-7)
 
     def test_private_gradvalues_clipping(self):
         """Test if the gradient norm is within l2_norm_clip."""
         noise_multiplier = 0
         acceptable_float_error = 1e-8
-        for microbatch in [1, 10, self.ntrain]:
-            for l2_norm_clip in [0, 1e-2, 1e-1, 1.0]:
-                gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss, self.model_vars,
-                                                                          noise_multiplier, l2_norm_clip, microbatch,
-                                                                          batch_axis=(0, 0)))
-                g_priv, v_priv = gv_priv(self.data, self.labels)
-                # Get the actual squared norm of the gradient.
-                g_normsquared = sum([np.sum(g ** 2) for g in g_priv])
-                self.assertLessEqual(g_normsquared, l2_norm_clip ** 2 + acceptable_float_error)
-                np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels), atol=1e-7)
+        for use_norm_accumulation in [True, False]:
+            for microbatch in [1, 10, self.ntrain]:
+                for l2_norm_clip in [0, 1e-2, 1e-1, 1.0]:
+                    gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(
+                        self.loss, self.model_vars,
+                        noise_multiplier, l2_norm_clip, microbatch,
+                        batch_axis=(0, 0),
+                        use_norm_accumulation=use_norm_accumulation))
+                    g_priv, v_priv = gv_priv(self.data, self.labels)
+                    # Get the actual squared norm of the gradient.
+                    g_normsquared = sum([np.sum(g ** 2) for g in g_priv])
+                    self.assertLessEqual(g_normsquared, l2_norm_clip ** 2 + acceptable_float_error)
+                    np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels)[0], atol=1e-7)
 
     def test_private_gradvalues_noise(self):
         """Test if the noise std is around expected."""
         runs = 100
         alpha = 0.0001
-        for microbatch in [1, 10, self.ntrain]:
-            for noise_multiplier in [0.1, 10.0]:
-                for l2_norm_clip in [0.01, 0.1]:
-                    gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(self.loss,
-                                                                              self.model_vars,
-                                                                              noise_multiplier,
-                                                                              l2_norm_clip,
-                                                                              microbatch,
-                                                                              batch_axis=(0, 0)))
-                    # Repeat the run and collect all gradients.
-                    g_privs = []
-                    for i in range(runs):
-                        g_priv, v_priv = gv_priv(self.data, self.labels)
-                        g_privs.append(np.concatenate([g_n.reshape(-1) for g_n in g_priv]))
-                        np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels), atol=1e-7)
-                    g_privs = np.array(g_privs)
+        for use_norm_accumulation in [True, False]:
+            for microbatch in [1, 10, self.ntrain]:
+                for noise_multiplier in [0.1, 10.0]:
+                    for l2_norm_clip in [0.01, 0.1]:
+                        gv_priv = objax.Jit(objax.privacy.dpsgd.PrivateGradValues(
+                            self.loss,
+                            self.model_vars,
+                            noise_multiplier,
+                            l2_norm_clip,
+                            microbatch,
+                            batch_axis=(0, 0),
+                            use_norm_accumulation=use_norm_accumulation))
+                        # Repeat the run and collect all gradients.
+                        g_privs = []
+                        for i in range(runs):
+                            g_priv, v_priv = gv_priv(self.data, self.labels)
+                            g_privs.append(np.concatenate([g_n.reshape(-1) for g_n in g_priv]))
+                            np.testing.assert_allclose(v_priv[0], self.loss(self.data, self.labels)[0], atol=1e-7)
+                        g_privs = np.array(g_privs)
 
-                    # Compute empirical std and expected std.
-                    std_empirical = np.std(g_privs, axis=0, ddof=1)
-                    std_theoretical = l2_norm_clip * noise_multiplier / (self.ntrain // microbatch)
+                        # Compute empirical std and expected std.
+                        std_empirical = np.std(g_privs, axis=0, ddof=1)
+                        std_theoretical = l2_norm_clip * noise_multiplier / (self.ntrain // microbatch)
 
-                    # Conduct chi-square test for correct expected standard
-                    # deviation.
-                    chi2_value = (runs - 1) * std_empirical ** 2 / std_theoretical ** 2
-                    chi2_cdf = chi2.cdf(chi2_value, runs - 1)
-                    self.assertTrue(np.all(alpha <= chi2_cdf) and np.all(chi2_cdf <= 1.0 - alpha))
+                        # Conduct chi-square test for correct expected standard
+                        # deviation.
+                        chi2_value = (runs - 1) * std_empirical ** 2 / std_theoretical ** 2
+                        chi2_cdf = chi2.cdf(chi2_value, runs - 1)
+                        self.assertTrue(np.all(alpha <= chi2_cdf) and np.all(chi2_cdf <= 1.0 - alpha))
 
-                    # Conduct chi-square test for incorrect expected standard
-                    # deviations: expect failure.
-                    chi2_value = (runs - 1) * std_empirical ** 2 / (1.25 * std_theoretical) ** 2
-                    chi2_cdf = chi2.cdf(chi2_value, runs - 1)
-                    self.assertFalse(np.all(alpha <= chi2_cdf) and np.all(chi2_cdf <= 1.0 - alpha))
+                        # Conduct chi-square test for incorrect expected standard
+                        # deviations: expect failure.
+                        chi2_value = (runs - 1) * std_empirical ** 2 / (1.25 * std_theoretical) ** 2
+                        chi2_cdf = chi2.cdf(chi2_value, runs - 1)
+                        self.assertFalse(np.all(alpha <= chi2_cdf) and np.all(chi2_cdf <= 1.0 - alpha))
 
-                    chi2_value = (runs - 1) * std_empirical ** 2 / (0.75 * std_theoretical) ** 2
-                    chi2_cdf = chi2.cdf(chi2_value, runs - 1)
-                    self.assertFalse(np.all(alpha <= chi2_cdf) and np.all(chi2_cdf <= 1.0 - alpha))
+                        chi2_value = (runs - 1) * std_empirical ** 2 / (0.75 * std_theoretical) ** 2
+                        chi2_cdf = chi2.cdf(chi2_value, runs - 1)
+                        self.assertFalse(np.all(alpha <= chi2_cdf) and np.all(chi2_cdf <= 1.0 - alpha))
 
 
 class TestPrivateGradValuesAxis(unittest.TestCase):
@@ -568,10 +577,11 @@ class TestPrivateGradValuesAxis(unittest.TestCase):
         # Procedure to get private gradient given microbatch and l2_norm_clip.
         noise_multiplier = 0.
 
-        def get_g(microbatch, l2_norm_clip, batch_axis=(0,)):
+        def get_g(microbatch, l2_norm_clip, use_norm_accumulation, batch_axis=(0,)):
             gv_priv = objax.privacy.dpsgd.PrivateGradValues(loss, objax.VarCollection({'w': w}),
                                                             noise_multiplier, l2_norm_clip, microbatch,
-                                                            batch_axis=batch_axis)
+                                                            batch_axis=batch_axis,
+                                                            use_norm_accumulation=use_norm_accumulation)
             g_priv, v_priv = gv_priv(data)
             return g_priv
 
@@ -579,26 +589,28 @@ class TestPrivateGradValuesAxis(unittest.TestCase):
 
     def test_private_gradvalues_axis0(self):
         """Test for batch_axis = (0,) with different microbatch."""
-        # microbatch = 1
-        g_priv = self.get_g(microbatch=1, l2_norm_clip=1.0)
-        grad_expected = -np.array([1, 1, 1, -1, 1, -1], dtype=np.float32).mean()
-        np.testing.assert_allclose(g_priv[0], grad_expected, atol=1e-5, err_msg='microbatch=1')
+        for use_norm_accumulation in [True, False]:
+            # microbatch = 1
+            g_priv = self.get_g(microbatch=1, l2_norm_clip=1.0, use_norm_accumulation=use_norm_accumulation)
+            grad_expected = -np.array([1, 1, 1, -1, 1, -1], dtype=np.float32).mean()
+            np.testing.assert_allclose(g_priv[0], grad_expected, atol=1e-5, err_msg='microbatch=1')
 
-        # microbatch = 6
-        g_priv = self.get_g(microbatch=6, l2_norm_clip=1.0)
-        grad_expected = 0.
-        np.testing.assert_allclose(g_priv[0], grad_expected, atol=1e-5, err_msg='microbatch=6')
+            # microbatch = 6
+            g_priv = self.get_g(microbatch=6, l2_norm_clip=1.0, use_norm_accumulation=use_norm_accumulation)
+            grad_expected = 0.
+            np.testing.assert_allclose(g_priv[0], grad_expected, atol=1e-5, err_msg='microbatch=6')
 
-        # microbatch = 2
-        g_priv = self.get_g(microbatch=2, l2_norm_clip=3.0)
-        grad_expected = -np.array([2.5, -3, 2], dtype=np.float32).mean()  # unclipped gradient is [2.5, -4.5, 2]
-        np.testing.assert_allclose(g_priv[0], grad_expected, atol=1e-5, err_msg='microbatch=2')
+            # microbatch = 2
+            g_priv = self.get_g(microbatch=2, l2_norm_clip=3.0, use_norm_accumulation=use_norm_accumulation)
+            grad_expected = -np.array([2.5, -3, 2], dtype=np.float32).mean()  # unclipped gradient is [2.5, -4.5, 2]
+            np.testing.assert_allclose(g_priv[0], grad_expected, atol=1e-5, err_msg='microbatch=2')
 
     def test_private_gradvalues_axis1(self):
         """Test if batch_axis = (1,) raises ValueError."""
         microbatch = 1
         l2_norm_clip = 1.0
-        self.assertRaises(ValueError, self.get_g, microbatch, l2_norm_clip, (1,))
+        for use_norm_accumulation in [True, False]:
+            self.assertRaises(ValueError, self.get_g, microbatch, l2_norm_clip, use_norm_accumulation, (1,))
 
 
 if __name__ == '__main__':

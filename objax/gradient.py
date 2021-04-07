@@ -21,6 +21,7 @@ import jax
 
 from objax.module import Function, Module
 from objax.typing import JaxArray
+from objax.util import repr_function, class_name
 from objax.variable import BaseState, TrainVar, VarCollection
 
 
@@ -37,6 +38,7 @@ class GradValues(Module):
             variables: the variables for which to compute gradients.
             input_argnums: input indexes, if any, on which to compute gradients.
         """
+        self.f = f
         self.vc = variables = VarCollection(variables or ())
         if not isinstance(f, Module):
             f = Function(f, self.vc)
@@ -60,7 +62,10 @@ class GradValues(Module):
             finally:
                 self.vc.assign(original_vc)
 
+        assert isinstance(input_argnums, tuple) or input_argnums is None, \
+            f'Must pass a tuple of indices to input_argnums; received {input_argnums}.'
         self.input_argnums = input_argnums or tuple()
+
         signature = inspect.signature(f)
         self.__wrapped__ = f
         self.__signature__ = signature.replace(return_annotation=Tuple[List[JaxArray],
@@ -85,6 +90,10 @@ class GradValues(Module):
         if scope:
             return VarCollection((scope + k, v) for k, v in self.vc.items())
         return VarCollection(self.vc)
+
+    def __repr__(self):
+        f = repr(self.f) if isinstance(self.f, Module) else repr_function(self.f)
+        return f'{class_name(self)}(f={f}, input_argnums={self.input_argnums or None})'
 
 
 class Grad(GradValues):

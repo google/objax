@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['dynamic_slice', 'pad', 'rsqrt', 'stop_gradient', 'top_k',
-           'flatten', 'one_hot', 'upscale_nn']
+
+__all__ = ['dynamic_slice', 'flatten', 'interpolate', 'one_hot', 'pad', 'rsqrt', 'scan', 'stop_gradient',
+           'top_k', 'upsample_2d', 'upscale_nn']
+
+from typing import Union, Tuple
 
 import jax.nn
 from jax import numpy as jn, lax
 
+from objax import util
+from objax.constants import Interpolate
 from objax.typing import JaxArray
 
 dynamic_slice = lax.dynamic_slice
 one_hot = jax.nn.one_hot
 pad = jn.pad
+scan = lax.scan
 stop_gradient = lax.stop_gradient
 top_k = lax.top_k  # Current code doesn't work with gradient.
 rsqrt = lax.rsqrt
@@ -39,6 +45,69 @@ def flatten(x: JaxArray) -> JaxArray:
         where n_prod is equal to the product of n_2 to n_k.
     """
     return x.reshape([x.shape[0], -1])
+
+
+def interpolate(input: JaxArray,
+                size: Union[int, Tuple[int, ...]] = None,
+                scale_factor: Union[int, Tuple[int, ...]] = None,
+                mode: Union[Interpolate, str] = Interpolate.BILINEAR) -> JaxArray:
+    """
+    Function to interpolate JaxArrays by size or scaling factor
+    Args:
+        input: input tensor
+        size: int or tuple for output size
+        scale_factor: int or tuple scaling factor for each dimention
+        mode:str or Interpolate interpolation method e.g. ['bilinear', 'nearest']
+
+    Returns:
+        output : output JaxArray after interpolation
+    """
+    assert size or scale_factor, f'both size: {size} and scale_factor: {scale_factor} can not be None .'
+    assert bool(size) ^ bool(scale_factor), f'either size or scale_factor must be none ' \
+                                            f'scale: {size}, scale_factor: {scale_factor} .'
+    input_shape = input.shape
+    input_dim = len(input_shape)
+    if scale_factor:
+        if isinstance(scale_factor, int):
+            size = (input_shape[0], *(jn.array(input_shape[1:]) * scale_factor))
+        if isinstance(scale_factor, Tuple):
+            output_dim = len(scale_factor)
+            size = (*input_shape[:input_dim - output_dim],
+                    *(jn.array(input_shape[input_dim - output_dim:]) * jn.array(scale_factor)))
+    else:
+        if isinstance(size, int):
+            size = (*input_shape[:-1], size)
+        if isinstance(size, Tuple):
+            output_dim = len(size)
+            assert input_dim >= output_dim, f'Number of dimensions of "{size}"' \
+                                            f' must be < = to input shape"{input_shape}" '
+            size = (*input_shape[:input_dim - output_dim], *size)
+    output = jax.image.resize(input,
+                              shape=size,
+                              method=util.to_interpolate(mode))
+    return output
+
+
+def upsample_2d(x: JaxArray,
+                scale: Union[Tuple[int, int], int],
+                method: Union[Interpolate, str] = Interpolate.BILINEAR) -> JaxArray:
+    """Function to upscale 2D images.
+
+    Args:
+        x: input tensor.
+        scale: int or tuple scaling factor
+        method: str or UpSample interpolation methods e.g. ['bilinear', 'nearest'].
+
+    Returns:
+        upscaled 2d image tensor
+    """
+    s = x.shape
+    assert len(s) == 4, f'{s} must have 4 dimensions to be upsampled, or you can try interpolate function.'
+    scale = util.to_tuple(scale, 2)
+    y = jax.image.resize(x.transpose([0, 2, 3, 1]),
+                         shape=(s[0], s[2] * scale[0], s[3] * scale[1], s[1]),
+                         method=util.to_interpolate(method))
+    return y.transpose([0, 3, 1, 2])
 
 
 def upscale_nn(x: JaxArray, scale: int = 2) -> JaxArray:

@@ -38,6 +38,16 @@ class TestParallel(unittest.TestCase):
             z = fp(x)
         self.assertTrue(jn.array_equal(y, z))
 
+    def test_parallel_concat_broadcast(self):
+        """Parallel inference with broadcasted scalar input."""
+        f = lambda x, y: x + y
+        x = objax.random.normal((96, 3))
+        d = jn.float32(0.5)
+        y = f(x, d)
+        fp = objax.Parallel(f, objax.VarCollection())
+        z = fp(x, d)
+        self.assertTrue(jn.array_equal(y, z))
+
     def test_parallel_concat_multi_output(self):
         """Parallel inference (concat reduction) for multiple outputs."""
         f = objax.nn.Linear(3, 4)
@@ -48,6 +58,18 @@ class TestParallel(unittest.TestCase):
             z1, z2 = fp(x)
         self.assertTrue(jn.array_equal(z1, y))
         self.assertTrue(jn.array_equal(z2, -y))
+
+    def test_parallel_list(self):
+        """Parallel inference (concat reduction) without batch splitting."""
+        f = objax.nn.Linear(3, 4)
+        g = lambda x: f(x[0]) + x[1][:, jn.newaxis]
+        x1 = objax.random.normal((96, 3))
+        x2 = objax.random.normal((96,))
+        y = g([x1, x2])
+        fp = objax.Parallel(g, vc=f.vars())
+        with fp.vars().replicate():
+            z = fp([x1, x2])
+        self.assertTrue(jn.array_equal(y, z))
 
     def test_parallel_bneval_concat(self):
         """Parallel inference (concat reduction) with batch norm in eval mode."""
@@ -84,7 +106,7 @@ class TestParallel(unittest.TestCase):
                 z = fp8(x8).reshape((-1,) + values[it].shape)
             self.assertAlmostEqual(((f[1].running_var.value - states[2 * it]) ** 2).sum(), 0, delta=1e-12)
             self.assertAlmostEqual(((f[1].running_mean.value - states[2 * it + 1]) ** 2).sum(), 0, delta=1e-12)
-            self.assertLess(((z - values[it][None]) ** 2).sum(), 1e-7)
+            self.assertLess(((z - values[it][None]) ** 2).sum(), 5e-7)
         fp8.vars().assign(tensors)
 
     def test_parallel_syncbntrain_concat(self):

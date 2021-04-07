@@ -122,27 +122,35 @@ objax.nn
         ml = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.functional.relu,
                                   objax.nn.Linear(3, 4)])
         x = objax.random.normal((10, 2))
-        y = ml(x)       # Runs all the operations (Linear -> ReLU -> Linear).
+        y = ml(x)  # Runs all the operations (Linear -> ReLU -> Linear).
         print(y.shape)  # (10, 4)
 
         # objax.nn.Sequential is really a list.
         ml.insert(2, objax.nn.BatchNorm0D(3))  # Add a batch norm layer after ReLU
-        y = ml(x, training=False)  # The batch norm expects a training argument.
-                                   # Sequential automatically pass arguments to the modules using them.
+        ml.append(objax.nn.Dropout(keep=0.5))  # Add a dropout layer at the end
+        y = ml(x, training=False)  # Both batch norm and dropout expect a training argument.
+        # Sequential automatically pass arguments to the modules using them.
 
         # You can run a subset of operations since it is a list.
-        y1 = ml[:2](x)                    # Run first two layers (Linear -> ReLU)
-        y2 = ml[2:](y1, training=False)   # Run all layers starting from third (BatchNorm0D -> Linear)
-        print(ml(x, training=False) - y2) # [[0. 0. ...]] - results are the same.
+        y1 = ml[:2](x)  # Run first two layers (Linear -> ReLU)
+        y2 = ml[2:](y1, training=False)  # Run all layers starting from third (BatchNorm0D -> Dropout)
+        print(ml(x, training=False) - y2)  # [[0. 0. ...]] - results are the same.
 
         print(ml.vars())
-        # (Sequential)[0](Linear).b        3 (3,)
-        # (Sequential)[0](Linear).w        6 (2, 3)
-        # (Sequential)[2](Linear).b        4 (4,)
-        # (Sequential)[2](Linear).w       12 (3, 4)
-        # (Sequential)[3](Linear).b        5 (5,)
-        # (Sequential)[3](Linear).w       20 (4, 5)
-        # +Total(6)                       50
+        # (Sequential)[0](Linear).b                              3 (3,)
+        # (Sequential)[0](Linear).w                              6 (2, 3)
+        # (Sequential)[2](BatchNorm0D).running_mean              3 (1, 3)
+        # (Sequential)[2](BatchNorm0D).running_var               3 (1, 3)
+        # (Sequential)[2](BatchNorm0D).beta                      3 (1, 3)
+        # (Sequential)[2](BatchNorm0D).gamma                     3 (1, 3)
+        # (Sequential)[3](BatchNorm0D).running_mean              3 (1, 3)
+        # (Sequential)[3](BatchNorm0D).running_var               3 (1, 3)
+        # (Sequential)[3](BatchNorm0D).beta                      3 (1, 3)
+        # (Sequential)[3](BatchNorm0D).gamma                     3 (1, 3)
+        # (Sequential)[4](Linear).b                              4 (4,)
+        # (Sequential)[4](Linear).w                             12 (3, 4)
+        # (Sequential)[5](Dropout).keygen(Generator)._key        2 (2,)
+        # +Total(13)                                            51
 
 .. autoclass:: SyncedBatchNorm
     :members: __call__

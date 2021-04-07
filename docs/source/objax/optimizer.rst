@@ -6,7 +6,9 @@ objax.optimizer package
 .. autosummary::
 
     Adam
+    ExponentialMovingAverageModule
     ExponentialMovingAverage
+    LARS
     Momentum
     SGD
 
@@ -36,6 +38,27 @@ objax.optimizer package
     Note that the implementation uses the approximation
     :math:`\sqrt{(\hat{s_{k}} + \epsilon)} \approx \sqrt{\hat{s_{k}}} + \epsilon`.
 
+.. autoclass:: ExponentialMovingAverageModule
+    :members:
+
+    Convenience interface to apply :py:class:`objax.optimizer.ExponentialMovingAverage` to a module.
+
+    Usage example::
+
+        import objax
+
+        m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.nn.BatchNorm0D(3)])
+        m_ema = objax.optimizer.ExponentialMovingAverageModule(m, momentum=0.999, debias=True)
+
+        x = objax.random.uniform((16, 2))
+
+        # When the weights of m change, simply call update_ema() to update moving averages
+        v1 = m(x, training=True)
+        m_ema.update_ema()
+
+        # You call m_ema just like you would call m
+        v2 = m_ema(x, training=False)
+
 .. autoclass:: ExponentialMovingAverage
     :members:
 
@@ -61,6 +84,27 @@ objax.optimizer package
 
     Where :math:`\epsilon` is a small constant to avoid a divide-by-0.
 
+.. autoclass:: LARS
+    :members:
+
+    The Layer-Wise Rate Scaling (LARS) optimizer implements the scheme originally proposed in
+    `Large Batch Training of Convolutional Networks <https://arxiv.org/abs/1708.03888>`_. The
+    optimizer takes as input the base learning rate :math:`\gamma_0`, momentum :math:`m`,
+    weight decay :math:`\beta`, and trust coefficient :math:`\eta` and updates the model weights
+    :math:`w` as follows:
+
+    .. math::
+      \begin{eqnarray}
+      g_{t}^{l} &\leftarrow& \nabla L(w_{t}^{l}) \nonumber \\
+      \gamma_t &\leftarrow& \gamma_0 \ast (1 - \frac{t}{T})^{2} \nonumber \\
+      \lambda^{l} &\leftarrow& \frac{\| w_{t}^{l} \| }{ \| g_t^{l} \| + \beta \| w_{t}^{l} \|} \nonumber \\
+      v_{t+1}^{l} &\leftarrow& m v_{t}^{l} + \gamma_{t+1} \ast \lambda^{l} \ast (g_{t}^{l} + \beta w_{t}^{l}) \nonumber \\
+      w_{t+1}^{l} &\leftarrow& w_{t}^{l} - v_{t+1}^{l} \nonumber \\
+      \end{eqnarray}
+
+    where :math:`T` is the total number of steps (epochs) that the optimizer will take, :math:`t` is the
+    current step number, and :math:`w_{t}^{l}` are the weights for during step :math:`t` for layer :math:`l`.
+	
 .. autoclass:: Momentum
     :members:
 
