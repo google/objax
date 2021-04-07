@@ -52,12 +52,15 @@ class VGG19(objax.nn.Sequential):
         Args:
             pretrained: if True load weights from ImageNet pretrained model.
         """
-        if not os.path.exists(_VGG19_NPY):
-            raise FileNotFoundError(
-                'You must download vgg19.npy from %s and save it to %s' % (_VGG19_URL, _VGG19_NPY))
-        if not os.path.exists(_SYNSET_PATH):
-            request.urlretrieve(_SYNSET_URL, _SYNSET_PATH)
-        self.data_dict = np.load(_VGG19_NPY, encoding='latin1', allow_pickle=True).item()
+        if pretrained:
+            if not os.path.exists(_VGG19_NPY):
+                raise FileNotFoundError(
+                    'You must download vgg19.npy from %s and save it to %s' % (_VGG19_URL, _VGG19_NPY))
+            if not os.path.exists(_SYNSET_PATH):
+                request.urlretrieve(_SYNSET_URL, _SYNSET_PATH)
+            self.data_dict = np.load(_VGG19_NPY, encoding='latin1', allow_pickle=True).item()
+        else:
+            self.data_dict = None
         self.pretrained = pretrained
         self.ops = self.build()
         super().__init__(self.ops)
