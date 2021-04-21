@@ -185,6 +185,12 @@ Here's a basic example of RandomState manipulation::
     print(v.split(2))  # [[ 622232657  209145368] [2741198523 2127103341]]
     print(v.value)     # [3514448473 2078537737]
 
+Accessing a variable's value
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You do not have to use :code:`.value` to access the value of an Objax variable when using that variable in a computation.
+
+
 Module
 ------
 
@@ -210,7 +216,9 @@ Let's start with a simple example: a module called :code:`Linear`, which does a 
             self.b = objax.TrainVar(jn.zeros(n))
 
         def __call__(self, x):
-            return x.dot(self.w.value) + self.b.value
+            return x.dot(self.w) + self.b
+
+Note that :code:`__call__()` uses :code:`self.w` and :code:`self.b` directly.
 
 This simple module can be used on a batch :math:`x\in\mathbb{R}^{d\times m}` to compute the resulting value
 :math:`y\in\mathbb{R}^{d\times n}` for batch size :math:`d`.

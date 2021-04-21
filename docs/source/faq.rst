@@ -41,7 +41,7 @@ Thus a user only has to pass around training examples :code:`batch['x'], batch['
   b = objax.TrainVar(jn.zeros(1))
 
   def loss(x, y):
-      pred = jn.dot(x, w.value) + b.value
+      pred = jn.dot(x, w) + b
       return 0.5 * ((y - pred) ** 2).mean()
 
   g_fn = objax.Grad(loss,           # g_fn is Objax module

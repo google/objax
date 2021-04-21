@@ -186,7 +186,7 @@ Continuing on our example, lets create a new loss that returns its multiple comp
     def losses(x, labels):
         logits = my_classifier(x)
         loss_xe = objax.functional.loss.cross_entropy_logits(logits, labels).mean()
-        loss_wd = sum((v.value ** 2).sum() for k, v in my_classifier.vars().items() if k.endswith('.w'))
+        loss_wd = sum((v ** 2).sum() for k, v in my_classifier.vars().items() if k.endswith('.w'))
         return loss_xe + 0.0002 * loss_wd, loss_xe, loss_wd
 
     gradient_losses = objax.GradValues(losses, my_classifier.vars())
@@ -201,7 +201,7 @@ Or one might prefer to return a dict to keep things organized::
     def loss_dict(x, labels):
         logits = my_classifier(x)
         loss_xe = objax.functional.loss.cross_entropy_logits(logits, labels).mean()
-        loss_wd = sum((v.value ** 2).sum() for k, v in my_classifier.vars().items() if k.endswith('.w'))
+        loss_wd = sum((v ** 2).sum() for k, v in my_classifier.vars().items() if k.endswith('.w'))
         return loss_xe + 0.0002 * loss_wd, {'loss/xe': loss_xe, 'loss/wd': loss_wd}
 
     gradient_loss_dict = objax.GradValues(loss_dict, my_classifier.vars())
