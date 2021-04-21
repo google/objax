@@ -185,6 +185,30 @@ Here's a basic example of RandomState manipulation::
     print(v.split(2))  # [[ 622232657  209145368] [2741198523 2127103341]]
     print(v.value)     # [3514448473 2078537737]
 
+Accessing a variable's value
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While you can use :code:`variable.value` to access a variable's value it can make the code noisy. Instead, when
+using variable :code:`v` in math expressions you can omit :code:`.value` as the example below demonstrates::
+
+    import objax
+
+    batch_size = 4
+    ndim = 16
+
+    w = objax.TrainVar(objax.random.normal((ndim,)))
+    b = objax.TrainVar(objax.random.normal((1,)))
+
+    x = objax.random.normal((batch_size, ndim))
+
+    # Both of the following statements work the same way:
+    y1 = jn.dot(x, w.value) + b.value
+    y2 = jn.dot(x, w) + b
+
+    print(jn.linalg.norm(y1 - y2))  # 0.0
+
+You can use :code:`v.assign()` to update the variable's value. 
+
 Module
 ------
 
@@ -210,7 +234,9 @@ Let's start with a simple example: a module called :code:`Linear`, which does a 
             self.b = objax.TrainVar(jn.zeros(n))
 
         def __call__(self, x):
-            return x.dot(self.w.value) + self.b.value
+            return x.dot(self.w) + self.b
+
+Note that :code:`__call__()` uses :code:`self.w` and :code:`self.b` directly.
 
 This simple module can be used on a batch :math:`x\in\mathbb{R}^{d\times m}` to compute the resulting value
 :math:`y\in\mathbb{R}^{d\times n}` for batch size :math:`d`.
