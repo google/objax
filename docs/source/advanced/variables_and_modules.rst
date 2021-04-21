@@ -188,8 +188,26 @@ Here's a basic example of RandomState manipulation::
 Accessing a variable's value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You do not have to use :code:`.value` to access the value of an Objax variable when using that variable in a computation.
+While you can use :code:`variable.value` to access a variable's value it can make the code noisy. Instead, when
+using variable :code:`v` in math expressions you can omit :code:`.value` as the example below demonstrates::
 
+    import objax
+
+    batch_size = 4
+    ndim = 16
+
+    w = objax.TrainVar(objax.random.normal((ndim,)))
+    b = objax.TrainVar(objax.random.normal((1,)))
+
+    x = objax.random.normal((batch_size, ndim))
+
+    # Both of the following statements work the same way:
+    y1 = jn.dot(x, w.value) + b.value
+    y2 = jn.dot(x, w) + b
+
+    print(jn.linalg.norm(y1 - y2))  # 0.0
+
+You can use :code:`v.assign()` to update the variable's value. 
 
 Module
 ------
