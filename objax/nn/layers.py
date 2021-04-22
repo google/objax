@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
-           'Conv2D', 'ConvTranspose2D', 'Dropout', 'Linear',
+           'Conv2D', 'ConvTranspose2D', 'Dropout', 'Linear', 'LSTMCell',
            'MovingAverage', 'ExponentialMovingAverage', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
@@ -354,6 +354,49 @@ class Linear(Module):
     def __repr__(self):
         s = self.w.value.shape
         args = f'nin={s[0]}, nout={s[1]}, use_bias={self.b is not None}, w_init={util.repr_function(self.w_init)}'
+        return f'{class_name(self)}({args})'
+
+
+class LSTMCell(Module):
+    """A long short-term memory (LSTM) cell."""
+
+    def __init__(self, nin: int, nhid: int, use_bias: bool = True,
+                 w_in_init: Callable = xavier_normal, w_hid_init: Callable = xavier_normal):
+        """Creates a LSTMCell module instance.
+
+        Args:
+            nin: number of channels of the input tensor.
+            nhid: number of channels of the hidden state tensor.
+            use_bias: if True then lstm cell will have bias term.
+            w_in_init: weight initializer for parameters that transform the input
+                       (a function that takes in a (I, 4*H) shape and returns a 2D matrix).
+            w_hid_init: weight initializer for parameters that transform the hidden state
+                        (a function that takes in a (H, 4*H) shape and returns a 2D matrix).
+        """
+        self.nin = nin
+        self.nhid = nhid
+
+        self.i2h = Linear(nin, 4 * nhid, False, w_in_init)
+        self.h2h = Linear(nhid, 4 * nhid, use_bias, w_hid_init)
+
+    def __call__(self, x: JaxArray, hc: Optional[Tuple[JaxArray, JaxArray]] = None) -> Tuple[JaxArray, JaxArray]:
+        """Returns the results of applying the lstm cell to input x."""
+        assert x.shape[1] == self.nin, ('Attempting to apply the lstm cell '
+                                        f'to an input with {x.shape[1]} input channels '
+                                        f'when the lstm cell expects {self.nin} channels')
+        h, c = hc if hc is not None else jn.zeros((2, x.shape[0], self.nhid))
+        input, forget, cell, output = jn.split(self.i2h(x) + self.h2h(h), 4, 1)
+        input = functional.sigmoid(input)
+        forget = functional.sigmoid(forget)
+        cell = functional.tanh(cell)
+        output = functional.sigmoid(output)
+        c = forget * c + input * cell
+        h = output * functional.tanh(c)
+        return h, c
+
+    def __repr__(self):
+        args = (f'nin={self.nin}, nhid={self.nhid}, use_bias={self.h2h.b is not None}, '
+                f'w_in_init={util.repr_function(self.i2h.w_init)}, w_hid_init={util.repr_function(self.h2h.w_init)}')
         return f'{class_name(self)}({args})'
 
 

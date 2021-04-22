@@ -31,6 +31,8 @@ class TestRepr(unittest.TestCase):
                        '  [14] objax.nn.SyncedBatchNorm0D(nin=8, momentum=0.999, eps=1e-06)',
                        '  [15] objax.nn.SyncedBatchNorm1D(nin=9, momentum=0.999, eps=1e-06)',
                        '  [16] objax.nn.SyncedBatchNorm2D(nin=19, momentum=0.999, eps=1e-06)',
+                       '  [17] objax.nn.LSTMCell(nin=2, nhid=3, use_bias=True,'
+                       ' w_in_init=xavier_normal(*, gain=1), w_hid_init=xavier_normal(*, gain=1))',
                        ')'])
         m = objax.nn.Sequential([
             objax.nn.Linear(2, 3),
@@ -52,6 +54,7 @@ class TestRepr(unittest.TestCase):
             objax.nn.SyncedBatchNorm0D(8),
             objax.nn.SyncedBatchNorm1D(9),
             objax.nn.SyncedBatchNorm2D(19),
+            objax.nn.LSTMCell(2, 3),
         ])
         self.assertEqual(repr(m), r)
 
