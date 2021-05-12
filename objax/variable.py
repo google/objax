@@ -140,6 +140,8 @@ class BaseVar(abc.ABC):
                         'To check if variable is `None` use `is None` or `is not None` instead.')
 
     def __getattr__(self, name):
+        if '_value' not in vars(self):
+            raise AttributeError
         return getattr(self.value, name)
 
     @property
