@@ -29,6 +29,36 @@ from objax.typing import JaxArray
 import warnings
 
 
+def custom_formatwarning(msg, *args, **kwargs):
+    # ignore everything except the message
+    return str(msg) + '\n'
+
+
+warnings.formatwarning = custom_formatwarning
+
+
+def sizemismatch_checker(func):
+    """Checks if the arguments of loss functions mismatch and returns a warning accordingly.
+
+    Args:
+        func: (function): loss_function
+
+    Returns:
+        (batch,...) tensor  result from the loss function.
+    """
+    mess = 'Arguments shape mismatch in'
+
+    def inner(arg1, arg2, *args, **kwargs):
+        if arg1.shape != arg2.shape:
+            warnings.warn(' {} {} : arg1 {} and arg2 {}'.format(mess, func.__name__, arg1.shape, arg2.shape))
+        returned_value = func(arg1, arg2, *args, **kwargs)
+
+        return returned_value
+
+    return inner
+
+
+@sizemismatch_checker
 def cross_entropy_logits(logits: JaxArray, labels: JaxArray) -> JaxArray:
     """Computes the softmax cross-entropy loss on n-dimensional data.
 
@@ -39,8 +69,6 @@ def cross_entropy_logits(logits: JaxArray, labels: JaxArray) -> JaxArray:
     Returns:
         (batch, ...) tensor of the cross-entropies for each entry.
     """
-    if logits.shape != labels.shape:
-        warnings.warn('Size Mismatch: logits {} and labels {}'.format(logits.shape, labels.shape))
 
     return logsumexp(logits, axis=-1) - (logits * labels).sum(-1)
 
@@ -76,6 +104,7 @@ def l2(x: JaxArray) -> JaxArray:
     return 0.5 * (x ** 2).sum()
 
 
+@sizemismatch_checker
 def mean_absolute_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[int]] = (0,)) -> JaxArray:
     """Computes the mean absolute error between x and y.
 
@@ -87,14 +116,12 @@ def mean_absolute_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[i
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean absolute error.
     """
-    if x.shape != y.shape:
-        warnings.warn('Size Mismatch: x {} and y {}'.format(x.shape, y.shape))
-
     loss = jn.abs(x - y)
     axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
 
 
+@sizemismatch_checker
 def mean_squared_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[int]] = (0,)) -> JaxArray:
     """Computes the mean squared error between x and y.
 
@@ -106,14 +133,12 @@ def mean_squared_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[in
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean squared error.
     """
-    if x.shape != y.shape:
-        warnings.warn('Size Mismatch: x {} and y {}'.format(x.shape, y.shape))
-
     loss = (x - y) ** 2
     axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
 
 
+@sizemismatch_checker
 def mean_squared_log_error(y_true: JaxArray, y_pred: JaxArray, keep_axis: Optional[Iterable[int]] = (0,)) -> JaxArray:
     """Computes the mean squared logarithmic error between y_true and y_pred.
 
@@ -125,14 +150,12 @@ def mean_squared_log_error(y_true: JaxArray, y_pred: JaxArray, keep_axis: Option
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean squared error.
     """
-    if y_true.shape != y_pred.shape:
-        warnings.warn('Size Mismatch: logits {} and labels {}'.format(y_true.shape, y_pred.shape))
-
     loss = (jn.log1p(y_true) - jn.log1p(y_pred)) ** 2
     axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
 
 
+@sizemismatch_checker
 def sigmoid_cross_entropy_logits(logits: JaxArray, labels: Union[JaxArray, int]) -> JaxArray:
     """Computes the sigmoid cross-entropy loss.
 
@@ -143,7 +166,4 @@ def sigmoid_cross_entropy_logits(logits: JaxArray, labels: Union[JaxArray, int])
     Returns:
         (batch, ...) tensor of the cross-entropies for each entry.
     """
-    if logits.shape != labels.shape:
-        warnings.warn('Size Mismatch: logits {} and labels {}'.format(logits.shape, labels.shape))
-
     return jn.maximum(logits, 0) - logits * labels + jn.log(1 + jn.exp(-jn.abs(logits)))
