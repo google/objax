@@ -21,11 +21,13 @@ __all__ = ['cross_entropy_logits',
            'sigmoid_cross_entropy_logits']
 
 from typing import Union, Iterable, Optional
-
 import jax.numpy as jn
-
 from objax.functional.core import logsumexp
 from objax.typing import JaxArray
+import warnings
+
+
+WARN_SHAPE_MISMATCH = 'Argument shape mismatch in'
 
 
 def cross_entropy_logits(logits: JaxArray, labels: JaxArray) -> JaxArray:
@@ -38,6 +40,10 @@ def cross_entropy_logits(logits: JaxArray, labels: JaxArray) -> JaxArray:
     Returns:
         (batch, ...) tensor of the cross-entropies for each entry.
     """
+
+    FUNC_NAME = 'cross_entropy_logits'
+    if logits.shape != labels.shape:
+        warnings.warn(' {} {} : arg1 {} and arg2 {}'.format(WARN_SHAPE_MISMATCH, FUNC_NAME, logits.shape, labels.shape))
     return logsumexp(logits, axis=-1) - (logits * labels).sum(-1)
 
 
@@ -51,6 +57,7 @@ def cross_entropy_logits_sparse(logits: JaxArray, labels: Union[JaxArray, int]) 
     Returns:
         (batch, ...) tensor of the cross-entropies for each entry.
     """
+
     if isinstance(labels, int):
         labeled_logits = logits[..., labels]
     else:
@@ -68,6 +75,7 @@ def l2(x: JaxArray) -> JaxArray:
     Returns:
         scalar tensor containing the l2 loss of x.
     """
+
     return 0.5 * (x ** 2).sum()
 
 
@@ -82,6 +90,10 @@ def mean_absolute_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[i
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean absolute error.
     """
+
+    FUNC_NAME = 'mean_absolute_error'
+    if x.shape != y.shape:
+        warnings.warn(' {} {} : arg1 {} and arg2 {}'.format(WARN_SHAPE_MISMATCH, FUNC_NAME, x.shape, y.shape))
     loss = jn.abs(x - y)
     axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
@@ -98,6 +110,10 @@ def mean_squared_error(x: JaxArray, y: JaxArray, keep_axis: Optional[Iterable[in
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean squared error.
     """
+
+    FUNC_NAME = 'mean_squared_error'
+    if x.shape != y.shape:
+        warnings.warn(' {} {} : arg1 {} and arg2 {}'.format(WARN_SHAPE_MISMATCH, FUNC_NAME, x.shape, y.shape))
     loss = (x - y) ** 2
     axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
@@ -114,6 +130,10 @@ def mean_squared_log_error(y_true: JaxArray, y_pred: JaxArray, keep_axis: Option
     Returns:
         tensor of shape (d_i, ..., for i in keep_axis) containing the mean squared error.
     """
+
+    FUNC_NAME = 'mean_squared_log_error'
+    if y_true.shape != y_pred.shape:
+        warnings.warn(' {} {} : arg1 {} and arg2 {}'.format(WARN_SHAPE_MISMATCH, FUNC_NAME, y_true.shape, y_pred.shape))
     loss = (jn.log1p(y_true) - jn.log1p(y_pred)) ** 2
     axis = [i for i in range(loss.ndim) if i not in (keep_axis or ())]
     return loss.mean(axis)
@@ -129,4 +149,8 @@ def sigmoid_cross_entropy_logits(logits: JaxArray, labels: Union[JaxArray, int])
     Returns:
         (batch, ...) tensor of the cross-entropies for each entry.
     """
+
+    FUNC_NAME = 'sigmoid_cross_entropy_logits'
+    if logits.shape != labels.shape:
+        warnings.warn(' {} {} : arg1 {} and arg2 {}'.format(WARN_SHAPE_MISMATCH, FUNC_NAME, logits.shape, labels.shape))
     return jn.maximum(logits, 0) - logits * labels + jn.log(1 + jn.exp(-jn.abs(logits)))
