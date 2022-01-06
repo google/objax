@@ -13,8 +13,9 @@
 # limitations under the License.
 
 __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
-           'Conv2D', 'ConvTranspose2D', 'Dropout', 'Linear',
-           'MovingAverage', 'ExponentialMovingAverage', 'Sequential',
+           'Conv2D', 'ConvTranspose2D', 'Dropout', 'ExponentialMovingAverage',
+           'GroupNorm', 'GroupNorm0D', 'GroupNorm1D', 'GroupNorm2D',
+           'Linear', 'MovingAverage', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
 from typing import Callable, Iterable, Tuple, Optional, Union, List, Dict
@@ -325,6 +326,103 @@ class ExponentialMovingAverage(Module):
     def __repr__(self):
         s = self.avg.value.shape
         return f'{class_name(self)}(shape={s}, momentum={self.momentum}, init_value={self.init_value})'
+
+
+class GroupNorm(Module):
+    """Applies a group normalization to input tensor.
+
+    The module follows the operation described the paper
+    `Group Normalization <https://arxiv.org/abs/1803.08494>`_.
+    """
+
+    def __init__(self, nin: int, rank: int, groups: int = 32, eps: float = 1e-5):
+        """Creates a GroupNorm module instance.
+
+        Args:
+            nin: number of input channels.
+            rank: rank of the input tensor.
+            groups: number of normalization groups.
+            eps: small value which is used for numerical stability.
+        """
+        groups = min(groups, nin)
+        assert nin % groups == 0, 'nin should be divisible by groups'
+
+        super(GroupNorm, self).__init__()
+        self.nin = nin
+        self.groups = groups
+        self.eps = eps
+        self.redux = tuple(range(2, rank + 1))
+        var_shape = (1, nin) + (1,) * (rank - 2)
+        self.gamma = TrainVar(jn.ones(var_shape))
+        self.beta = TrainVar(jn.zeros(var_shape))
+
+    def __call__(self, x: JaxArray, training: bool = True) -> JaxArray:
+        """Returns the results of applying group normalization to input x."""
+        # This method has unused training argument, so group norm can be used as a drop-in replacement of batch norm.
+        del training
+        group_shape = ((-1, self.groups, self.nin // self.groups) + x.shape[2:])
+        x = x.reshape(group_shape)
+        mean = x.mean(axis=self.redux, keepdims=True)
+        var = x.var(axis=self.redux, keepdims=True)
+        x = (x - mean) * functional.rsqrt(var + self.eps)
+        x = x.reshape((-1, self.nin,) + group_shape[3:])
+        x = x * self.gamma.value + self.beta.value
+        return x
+
+    def __repr__(self):
+        args = f'nin={self.nin}, rank={len(self.gamma.shape)}, groups={self.groups}, eps={self.eps}'
+        return f'{class_name(self)}({args})'
+
+
+class GroupNorm0D(GroupNorm):
+    """Applies a 0D group normalization on a input batch of shape (N,C)."""
+
+    def __init__(self, nin: int, groups: int = 32, eps: float = 1e-5):
+        """Creates a GroupNorm2D module instance.
+
+        Args:
+            nin: number of input channels.
+            groups: number of normalization groups.
+            eps: small value which is used for numerical stability.
+        """
+        super().__init__(nin, rank=2, groups=groups, eps=eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.nin}, groups={self.groups}, eps={self.eps})'
+
+
+class GroupNorm1D(GroupNorm):
+    """Applies a 1D group normalization on a input batch of shape (N,C,L)."""
+
+    def __init__(self, nin: int, groups: int = 32, eps: float = 1e-5):
+        """Creates a GroupNorm2D module instance.
+
+        Args:
+            nin: number of input channels.
+            groups: number of normalization groups.
+            eps: small value which is used for numerical stability.
+        """
+        super().__init__(nin, rank=3, groups=groups, eps=eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.nin}, groups={self.groups}, eps={self.eps})'
+
+
+class GroupNorm2D(GroupNorm):
+    """Applies a 2D group normalization on a input batch of shape (N,C,H,W)."""
+
+    def __init__(self, nin: int, groups: int = 32, eps: float = 1e-5):
+        """Creates a GroupNorm2D module instance.
+
+        Args:
+            nin: number of input channels.
+            groups: number of normalization groups.
+            eps: small value which is used for numerical stability.
+        """
+        super().__init__(nin, rank=4, groups=groups, eps=eps)
+
+    def __repr__(self):
+        return f'{class_name(self)}(nin={self.nin}, groups={self.groups}, eps={self.eps})'
 
 
 class Linear(Module):

@@ -16,9 +16,10 @@
 import os
 import unittest
 
-import objax
-
+import jax.numpy as jn
 import numpy as np
+
+import objax
 
 
 # Split CPU cores into 8 devices for tests of sync batch norm
@@ -110,6 +111,34 @@ class TestSyncBatchnorm(unittest.TestCase):
     def test_syncbn_2d(self):
         x = objax.random.normal((64, 3, 16, 16))
         self.helper_test_syncbn(x, lambda: objax.nn.BatchNorm2D(3), lambda: objax.nn.SyncedBatchNorm2D(3))
+
+
+class TestGroupnorm(unittest.TestCase):
+
+    def test_groupnorm_0d(self):
+        x = objax.random.normal((64, 8))
+        gn = objax.nn.GroupNorm0D(8, groups=2, eps=1e-8)
+        y = gn(x, training=True)
+        self.assertEqual(y.shape, x.shape)
+        x = jn.array([[1., 1., 1., 1., -1., -2., -3., -4.], [5., 5., 5., 5., -1., -1., -2., -2.]])
+        y = gn(x)
+        np.testing.assert_allclose(
+            np.array([[0., 0., 0., 0., 1.34164079, 0.4472136, -0.4472136, -1.34164079],
+                      [0., 0., 0., 0., 1., 1., -1., -1.]]),
+            y,
+            atol=1e-5)
+
+    def test_groupnorm_1d(self):
+        x = objax.random.normal((64, 8, 16))
+        gn = objax.nn.GroupNorm1D(8, groups=2)
+        y = gn(x, training=True)
+        self.assertEqual(y.shape, x.shape)
+
+    def test_groupnorm_2d(self):
+        x = objax.random.normal((64, 4, 16, 16))
+        gn = objax.nn.GroupNorm2D(4, groups=2)
+        y = gn(x, training=True)
+        self.assertEqual(y.shape, x.shape)
 
 
 if __name__ == '__main__':
