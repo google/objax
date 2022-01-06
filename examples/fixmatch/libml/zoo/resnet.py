@@ -14,6 +14,7 @@
 
 __all__ = ['ResNetBlock', 'ResNet']
 
+import functools
 from typing import Callable
 
 import jax
@@ -27,7 +28,7 @@ def leaky_relu(x):
 
 
 def conv_args(k, f):
-    return dict(w_init=jax.partial(objax.random.normal, stddev=objax.functional.rsqrt(0.5 * k * k * f)))
+    return dict(w_init=functools.partial(objax.random.normal, stddev=objax.functional.rsqrt(0.5 * k * k * f)))
 
 
 class ResNetBlock(objax.Module):

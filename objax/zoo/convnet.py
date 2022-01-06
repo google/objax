@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import jax
+import functools
 
 import objax
 from objax.typing import JaxArray
@@ -47,6 +47,6 @@ class ConvNet(objax.nn.Sequential):
         for i in range(scales):
             ops.extend([objax.nn.Conv2D(nf(i), nf(i), 3), objax.functional.leaky_relu,
                         objax.nn.Conv2D(nf(i), nf(i + 1), 3), objax.functional.leaky_relu,
-                        jax.partial(pooling, size=2, strides=2)])
+                        functools.partial(pooling, size=2, strides=2)])
         ops.extend([objax.nn.Conv2D(nf(scales), nclass, 3), self._mean_reduce])
         super().__init__(ops)
