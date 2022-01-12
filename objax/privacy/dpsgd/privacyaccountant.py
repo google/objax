@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""RDP analysis of the Sampled Gaussian Mechanism.
 
+Mainly copied from the privacy analysis in TF Privacy.
+"""
 import math
-import sys
 from typing import Tuple, Union
-
 import numpy as np
 from scipy import special
 import six
@@ -62,14 +63,6 @@ def _log_sub_sign(logx: float, logy: float) -> Tuple[bool, float]:
         mag = -np.inf
 
     return s, mag
-
-
-def _log_print(logx: float) -> str:
-    """Pretty print."""
-    if logx < math.log(sys.float_info.max):
-        return "{}".format(math.exp(logx))
-    else:
-        return "exp({})".format(logx)
 
 
 def _log_comb(n, k) -> float:
