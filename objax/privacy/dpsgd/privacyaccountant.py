@@ -73,8 +73,8 @@ def _log_print(logx: float) -> str:
 
 
 def _log_comb(n, k) -> float:
-    return (special.gammaln(n + 1) - special.gammaln(k + 1) -
-            special.gammaln(n - k + 1))
+    return (special.gammaln(n + 1) - special.gammaln(k + 1)
+            - special.gammaln(n - k + 1))
 
 
 def _compute_log_a_int(q: float, sigma: int, alpha: int) -> float:
@@ -85,8 +85,7 @@ def _compute_log_a_int(q: float, sigma: int, alpha: int) -> float:
     log_a = -np.inf
 
     for i in range(alpha + 1):
-        log_coef_i = (
-                _log_comb(alpha, i) + i * math.log(q) + (alpha - i) * math.log(1 - q))
+        log_coef_i = _log_comb(alpha, i) + i * math.log(q) + (alpha - i) * math.log(1 - q)
 
         s = log_coef_i + (i * i - i) / (2 * (sigma ** 2))
         log_a = _log_add(log_a, s)
@@ -428,8 +427,7 @@ def _analyze_renyi_sample_without_replacement_scalar(q: float, sigma: float, alp
         return np.inf
 
     if float(alpha).is_integer():
-        return _analyze_renyi_sample_without_replacement_int(q, sigma, int(alpha)) / (
-                alpha - 1)
+        return _analyze_renyi_sample_without_replacement_int(q, sigma, int(alpha)) / (alpha - 1)
     else:
         # When alpha not an integer, we apply Corollary 10 of [WBK19] to interpolate
         # the CGF and obtain an upper bound
