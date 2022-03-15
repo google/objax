@@ -447,6 +447,105 @@ class TestGradValues(unittest.TestCase):
         self.assertEqual(inspect.signature(g), inspect.signature(df))
 
 
+class TestJacobian(unittest.TestCase):
+    def __init__(self, methodname):
+        """Initialize the test class."""
+        super().__init__(methodname)
+
+        self.data = jn.array([1.0, 2.0, 3.0, 4.0])
+
+        self.W = objax.TrainVar(jn.array([[1., 2., 3., 4.],
+                                         [5., 6., 7., 8.],
+                                         [9., 0., 1., 2.]]))
+        self.b = objax.TrainVar(jn.array([-1., 0., 1.]))
+
+        # f_lin(x) = W*x + b
+        @objax.Function.with_vars(objax.VarCollection({'w': self.W, 'b': self.b}))
+        def f_lin(x):
+            return jn.dot(self.W.value, x) + self.b.value
+
+        self.f_lin = f_lin
+
+    def test_jacobian_linear(self):
+        """Test if jacobian is correct for linear function."""
+        # Jacobian w.r.t. variables
+        jac_lin_vars = objax.Jacobian(self.f_lin, self.f_lin.vars())
+        j = jac_lin_vars(self.data)
+
+        self.assertEqual(len(j), 2)
+        # df_i/dW_jk = Indicator(i == j)*x_k
+        self.assertSequenceEqual(j[0].shape, (3, 3, 4))
+        np.testing.assert_allclose(j[0][0, 0], self.data)
+        np.testing.assert_allclose(j[0][0, 1], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][0, 2], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][1, 0], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][1, 1], self.data)
+        np.testing.assert_allclose(j[0][1, 2], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][2, 0], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][2, 1], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][2, 2], self.data)
+        # df_i/db_j = Indicator(i == j)
+        self.assertSequenceEqual(j[1].shape, (3, 3))
+        np.testing.assert_allclose(j[1], np.eye(3))
+
+        # Jacobian w.r.t. argument x
+        jac_lin_x = objax.Jacobian(self.f_lin, None, input_argnums=(0,))
+        j = jac_lin_x(self.data)
+
+        self.assertEqual(len(j), 1)
+        # df_i/dx_j = W_ij
+        np.testing.assert_allclose(j[0], self.W.value)
+
+    def test_jacobian_linear_jit(self):
+        """Test if Jacobian is corrrectly working with JIT."""
+        jac_lin_vars = objax.Jacobian(self.f_lin, self.f_lin.vars())
+        jac_lin_vars_jit = objax.Jit(jac_lin_vars)
+        j = jac_lin_vars(self.data)
+        j_jit = jac_lin_vars_jit(self.data)
+
+        self.assertEqual(len(j_jit), 2)
+        np.testing.assert_allclose(j_jit[0], j[0])
+        np.testing.assert_allclose(j_jit[1], j[1])
+
+        jac_lin_x = objax.Jacobian(self.f_lin, None, input_argnums=(0,))
+        jac_lin_x_jit = objax.Jit(jac_lin_x)
+        j = jac_lin_x(self.data)
+        j_jit = jac_lin_x_jit(self.data)
+
+        self.assertEqual(len(j_jit), 1)
+        np.testing.assert_allclose(j_jit[0], j[0])
+
+
+class TestHessian(unittest.TestCase):
+    def __init__(self, methodname):
+        """Initialize the test class."""
+        super().__init__(methodname)
+
+        self.data = jn.array([1.0, 2.0, 3.0, 4.0])
+
+        self.W = objax.TrainVar(jn.array([[1., 2., 3., 4.],
+                                         [5., 6., 7., 8.],
+                                         [9., 0., 1., 2.]]))
+        self.b = objax.TrainVar(jn.array([-1., 0., 1.]))
+
+        # f_sq(x) = (W*x + b)^2
+        @objax.Function.with_vars(objax.VarCollection({'w': self.W, 'b': self.b}))
+        def f_sq(x):
+            h = jn.dot(self.W.value, x) + self.b.value
+            return jn.dot(h, h)
+
+        self.f_sq = f_sq
+
+    def test_hessian_sq(self):
+        hess_vars = objax.Hessian(self.f_sq, self.f_sq.vars())
+        h = hess_vars(self.data)
+        # TODO: test hessian value
+
+        # hess_all = objax.Hessian(self.f_sq, self.f_sq.vars(), input_argnums=(0,))
+        # h = hess_all(self.data)
+        # TODO: test hessian value
+
+
 class TestPrivateGradValues(unittest.TestCase):
     def __init__(self, methodname):
         """Initialize the test class."""
