@@ -18,6 +18,8 @@ Modules
     Function
     Grad
     GradValues
+    Jacobian
+    Hessian
     Jit
     Parallel
     Vectorize
@@ -180,6 +182,61 @@ Modules
 
 
     For more information and examples, see :ref:`Understanding Gradients`.
+
+.. autoclass:: Jacobian
+   :members:
+
+    Usage example::
+
+        import objax
+        import jax.numpy as jn
+
+        data = jn.array([1.0, 2.0, 3.0, 4.0])
+
+        w = objax.TrainVar(jn.array([[1., 2., 3., 4.],
+                                     [5., 6., 7., 8.],
+                                     [9., 0., 1., 2.]]))
+        b = objax.TrainVar(jn.array([-1., 0., 1.]))
+
+        # f_lin(x) = w*x + b
+        @objax.Function.with_vars(objax.VarCollection({'w': w, 'b': b}))
+        def f_lin(x):
+            return jn.dot(W.value, x) + b.value
+
+        # Jacobian w.r.t. model variables
+        jac_vars_module = objax.Jacobian(f_lin, f_lin.vars())
+        j = jac_vars_module(data)
+
+        # Jacobian w.r.t. arguments
+        jac_x_module = objax.Jacobian(f_lin, None, input_argnums=(0,))
+        j = jac_x_module(data)
+
+
+.. autoclass:: Hessian
+   :members:
+
+    Usage example::
+
+        import objax
+        import jax.numpy as jn
+
+        data = jn.array([1.0, 2.0, 3.0, 4.0])
+
+        w = objax.TrainVar(jn.array([[1., 2., 3., 4.],
+                                     [5., 6., 7., 8.],
+                                     [9., 0., 1., 2.]]))
+        b = objax.TrainVar(jn.array([-1., 0., 1.]))
+
+        # f_sq(x) = (w*x + b)^2
+        @objax.Function.with_vars(objax.VarCollection({'w': w, 'b': b}))
+        def f_sq(x):
+            h = jn.dot(w.value, x) + b.value
+            return jn.dot(h, h)
+
+        # Hessian w.r.t. both variables and input argument
+        hess_module = objax.Hessian(f_sq, f_sq.vars(), input_argnums=(0,))
+        h = hess_module(data)
+
 
 .. autoclass:: Jit
     :members: vars

@@ -130,8 +130,8 @@ class GradValues(_DerivativeBase):
     def __call__(self, *args, **kwargs):
         """Returns the computed gradients for the first value returned by `f` and the values returned by `f`.
         Returns:
-            A tuple (gradients , values of f]), where gradients is a list containing
-                the input gradients, if any, followed by the variable gradients."""
+            A tuple (gradients, values of f), where gradients is a list containing
+            the input gradients, if any, followed by the variable gradients."""
         return super().__call__(*args, **kwargs)
 
 
@@ -172,6 +172,7 @@ class Jacobian(_DerivativeBase):
                  variables: Optional[VarCollection],
                  input_argnums: Optional[Tuple[int, ...]] = None):
         """Constructs an instance to compute the Jacobian of f w.r.t. variables and arguments.
+
         Args:
             f: the function for which to compute Jacobian.
             variables: the variables for which to compute gradients.
@@ -191,6 +192,7 @@ class Hessian(_DerivativeBase):
                  variables: Optional[VarCollection],
                  input_argnums: Optional[Tuple[int, ...]] = None):
         """Constructs an instance to compute the Hessian of f w.r.t. variables and arguments.
+
         Args:
             f: the function for which to compute Hessian.
             variables: the variables for which to compute gradients.
