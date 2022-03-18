@@ -447,6 +447,172 @@ class TestGradValues(unittest.TestCase):
         self.assertEqual(inspect.signature(g), inspect.signature(df))
 
 
+class TestJacobian(unittest.TestCase):
+    def __init__(self, methodname):
+        """Initialize the test class."""
+        super().__init__(methodname)
+
+        self.data = jn.array([1.0, 2.0, 3.0, 4.0])
+
+        self.W = objax.TrainVar(jn.array([[1., 2., 3., 4.],
+                                         [5., 6., 7., 8.],
+                                         [9., 0., 1., 2.]]))
+        self.b = objax.TrainVar(jn.array([-1., 0., 1.]))
+
+        # f_lin(x) = W*x + b
+        @objax.Function.with_vars(objax.VarCollection({'w': self.W, 'b': self.b}))
+        def f_lin(x):
+            return jn.dot(self.W.value, x) + self.b.value
+
+        self.f_lin = f_lin
+
+    def test_jacobian_linear(self):
+        """Test if jacobian is correct for linear function."""
+        # Jacobian w.r.t. variables
+        jac_lin_vars = objax.Jacobian(self.f_lin, self.f_lin.vars())
+        j = jac_lin_vars(self.data)
+
+        self.assertEqual(len(j), 2)
+        # df_i/dW_jk = Indicator(i == j)*x_k
+        self.assertSequenceEqual(j[0].shape, (3, 3, 4))
+        np.testing.assert_allclose(j[0][0, 0], self.data)
+        np.testing.assert_allclose(j[0][0, 1], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][0, 2], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][1, 0], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][1, 1], self.data)
+        np.testing.assert_allclose(j[0][1, 2], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][2, 0], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][2, 1], np.zeros((4,)))
+        np.testing.assert_allclose(j[0][2, 2], self.data)
+        # df_i/db_j = Indicator(i == j)
+        self.assertSequenceEqual(j[1].shape, (3, 3))
+        np.testing.assert_allclose(j[1], np.eye(3))
+
+        # Jacobian w.r.t. argument x
+        jac_lin_x = objax.Jacobian(self.f_lin, None, input_argnums=(0,))
+        j = jac_lin_x(self.data)
+
+        self.assertEqual(len(j), 1)
+        # df_i/dx_j = W_ij
+        np.testing.assert_allclose(j[0], self.W.value)
+
+    def test_jacobian_linear_jit(self):
+        """Test if Jacobian is corrrectly working with JIT."""
+        jac_lin_vars = objax.Jacobian(self.f_lin, self.f_lin.vars())
+        jac_lin_vars_jit = objax.Jit(jac_lin_vars)
+        j = jac_lin_vars(self.data)
+        j_jit = jac_lin_vars_jit(self.data)
+
+        self.assertEqual(len(j_jit), 2)
+        np.testing.assert_allclose(j_jit[0], j[0])
+        np.testing.assert_allclose(j_jit[1], j[1])
+
+        jac_lin_x = objax.Jacobian(self.f_lin, None, input_argnums=(0,))
+        jac_lin_x_jit = objax.Jit(jac_lin_x)
+        j = jac_lin_x(self.data)
+        j_jit = jac_lin_x_jit(self.data)
+
+        self.assertEqual(len(j_jit), 1)
+        np.testing.assert_allclose(j_jit[0], j[0])
+
+
+class TestHessian(unittest.TestCase):
+    def __init__(self, methodname):
+        """Initialize the test class."""
+        super().__init__(methodname)
+
+        self.data = jn.array([1.0, 2.0, 3.0, 4.0])
+
+        self.W = objax.TrainVar(jn.array([[1., 2., 3., 4.],
+                                         [5., 6., 7., 8.],
+                                         [9., 0., 1., 2.]]))
+        self.b = objax.TrainVar(jn.array([-1., 0., 1.]))
+
+        # f_sq(x) = (W*x + b)^2
+        @objax.Function.with_vars(objax.VarCollection({'w': self.W, 'b': self.b}))
+        def f_sq(x):
+            h = jn.dot(self.W.value, x) + self.b.value
+            return jn.dot(h, h)
+
+        self.f_sq = f_sq
+
+    def test_hessian_sq(self):
+        # Function:
+        # f = sum_i (sum_j w_{ij}x_j + b_i)^2
+
+        # First derivatives:
+        # df/dw_{kl} = 2(sum_j w_{kj}x_j + b_k)x_l
+        # df/db_{k} = 2(sum_j w_{kj}x_j + b_k)
+        # df/dx_{k} = 2(sum_i (sum_j w_{kj}x_j + b_k)w_{ik})
+
+        # Set up expected values for second derivatives:
+
+        # d^2f/dw_{kl}dw_{mn} = 2 * x_n * x_l * Indicator(k == m)
+        expected_d2f_dw2 = np.zeros((3, 4, 3, 4))
+        for i in range(3):
+            for j in range(4):
+                expected_d2f_dw2[i, j, i, :] = 2 * self.data * self.data[j]
+
+        # d^2f/dw_{kl}db_{m} = 2 * x_l * Indicator(k == m)
+        expected_d2f_dw_db = np.zeros((3, 4, 3))
+        for i in range(3):
+            expected_d2f_dw_db[i, :, i] = 2 * self.data
+
+        # d^2f/db_{k}db_{m} = 2 * Indicator(k == m)
+        expected_d2f_db2 = 2 * np.eye(3)
+
+        # d^2f/dx_{k}dx_{l} = 2 * sum_i w_{ik}w_{il}
+        expected_d2f_dx2 = 2 * np.dot(np.transpose(self.W.value), self.W.value)
+
+        # d^2f/dx_{k}db_{l} = 2 * w_{lk}
+        expected_d2f_db_dx = 2 * self.W.value
+
+        # d^2f/dx_{k}dw_{mn} = 2*(x_{n}w_{mk} + (sum_j w_{mj}x_j + b_m) * Indicator(k == n))
+        expected_d2f_dw_dx = np.array(np.reshape(self.W.value, (3, 1, 4)) * np.reshape(self.data, (1, 4, 1)))
+        linear_val = jn.dot(self.W.value, self.data) + self.b.value
+        for k in range(4):
+            expected_d2f_dw_dx[:, k, k] = expected_d2f_dw_dx[:, k, k] + linear_val
+        expected_d2f_dw_dx = 2 * expected_d2f_dw_dx
+
+        # Hessian w.r.t to variables only
+        hess_vars = objax.Hessian(self.f_sq, self.f_sq.vars())
+        h = hess_vars(self.data)
+        # h is a list of lists:
+        # h = [[d^2f/dw^2, d^2f/db dw]
+        #      [d^2f/dw db, d^2f/dw^2]]
+        self.assertEqual(2, len(h))
+        self.assertEqual(2, len(h[0]))
+        self.assertEqual(2, len(h[1]))
+        np.testing.assert_allclose(h[0][0], expected_d2f_dw2)
+        np.testing.assert_allclose(h[0][1], expected_d2f_dw_db)
+        np.testing.assert_allclose(h[1][0], np.transpose(expected_d2f_dw_db, [2, 0, 1]))
+        np.testing.assert_allclose(h[1][1], expected_d2f_db2)
+
+        # Hessian w.r.t to variables and input
+        hess_all = objax.Hessian(self.f_sq, self.f_sq.vars(), input_argnums=(0,))
+        h = hess_all(self.data)
+        self.assertEqual(3, len(h))
+        self.assertEqual(3, len(h[0]))
+        self.assertEqual(3, len(h[1]))
+        self.assertEqual(3, len(h[2]))
+        np.testing.assert_allclose(h[0][0], expected_d2f_dx2)
+        np.testing.assert_allclose(h[1][0], expected_d2f_dw_dx)
+        np.testing.assert_allclose(h[0][1], np.transpose(expected_d2f_dw_dx, [2, 0, 1]))
+        np.testing.assert_allclose(h[2][0], expected_d2f_db_dx)
+        np.testing.assert_allclose(h[0][2], np.transpose(expected_d2f_db_dx))
+        np.testing.assert_allclose(h[1][1], expected_d2f_dw2)
+        np.testing.assert_allclose(h[1][2], expected_d2f_dw_db)
+        np.testing.assert_allclose(h[2][1], np.transpose(expected_d2f_dw_db, [2, 0, 1]))
+        np.testing.assert_allclose(h[2][2], expected_d2f_db2)
+
+        # Hessian w.r.t to input only
+        hess_inp = objax.Hessian(self.f_sq, None, input_argnums=(0,))
+        h = hess_inp(self.data)
+        self.assertEqual(1, len(h))
+        self.assertEqual(1, len(h[0]))
+        np.testing.assert_allclose(h[0][0], expected_d2f_dx2)
+
+
 class TestPrivateGradValues(unittest.TestCase):
     def __init__(self, methodname):
         """Initialize the test class."""
