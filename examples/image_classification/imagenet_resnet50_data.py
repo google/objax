@@ -73,11 +73,12 @@ def load(split: Split, is_training: bool, batch_dims: Sequence[int], tfds_data_d
 
     total_batch_size = np.prod(batch_dims)
 
-    options = ds.options()
+    options = tf.data.Options()
     options.experimental_threading.private_threadpool_size = 48
     options.experimental_threading.max_intra_op_parallelism = 1
     if is_training:
         options.experimental_deterministic = False
+    ds = ds.with_options(options)
 
     if is_training:
         ds = ds.repeat()
