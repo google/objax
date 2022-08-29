@@ -108,19 +108,18 @@ class TestSequential(unittest.TestCase):
     def test_on_sequential_missing_argument(self):
         m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.nn.BatchNorm0D(3), objax.nn.Linear(3, 2)])
         x = jn.array([[1., -1.], [2., -2.]])
-        error_substring = "missing 1 required positional argument: 'training'"
-        msg = f'{error_substring}'
+        msg = "missing 1 required positional argument: 'training'"
         try:
             m(x)
             assert False
         except TypeError as e:
-            self.assertTrue(str(e).find(msg) != -1)
+            self.assertIn(msg, str(e))
         m.pop()
         try:
             m(x)
             assert False
         except TypeError as e:
-            self.assertTrue(str(e).find(msg) != -1)
+            self.assertIn(msg, str(e))
 
 
 if __name__ == '__main__':
