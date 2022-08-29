@@ -108,7 +108,7 @@ class TestSequential(unittest.TestCase):
     def test_on_sequential_missing_argument(self):
         m = objax.nn.Sequential([objax.nn.Linear(2, 3), objax.nn.BatchNorm0D(3), objax.nn.Linear(3, 2)])
         x = jn.array([[1., -1.], [2., -2.]])
-        msg = f'Sequential layer[1] {m[1]} BatchNorm.__call__() missing 1 required positional argument: \'training\''
+        msg = f'Sequential layer[1] {m[1]} __call__() missing 1 required positional argument: \'training\''
         try:
             m(x)
             assert False
