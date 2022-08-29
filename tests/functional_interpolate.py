@@ -23,7 +23,7 @@ import objax
 
 
 def shaparange(s):
-    return jn.arange(np.prod(s), dtype=np.float).reshape(s)
+    return jn.arange(np.prod(s), dtype=float).reshape(s)
 
 
 class TestUpsample(unittest.TestCase):
