@@ -60,7 +60,7 @@ class TestUtilImage(unittest.TestCase):
         self.assertEqual((x - 1).clip(0, 255).tolist(), z.tolist())
 
     def test_to_png(self):
-        x = np.zeros((3, 32, 32), np.float) + 1 / 255
+        x = np.zeros((3, 32, 32), float) + 1 / 255
         x[:, :12, :12] = 1
         x[:, -12:, -12:] = -1
         y = objax.util.image.to_png(x)
