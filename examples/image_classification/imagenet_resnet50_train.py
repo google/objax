@@ -109,10 +109,12 @@ class Experiment:
         wd_loss = FLAGS.weight_decay * 0.5 * sum((v.value ** 2).sum()
                                                  for k, v in self.model_vars.items()
                                                  if k.endswith('.w'))
+        accuracy = jn.count_nonzero(jn.equal(jn.argmax(logits, axis=1), labels))/(images.shape[0]+1e-5)* 100
         total_loss = xent_loss + wd_loss
         return total_loss, {'total_loss': total_loss,
                             'xent_loss': xent_loss,
-                            'wd_loss': wd_loss}
+                            'wd_loss': wd_loss,
+                            'accuracy':accuracy}
 
     def learning_rate(self, epoch: float):
         """Computes learning rate for given fractional epoch."""
@@ -182,9 +184,9 @@ class Experiment:
                 # save checkpoint
                 checkpoint.save(self.all_vars, cur_step)
             # print info
-            print('Step %d -- Epoch %.2f -- Loss %.2f  Accuracy %.2f'
+            print('Step %d -- Epoch %.2f -- Loss %.2f Train Accuracy %.2f Eval Accuracy %.2f'
                   % (cur_step, cur_step / steps_per_epoch,
-                     monitors['total_loss'], accuracy * 100))
+                     monitors['total_loss'],monitors['accuracy'], accuracy * 100))
             print('    Training took %.1f seconds, eval took %.1f seconds'
                   % (elapsed_train_time, elapsed_eval_time), flush=True)
 
