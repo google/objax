@@ -23,7 +23,7 @@ import objax
 
 
 def shaparange(s):
-    return jn.arange(np.prod(s), dtype=np.float).reshape(s)
+    return jn.arange(np.prod(s), dtype=float).reshape(s)
 
 
 def pad(x, pad_width):
@@ -37,7 +37,7 @@ class TestPooling(unittest.TestCase):
         z = x.reshape((2, 3, 2, 5, 6, 5)).mean((-3, -1))
         self.assertEqual(y.tolist(), z.tolist())
         y = objax.functional.average_pool_2d(x, size=5, strides=1)
-        z = np.zeros((2, 3, 6, 26), dtype=np.float)
+        z = np.zeros((2, 3, 6, 26), dtype=float)
         for i in range(6):
             for j in range(26):
                 z[:, :, i, j] = x[:, :, i:i + 5, j:j + 5].mean((-2, -1))
@@ -52,7 +52,7 @@ class TestPooling(unittest.TestCase):
         z = x.reshape((2, 3, 2, 5, 6, 5)).max((-3, -1))
         self.assertEqual(y.tolist(), z.tolist())
         y = objax.functional.max_pool_2d(x, size=5, strides=1)
-        z = np.zeros((2, 3, 6, 26), dtype=np.float)
+        z = np.zeros((2, 3, 6, 26), dtype=float)
         for i in range(6):
             for j in range(26):
                 z[:, :, i, j] = x[:, :, i:i + 5, j:j + 5].max((-2, -1))
