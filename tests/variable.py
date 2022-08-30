@@ -244,7 +244,7 @@ class TestVariable(unittest.TestCase):
         np.testing.assert_allclose(v.value.repeat(3), v.repeat(3))
         np.testing.assert_allclose(v.value.swapaxes(0, 1), v.swapaxes(0, 1))
         np.testing.assert_allclose(v.value.take(np.array([1, 2, 3])), v.take(np.array([1, 2, 3])))
-        np.testing.assert_allclose(v.value.tile([1, 2]), v.tile([1, 2]))
+        np.testing.assert_allclose(jn.tile(v.value, [1, 2]), jn.tile(v, [1, 2]))
         np.testing.assert_allclose(v.value.reshape([-1]), v.reshape([-1]))
 
     def test_jax_duck_typing_get_item(self):
