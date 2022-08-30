@@ -12,13 +12,15 @@ Install using :code:`pip` with the following command:
 
     pip install --upgrade objax
 
-For GPU support, we assume you have already some version of CUDA installed. Here are the extra steps:
+For GPU support, we assume you have already some version of CUDA installed (jaxlib releases require
+CUDA 11.2 or newer). Here are the extra steps:
 
 .. code-block:: bash
 
-    # Specify your installed CUDA version.
-    CUDA_VERSION=11.0
-    pip install -f https://storage.googleapis.com/jax-releases/jax_releases.html jaxlib==`python3 -c 'import jaxlib; print(jaxlib.__version__)'`+cuda`echo $CUDA_VERSION | sed s:\\\.::g`
+    RELEASE_URL="https://storage.googleapis.com/jax-releases/jax_cuda_releases.html"
+    JAX_VERSION=`python3 -c 'import jax; print(jax.__version__)'`
+    pip uninstall -y jaxlib
+    pip install -f $RELEASE_URL jax[cuda]==$JAX_VERSION
 
 Useful shell configurations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
