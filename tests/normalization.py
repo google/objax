@@ -141,5 +141,29 @@ class TestGroupnorm(unittest.TestCase):
         self.assertEqual(y.shape, x.shape)
 
 
+class TestLayernorm(unittest.TestCase):
+
+    def test_layernorm_output(self):
+        x = jn.array([1., 1., 2., 2.]).reshape((1, 2, 2))
+        ln = objax.nn.LayerNorm((2, 2))
+        y = ln(x)
+        np.testing.assert_allclose(
+            np.array([-1., -1., 1., 1.]).reshape((1, 2, 2)),
+            y,
+            atol=1e-4)
+
+    def test_layernorm_1d(self):
+        x = objax.random.normal((64, 8, 16))
+        ln = objax.nn.LayerNorm((8, 16))
+        y = ln(x)
+        self.assertEqual(y.shape, x.shape)
+
+    def test_layernorm_2d(self):
+        x = objax.random.normal((64, 4, 16, 16))
+        ln = objax.nn.LayerNorm((4, 16, 16))
+        y = ln(x)
+        self.assertEqual(y.shape, x.shape)
+
+
 if __name__ == '__main__':
     unittest.main()
