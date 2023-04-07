@@ -16,22 +16,21 @@ __all__ = ['assert_assigned_type_and_shape_match']
 
 import jax
 
-from objax.typing import JaxArray
-
 
 TRACER_TYPES = (jax.interpreters.partial_eval.JaxprTracer,
                 jax.interpreters.partial_eval.DynamicJaxprTracer)
 
 
 def split_shape_and_device(array):
-    if isinstance(array, jax.interpreters.pxla.ShardedDeviceArray):
+    if isinstance(array, jax.Array) and hasattr(array, 'sharding') and isinstance(
+            array.sharding, jax.sharding.PmapSharding):
         return array.shape[0], array.shape[1:]
     else:
         return None, array.shape
 
 
 def assert_assigned_type_and_shape_match(existing_tensor, new_tensor):
-    assert isinstance(new_tensor, JaxArray.__args__), \
+    assert isinstance(new_tensor, jax.Array), \
         f'Assignments to variable must be an instance of JaxArray, but received f{type(new_tensor)}.'
 
     new_tensor_device, new_tensor_shape = split_shape_and_device(new_tensor)

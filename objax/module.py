@@ -20,7 +20,6 @@ from typing import Optional, List, Union, Callable, Tuple
 import jax
 import jax.numpy as jn
 import numpy as np
-from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.typing import JaxArray
 from objax.util import class_name, override_args_kwargs, positional_args_names, repr_function
@@ -287,7 +286,7 @@ class Parallel(Module):
                 raise ValueError('You must supply the VarCollection used by the function f.')
             f = Function(f, vc)
 
-        def pmap(tensor_list: List[ShardedDeviceArray], random_list: List[ShardedDeviceArray], *args):
+        def pmap(tensor_list: List[jax.Array], random_list: List[jax.Array], *args):
             original_values = self.vc.tensors()
             try:
                 self.vc.assign(tensor_list)
@@ -320,7 +319,7 @@ class Parallel(Module):
         Important: Make sure you call this function within the scope of VarCollection.replicate() statement.
         """
         unreplicated = [k for k, v in self.vc.items()
-                        if not isinstance(v.value, (ShardedDeviceArray,
+                        if not isinstance(v.value, (jax.Array,
                                                     jax.interpreters.partial_eval.JaxprTracer,
                                                     jax.interpreters.partial_eval.DynamicJaxprTracer))]
         assert not unreplicated, \

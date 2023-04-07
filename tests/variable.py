@@ -148,7 +148,7 @@ class TestVariable(unittest.TestCase):
             'degrees', 'diag', 'double', 'empty_like', 'exp', 'exp2', 'expm1', 'fabs', 'fix', 'flatnonzero', 'float16',
             'float32', 'float64', 'floor', 'frexp', 'i0', 'int16', 'int32', 'int64', 'int8',
             'iscomplex', 'iscomplexobj', 'isfinite', 'isinf', 'isnan', 'isneginf', 'isposinf', 'isreal', 'isrealobj',
-            'log', 'log10', 'log1p', 'log2', 'max', 'mean', 'median', 'min', 'modf', 'msort', 'nan_to_num',
+            'log', 'log10', 'log1p', 'log2', 'max', 'mean', 'median', 'min', 'modf', 'nan_to_num',
             'nanargmax', 'nanargmin', 'nancumprod', 'nancumsum', 'nanmedian', 'nanmax', 'nanmean', 'nanmin', 'nanprod',
             'nanstd', 'nansum', 'nanvar', 'ndim', 'negative', 'nonzero', 'ones_like', 'positive', 'prod', 'product',
             'ptp', 'rad2deg', 'radians', 'ravel', 'reciprocal', 'rint', 'round', 'shape', 'sign', 'signbit', 'sin',
