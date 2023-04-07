@@ -83,9 +83,6 @@ def load(split: Split, is_training: bool, batch_dims: Sequence[int], tfds_data_d
     if is_training:
         ds = ds.repeat()
         ds = ds.shuffle(buffer_size=10 * total_batch_size, seed=0)
-    else:
-        if split.num_examples % total_batch_size != 0:
-            raise ValueError(f'Test set size must be divisible by {total_batch_size}')
 
     def preprocess(example):
         image = _preprocess_image(example['image'], is_training)
