@@ -73,18 +73,16 @@ def load(split: Split, is_training: bool, batch_dims: Sequence[int], tfds_data_d
 
     total_batch_size = np.prod(batch_dims)
 
-    options = ds.options()
+    options = tf.data.Options()
     options.experimental_threading.private_threadpool_size = 48
     options.experimental_threading.max_intra_op_parallelism = 1
     if is_training:
         options.experimental_deterministic = False
+    ds = ds.with_options(options)
 
     if is_training:
         ds = ds.repeat()
         ds = ds.shuffle(buffer_size=10 * total_batch_size, seed=0)
-    else:
-        if split.num_examples % total_batch_size != 0:
-            raise ValueError(f'Test set size must be divisible by {total_batch_size}')
 
     def preprocess(example):
         image = _preprocess_image(example['image'], is_training)

@@ -20,7 +20,6 @@ from typing import IO, BinaryIO, Union, Optional
 
 import jax.numpy as jn
 import numpy as np
-from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.util import Renamer
 from objax.variable import TrainRef, VarCollection
@@ -98,13 +97,16 @@ def save_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
             names.append(k)
             data[str(len(data))] = v.value
             seen.add(id(v))
-        if isinstance(v.value, ShardedDeviceArray):
-            replicated.append(k)
     if replicated:
         print('Warning: When saving VarCollection, some variables were replicated on multiple devices.')
         print('         While it is valid, in most use cases it is more disk efficient to save variables outside of ')
         print('         vars().replicate().')
+    def _disabled_seek(*_):
+        raise AttributeError('seek() is disabled on this object.')
+    _old_seek = getattr(file, 'seek')
+    setattr(file, 'seek', _disabled_seek)
     np.savez(file, names=np.array(names), **data)
+    setattr(file, 'seek', _old_seek)
     if do_close:
         file.close()
         os.rename(filename + '.tmp', filename)  # Atomic rename to avoid broken file (when killed while saving).

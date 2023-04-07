@@ -243,10 +243,10 @@ class TestParallel(unittest.TestCase):
             with fp.vars().replicate():
                 zl.append(fp(x))
         znone, zfirst, zmean, zsum = zl
-        self.assertAlmostEqual(jn.square(jn.array(y.split(8)) - znone).sum(), 0, places=8)
-        self.assertAlmostEqual(jn.square(y.split(8)[0] - zfirst).sum(), 0, places=8)
-        self.assertAlmostEqual(jn.square(np.mean(y.split(8), 0) - zmean).sum(), 0, places=8)
-        self.assertAlmostEqual(jn.square(np.sum(y.split(8), 0) - zsum).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(jn.array(jn.split(y, 8)) - znone).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(jn.split(y, 8)[0] - zfirst).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(np.mean(jn.split(y, 8), 0) - zmean).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(np.sum(jn.split(y, 8), 0) - zsum).sum(), 0, places=8)
 
     def test_jit_parallel_bntrain_concat(self):
         """JIT parallel inference (concat reduction) with batch norm in train mode."""
@@ -288,10 +288,10 @@ class TestParallel(unittest.TestCase):
             with fp.vars().replicate():
                 zl.append(fp(x))
         znone, zfirst, zmean, zsum = zl
-        self.assertAlmostEqual(jn.square(jn.array(y.split(8)) - znone).sum(), 0, places=8)
-        self.assertAlmostEqual(jn.square(y.split(8)[0] - zfirst).sum(), 0, places=8)
-        self.assertAlmostEqual(jn.square(np.mean(y.split(8), 0) - zmean).sum(), 0, places=8)
-        self.assertAlmostEqual(jn.square(np.sum(y.split(8), 0) - zsum).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(jn.array(jn.split(y, 8)) - znone).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(jn.split(y, 8)[0] - zfirst).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(np.mean(jn.split(y, 8), 0) - zmean).sum(), 0, places=8)
+        self.assertAlmostEqual(jn.square(np.sum(jn.split(y, 8), 0) - zsum).sum(), 0, places=8)
 
     def test_trainvar_assign(self):
         m = objax.ModuleList([objax.TrainVar(jn.zeros(2))])
