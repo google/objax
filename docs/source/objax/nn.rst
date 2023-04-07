@@ -76,7 +76,7 @@ objax.nn
     with kernel weight :math:`(k,k,C_{in},C_{out})` and bias :math:`(C_{out})` as follows:
 
     .. math::
-      \mathrm{out}[n,c,h,w] = \mathrm{b}[c] + \sum_{t=0}^{C_{in}-1}\sum_{i=0}^{k-1}\sum_{j=0}^{k-1} \mathrm{in}[n,c,i+h,j+w] \times \mathrm{w}[i,j,t,c]
+      \mathrm{out}[n,c,h,w] = \mathrm{b}[c] + \sum_{t=0}^{C_{in}-1}\sum_{i=0}^{k-1}\sum_{j=0}^{k-1} \mathrm{in}[n,t,i+h,j+w] \times \mathrm{w}[i,j,t,c]
 
     where :math:`H_{out}=H-k+1`, :math:`W_{out}=W-k+1`.
     Note that the implementation follows the definition of
