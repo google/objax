@@ -40,7 +40,9 @@ class TestObjax2Tf(unittest.TestCase):
         np.testing.assert_allclose(objax_op(x1), tf_op(tf.convert_to_tensor(x1, dtype=tf.float32)), rtol=1e-4)
         np.testing.assert_allclose(objax_op(x2), tf_op(tf.convert_to_tensor(x2, dtype=tf.float32)), rtol=1e-4)
 
-    def test_convert_wrn(self):
+    # NOTE: Objax2Tf tests are temporary disabled until the release of TF 2.8
+
+    def disabled_test_convert_wrn(self):
         # Make a model
         model = WideResNet(NCHANNELS, NCLASSES, depth=4, width=1)
         # Prediction op without JIT
@@ -56,7 +58,7 @@ class TestObjax2Tf(unittest.TestCase):
         self.verify_converted_predict_op(predict_op_jit, predict_tf_jit,
                                          shape=(BATCH_SIZE, NCHANNELS, IMAGE_SIZE, IMAGE_SIZE))
 
-    def test_savedmodel_wrn(self):
+    def disabled_test_savedmodel_wrn(self):
         model_dir = tempfile.mkdtemp()
         # Make a model and convert it to TF
         model = WideResNet(NCHANNELS, NCLASSES, depth=4, width=1)

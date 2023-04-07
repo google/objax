@@ -135,7 +135,7 @@ class TestRepr(unittest.TestCase):
                          'objax.Jit(f=objax.Function(f=myloss), static_argnums=None)')
         self.assertEqual(repr(objax.Parallel(gv)),
                          "objax.Parallel(f=objax.GradValues(f=myloss, input_argnums=(0,)),"
-                         " reduce=concatenate(*, axis=0), axis_name='device', static_argnums=None)")
+                         " reduce=concatenate(*, axis=0, dtype=None), axis_name='device', static_argnums=None)")
         self.assertEqual(repr(objax.Vectorize(myloss, vc=objax.VarCollection())),
                          'objax.Vectorize(f=objax.Function(f=myloss), batch_axis=(0,))')
         self.assertEqual(repr(objax.ForceArgs(gv, training=True, word='hello')),

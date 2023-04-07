@@ -367,10 +367,10 @@ class VarCollection(Dict[str, BaseVar]):
         ndevices = len(devices)
         for v in self:
             if isinstance(v, RandomState):
-                replicated.append(jax.api.device_put_sharded([shard for shard in v.split(ndevices)], devices))
+                replicated.append(jax.device_put_sharded([shard for shard in v.split(ndevices)], devices))
                 saved_states.append(v.value)
             else:
-                replicated.append(jax.api.device_put_replicated(v.value, devices))
+                replicated.append(jax.device_put_replicated(v.value, devices))
         self.assign(replicated)
         yield
         visited = set()

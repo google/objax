@@ -60,15 +60,19 @@ class TestUtilImage(unittest.TestCase):
         self.assertEqual((x - 1).clip(0, 255).tolist(), z.tolist())
 
     def test_to_png(self):
-        x = np.zeros((3, 32, 32), np.float) + 1 / 255
+        x = np.zeros((3, 32, 32), float) + 1 / 255
         x[:, :12, :12] = 1
         x[:, -12:, -12:] = -1
         y = objax.util.image.to_png(x)
-        self.assertEqual(y, b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00 \x00\x00\x00 \x08\x02\x00\x00\x00\xfc'
-                            b'\x18\xed\xa3\x00\x00\x00FIDATx\x9cc\xfc\xff\xff?\x03!\xd0\xd8\xd8HP\r.\xc0D\xb6\xceQ'
-                            b'\x0bF-\x18\xb5`\x04Y\xc0BI9C\x0c\x18\xfaA4j\xc1\x08\xb0\x80\x85\x12\xcd\r\r\r\x04\xd5'
-                            b'\x0c\xfd \x1a\xb5`\xd4\x82Q\x0b\xe8`\x01\x00\xe3\xf1\x07\xc7\x82\x83p\xa5\x00\x00\x00\x00'
-                            b'IEND\xaeB`\x82')
+        self.assertEqual(
+            np.array(Image.open(io.BytesIO(y))).tolist(),
+            np.array(Image.open(io.BytesIO(
+                b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00 \x00\x00\x00 \x08\x02\x00\x00\x00\xfc'
+                b'\x18\xed\xa3\x00\x00\x00FIDATx\x9cc\xfc\xff\xff?\x03!\xd0\xd8\xd8HP\r.\xc0D\xb6\xceQ'
+                b'\x0bF-\x18\xb5`\x04Y\xc0BI9C\x0c\x18\xfaA4j\xc1\x08\xb0\x80\x85\x12\xcd\r\r\r\x04\xd5'
+                b'\x0c\xfd \x1a\xb5`\xd4\x82Q\x0b\xe8`\x01\x00\xe3\xf1\x07\xc7\x82\x83p\xa5\x00\x00\x00\x00'
+                b'IEND\xaeB`\x82'
+            ))).tolist())
         z = np.array(Image.open(io.BytesIO(y)))
         z = (z.transpose((2, 0, 1)) - 127.5) / 127.5
         self.assertEqual(x.tolist(), z.tolist())

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __all__ = ['celu', 'elu', 'leaky_relu', 'log_sigmoid', 'log_softmax', 'logsumexp', 'relu',
-           'selu', 'sigmoid', 'softmax', 'softplus', 'tanh']
+           'selu', 'sigmoid', 'softmax', 'softplus', 'swish', 'tanh']
 
 import jax.nn
 import jax.scipy.special
@@ -32,6 +32,7 @@ sigmoid = jax.nn.sigmoid
 softmax = jax.nn.softmax
 softplus = jax.nn.softplus
 tanh = lax.tanh
+swish = jax.nn.swish
 
 
 # Have to redefine relu since jax.nn.relu isn't pickable.
