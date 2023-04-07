@@ -185,7 +185,7 @@ gv = objax.GradValues(loss, model.vars())
 
 
 def clip_gradients(grads, theta):
-    total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
+    total_grad_norm = jn.linalg.norm(jn.array([jn.linalg.norm(g) for g in grads]))
     scale_factor = jn.minimum(theta / total_grad_norm, 1.)
     return [g * scale_factor for g in grads]
 

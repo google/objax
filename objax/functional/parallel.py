@@ -20,21 +20,21 @@ import jax
 from jax import lax
 
 
-def pmax(x: jax.interpreters.pxla.ShardedDeviceArray, axis_name: str = 'device'):
+def pmax(x: jax.Array, axis_name: str = 'device'):
     """Compute a multi-device reduce max on x over the device axis axis_name."""
     return lax.pmax(x, axis_name)
 
 
-def pmean(x: jax.interpreters.pxla.ShardedDeviceArray, axis_name: str = 'device'):
+def pmean(x: jax.Array, axis_name: str = 'device'):
     """Compute a multi-device reduce mean on x over the device axis axis_name."""
     return lax.pmean(x, axis_name)
 
 
-def pmin(x: jax.interpreters.pxla.ShardedDeviceArray, axis_name: str = 'device'):
+def pmin(x: jax.Array, axis_name: str = 'device'):
     """Compute a multi-device reduce min on x over the device axis axis_name."""
     return lax.pmin(x, axis_name)
 
 
-def psum(x: jax.interpreters.pxla.ShardedDeviceArray, axis_name: str = 'device'):
+def psum(x: jax.Array, axis_name: str = 'device'):
     """Compute a multi-device reduce sum on x over the device axis axis_name."""
     return lax.psum(x, axis_name)
