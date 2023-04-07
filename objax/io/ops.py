@@ -101,6 +101,7 @@ def save_var_collection(file: Union[str, IO[BinaryIO]], vc: VarCollection):
         print('Warning: When saving VarCollection, some variables were replicated on multiple devices.')
         print('         While it is valid, in most use cases it is more disk efficient to save variables outside of ')
         print('         vars().replicate().')
+
     def _disabled_seek(*_):
         raise AttributeError('seek() is disabled on this object.')
     _old_seek = getattr(file, 'seek')
