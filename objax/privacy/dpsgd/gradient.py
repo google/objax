@@ -88,7 +88,7 @@ class PrivateGradValues(Module):
         @Function.with_vars(gv.vars())
         def clipped_grad_single_example(*args):
             grads, values = gv(*args)
-            total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
+            total_grad_norm = jn.linalg.norm(jn.array([jn.linalg.norm(g) for g in grads]))
             idivisor = 1 / jn.maximum(total_grad_norm / self.l2_norm_clip, 1.)
             return [g * idivisor for g in grads], values
 
@@ -123,7 +123,7 @@ class PrivateGradValues(Module):
         @Function.with_vars(gv.vars())
         def grad_norm_fn(*args):
             grads, values = gv(*args)
-            total_grad_norm = jn.linalg.norm([jn.linalg.norm(g) for g in grads])
+            total_grad_norm = jn.linalg.norm(jn.array([jn.linalg.norm(g) for g in grads]))
             return total_grad_norm, values
 
         grad_norm_fn_vectorized = Vectorize(grad_norm_fn, batch_axis=self.batch_axis)

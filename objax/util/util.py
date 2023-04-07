@@ -28,7 +28,6 @@ from typing import Callable, List, Union, Tuple, Iterable, Dict, Pattern, Option
 import jax
 import jax.numpy as jn
 import numpy as np
-from jax.interpreters.pxla import ShardedDeviceArray
 
 from objax.constants import ConvPadding, Interpolate
 from objax.typing import ConvPaddingInt
@@ -138,7 +137,7 @@ def local_kwargs(kwargs: dict, f: Callable) -> dict:
     return {k: kwargs[k] for k in p.keys() if k in kwargs}
 
 
-map_to_device: Callable[[List[jn.ndarray]], List[ShardedDeviceArray]] = jax.pmap(lambda x: x, axis_name='device')
+map_to_device: Callable[[List[jn.ndarray]], List[jn.ndarray]] = jax.pmap(lambda x: x, axis_name='device')
 
 
 def multi_host_barrier():
