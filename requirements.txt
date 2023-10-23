@@ -1,7 +1,9 @@
 scipy
 numpy>=1.18.0
 pillow
-jaxlib>=0.4.19
 jax>=0.3.25
 tensorboard>=2.3.0
 parameterized
+-i https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+jaxlib>=0.4.19
+
