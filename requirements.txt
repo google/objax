@@ -1,4 +1,3 @@
---extra-index-url https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 scipy
 numpy>=1.18.0
 pillow
