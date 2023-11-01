@@ -141,23 +141,24 @@ class TestVariable(unittest.TestCase):
 
     def test_jax_duck_typing_jax_api_one_float_arg(self):
         API_LIST = [
-            'abs', 'absolute', 'all', 'alltrue', 'amax', 'amin', 'any', 'arccos', 'arccosh', 'arcsin', 'arcsinh',
+            'abs', 'absolute', 'all', 'amax', 'amin', 'any', 'arccos', 'arccosh', 'arcsin', 'arcsinh',
             'arctan', 'arctanh', 'argmax', 'argmin', 'argsort', 'argwhere', 'around', 'asarray', 'average',
             'cbrt', 'cdouble', 'ceil', 'complex128', 'complex64', 'conj', 'conjugate',
-            'corrcoef', 'cos', 'cosh', 'count_nonzero', 'csingle', 'cumprod', 'cumproduct', 'cumsum', 'deg2rad',
+            'corrcoef', 'cos', 'cosh', 'count_nonzero', 'csingle', 'cumprod', 'cumsum', 'deg2rad',
             'degrees', 'diag', 'double', 'empty_like', 'exp', 'exp2', 'expm1', 'fabs', 'fix', 'flatnonzero', 'float16',
             'float32', 'float64', 'floor', 'frexp', 'i0', 'int16', 'int32', 'int64', 'int8',
             'iscomplex', 'iscomplexobj', 'isfinite', 'isinf', 'isnan', 'isneginf', 'isposinf', 'isreal', 'isrealobj',
             'log', 'log10', 'log1p', 'log2', 'max', 'mean', 'median', 'min', 'modf', 'nan_to_num',
             'nanargmax', 'nanargmin', 'nancumprod', 'nancumsum', 'nanmedian', 'nanmax', 'nanmean', 'nanmin', 'nanprod',
-            'nanstd', 'nansum', 'nanvar', 'ndim', 'negative', 'nonzero', 'ones_like', 'positive', 'prod', 'product',
+            'nanstd', 'nansum', 'nanvar', 'ndim', 'negative', 'nonzero', 'ones_like', 'positive', 'prod',
             'ptp', 'rad2deg', 'radians', 'ravel', 'reciprocal', 'rint', 'round', 'shape', 'sign', 'signbit', 'sin',
-            'sinc', 'single', 'sinh', 'size', 'sometrue', 'sort', 'sort_complex', 'sqrt', 'square', 'squeeze', 'std',
+            'sinc', 'single', 'sinh', 'size', 'sort', 'sort_complex', 'sqrt', 'square', 'squeeze', 'std',
             'sum', 'tan', 'tanh', 'transpose', 'trunc', 'uint16', 'uint32', 'uint64', 'uint8', 'vander', 'var',
             'zeros_like'
         ]
         v = objax.TrainVar(jn.array([1., 2., 3.], dtype=jn.float32))
         for name in API_LIST:
+            print(name)
             fn = jn.__dict__[name]
             expected = fn(v.value)
             actual = fn(v)

@@ -57,48 +57,52 @@ class TestRepr(unittest.TestCase):
 
     def test_vars(self):
         t = objax.TrainVar(jn.zeros([1, 2, 3, 2, 1]))
-        tv = '\n'.join(['objax.TrainVar(DeviceArray([[[[[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]]],',
-                        '              [[[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]]]]], dtype=float32), reduce=reduce_mean)'])
+        tv = '\n'.join(['objax.TrainVar(Array([[[[[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]]],',
+                        '        [[[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]]]]], dtype=float32), reduce=reduce_mean)'])
         self.assertEqual(repr(t), tv)
         r = objax.TrainRef(t)
-        rv = '\n'.join(['objax.TrainRef(ref=objax.TrainVar(DeviceArray([[[[[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]]],',
-                        '              [[[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]]]]], dtype=float32), reduce=reduce_mean))'])
+        rv = '\n'.join(['objax.TrainRef(ref=objax.TrainVar(Array([[[[[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]]],',
+                        '        [[[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]]]]], dtype=float32), reduce=reduce_mean))'])
         self.assertEqual(repr(r), rv)
         t = objax.StateVar(jn.zeros([1, 2, 3, 2, 1]))
-        tv = '\n'.join(['objax.StateVar(DeviceArray([[[[[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]]],',
-                        '              [[[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]],',
-                        '               [[0.],',
-                        '                [0.]]]]], dtype=float32), reduce=reduce_mean)'])
+        tv = '\n'.join(['objax.StateVar(Array([[[[[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]]],',
+                        '        [[[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]],',
+                        '         [[0.],',
+                        '          [0.]]]]], dtype=float32), reduce=reduce_mean)'])
         self.assertEqual(repr(t), tv)
-        self.assertEqual(repr(objax.random.Generator().key), 'objax.RandomState(DeviceArray([0, 0], dtype=uint32))')
+        print("EXPECTED:")
+        print('objax.RandomState(DeviceArray([0, 0], dtype=uint32))')
+        print("ACTUAL:")
+        print(repr(objax.random.Generator().key))
+        self.assertEqual(repr(objax.random.Generator().key), 'objax.RandomState(Array([0, 0], dtype=uint32))')
 
     def test_random(self):
         self.assertEqual(repr(objax.random.Generator(seed=123)), 'objax.random.Generator(seed=123)')
