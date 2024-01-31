@@ -15,7 +15,7 @@
 __all__ = ['BatchNorm', 'BatchNorm0D', 'BatchNorm1D', 'BatchNorm2D',
            'Conv2D', 'ConvTranspose2D', 'Dropout', 'ExponentialMovingAverage',
            'GroupNorm', 'GroupNorm0D', 'GroupNorm1D', 'GroupNorm2D',
-           'Linear', 'MovingAverage', 'Sequential',
+           'LayerNorm', 'Linear', 'MovingAverage', 'Sequential',
            'SyncedBatchNorm', 'SyncedBatchNorm0D', 'SyncedBatchNorm1D', 'SyncedBatchNorm2D']
 
 from typing import Callable, Iterable, Tuple, Optional, Union, List, Dict
@@ -423,6 +423,58 @@ class GroupNorm2D(GroupNorm):
 
     def __repr__(self):
         return f'{class_name(self)}(nin={self.nin}, groups={self.groups}, eps={self.eps})'
+
+
+class LayerNorm(Module):
+    """Applies Layer Normalization over a mini-batch of inputs as described
+    in the paper
+    `Layer Normalization <https://arxiv.org/abs/1607.06450>`_.
+    """
+    def __init__(self,
+                 normalized_shape: Union[int, Iterable[int]],
+                 eps: float = 1e-5,
+                 elementwise_affine: bool = True):
+        """Creates a LayerNorm module instance.
+
+        Args:
+            normalized_shape: shape of expexted input tensor.
+            eps: small value which is used for numerical stability.
+            elementwiese_affine: if ``True``, this module has learnable
+                                 per-element affine parameters initialized to
+                                 ones (for weights) and zeros (for biases).
+        """
+        super().__init__()
+        if isinstance(normalized_shape, int):
+            normalized_shape = (normalized_shape)
+
+        self.normalized_shape = tuple(normalized_shape)
+        self.dims = tuple([-(i + 1) for i in range(len(self.normalized_shape))])
+        self.eps = eps
+        self.elementwise_affine = elementwise_affine
+
+        if self.elementwise_affine:
+            self.beta = TrainVar(jn.zeros(normalized_shape))
+            self.gamma = TrainVar(jn.ones(normalized_shape))
+        else:
+            # Multiplying by 1 and adding 0 does not alter the input
+            self.beta = jn.zeros(normalized_shape)
+            self.gamma = jn.ones(normalized_shape)
+
+    def __call__(self, x: JaxArray) -> JaxArray:
+        """Performs layer normalization of input tensor.
+
+        Args:
+            x: input tensor.
+
+        Returns:
+            Layer normalized tensor.
+        """
+        assert self.normalized_shape == x.shape[-len(self.normalized_shape):]
+        mean = x.mean(self.dims, keepdims=True)
+        var = ((x - mean) ** 2).mean(self.dims, keepdims=True)
+        x_norm = (x - mean) / jn.sqrt(var + self.eps)
+        x_norm = self.gamma * x_norm + self.beta
+        return x_norm
 
 
 class Linear(Module):
