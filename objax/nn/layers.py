@@ -39,7 +39,7 @@ class BatchNorm(Module):
     <https://arxiv.org/abs/1502.03167>`_.
     """
 
-    def __init__(self, dims: Iterable[int], redux: Iterable[int], momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, dims: Iterable[int], redux: Iterable[int], momentum: float = 0.9, eps: float = 1e-5):
         """Creates a BatchNorm module instance.
 
         Args:
@@ -93,7 +93,7 @@ class BatchNorm0D(BatchNorm):
     <https://arxiv.org/abs/1502.03167>`_.
     """
 
-    def __init__(self, nin: int, momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, nin: int, momentum: float = 0.9, eps: float = 1e-5):
         """Creates a BatchNorm0D module instance.
 
         Args:
@@ -115,7 +115,7 @@ class BatchNorm1D(BatchNorm):
     <https://arxiv.org/abs/1502.03167>`_.
     """
 
-    def __init__(self, nin: int, momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, nin: int, momentum: float = 0.9, eps: float = 1e-5):
         """Creates a BatchNorm1D module instance.
 
         Args:
@@ -137,7 +137,7 @@ class BatchNorm2D(BatchNorm):
     <https://arxiv.org/abs/1502.03167>`_.
     """
 
-    def __init__(self, nin: int, momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, nin: int, momentum: float = 0.9, eps: float = 1e-5):
         """Creates a BatchNorm2D module instance.
 
         Args:
@@ -529,7 +529,7 @@ class SyncedBatchNorm0D(SyncedBatchNorm):
     Compared to regular batch norm this usually leads to better accuracy at a slight performance cost.
     """
 
-    def __init__(self, nin: int, momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, nin: int, momentum: float = 0.9, eps: float = 1e-5):
         """Creates a SyncedBatchNorm0D module instance.
 
         Args:
@@ -550,7 +550,7 @@ class SyncedBatchNorm1D(SyncedBatchNorm):
     Compared to regular batch norm this usually leads to better accuracy at a slight performance cost.
     """
 
-    def __init__(self, nin: int, momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, nin: int, momentum: float = 0.9, eps: float = 1e-5):
         """Creates a SyncedBatchNorm1D module instance.
 
         Args:
@@ -571,7 +571,7 @@ class SyncedBatchNorm2D(SyncedBatchNorm):
     Compared to regular batch norm this usually leads to better accuracy at a slight performance cost.
     """
 
-    def __init__(self, nin: int, momentum: float = 0.999, eps: float = 1e-6):
+    def __init__(self, nin: int, momentum: float = 0.9, eps: float = 1e-5):
         """Creates a SyncedBatchNorm2D module instance.
 
         Args:
